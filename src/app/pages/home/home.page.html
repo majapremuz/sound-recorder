@@ -1,0 +1,25 @@
+
+<ion-content>
+  <h1 class="title">Sound Recorder</h1>
+
+  <div class="recordings-list">
+    <img src="assets/microphone.png" alt="microphone icon" />
+  </div>
+
+  <h2>{{timeStamp}}</h2>
+
+  <canvas #waveCanvas class="wave-canvas"></canvas>
+
+  <ion-button (click)="toggleRecording()">
+  {{ isRecording ? 'Stop' : 'Record' }}
+</ion-button>
+
+<!-- Playback -->
+  <div *ngIf="audioUrl" style="margin-top: 20px;">
+    <h3>Preview:</h3>
+    <audio [src]="audioUrl" controls autoplay></audio>
+
+    <ion-button (click)="sendRecording()">Send</ion-button>
+  </div>
+
+</ion-content>

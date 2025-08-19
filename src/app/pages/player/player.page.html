@@ -1,0 +1,15 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Audio Player</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="audioUrl; else noAudio">
+    <audio [src]="audioUrl" controls autoplay></audio>
+  </div>
+
+  <ng-template #noAudio>
+    <p>No audio available.</p>
+  </ng-template>
+</ion-content>
