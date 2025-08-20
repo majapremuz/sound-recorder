@@ -1,15 +1,30 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Audio Player</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="ion-padding">
-  <div *ngIf="audioUrl; else noAudio">
-    <audio [src]="audioUrl" controls autoplay></audio>
+  <div >
+
+  <!-- Playback -->
+    <div *ngIf="audioUrl; else noAudio" class="custom-player">
+
+  <div class="player-controls">
+    <ion-button fill="clear" (click)="togglePlay()" class="play-button">
+      <ion-icon [name]="isPlaying ? 'pause' : 'play'" class="play-icon"></ion-icon>
+    </ion-button>
+
+    <ion-range
+      [value]="progress"
+      (ionChange)="seekAudio($event)"
+      min="0"
+      max="100"
+      step="1"
+      pin="true">
+    </ion-range>
+
+    <span>{{ currentTime | number:'1.0-0' }} / {{ duration | number:'1.0-0' }}s</span>
+  </div>
+</div>
   </div>
 
+
   <ng-template #noAudio>
-    <p>No audio available.</p>
+    <p class="no-audio">No audio available.</p>
   </ng-template>
 </ion-content>

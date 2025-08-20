@@ -16,6 +16,10 @@ h1, h2, h3 {
   overflow: hidden;
 }
 
+h1 {
+  text-shadow: 0 0 10px #ff0479;
+}
+
 h3 {
   font-size: 2rem;
 }
@@ -63,6 +67,7 @@ h3 {
     background: transparent;
     border: 3px solid #ff0479;
     border-radius: 50%;
+    box-shadow: 0 0 10px #ff0479;
     ion-icon {
       font-size: 24px;
     }
@@ -75,6 +80,7 @@ h3 {
 
   .play-icon {
     color: #ff0479;
+    transform: scale(4);
   }
   
 }

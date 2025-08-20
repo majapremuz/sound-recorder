@@ -14,6 +14,12 @@ export class PlayerPage implements OnInit {
 
   audioUrl: string | null = null;
 
+  audioPlayer = new Audio();
+  isPlaying = false;
+  currentTime = 0;
+  duration = 0;
+  progress = 0;
+
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit() {
@@ -21,4 +27,19 @@ export class PlayerPage implements OnInit {
       this.audioUrl = params['url'] || null;
     });
   }
+
+  togglePlay() {
+  if (this.isPlaying) {
+    this.audioPlayer.pause();
+  } else {
+    this.audioPlayer.play();
+  }
+  this.isPlaying = !this.isPlaying;
+}
+
+  seekAudio(event: any) {
+    const value = event.detail.value;
+    this.audioPlayer.currentTime = (value / 100) * this.duration;
+  }
+  
 }

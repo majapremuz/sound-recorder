@@ -3,8 +3,9 @@
   <h1 class="title">Sound Recorder</h1>
 
   <div class="recordings-list">
-    <img src="assets/microphone.png" alt="microphone icon" />
-  </div>
+    <img src="assets/microphone.png" alt="microphone icon" class="mic-img"/>
+</div>
+
 
   <h2>{{timeStamp}}</h2>
 
@@ -14,8 +15,8 @@
   {{ isRecording ? 'Stop' : 'Record' }}
 </ion-button>
 
-<!-- Playback -->
-    <div *ngIf="audioUrl" class="custom-player">
+<!-- Playback-->
+    <div  *ngIf="audioUrl" class="custom-player">
   <h3>Preview:</h3>
 
   <div class="player-controls">
