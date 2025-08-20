@@ -28,6 +28,12 @@ export class HomePage {
   recordingStartTime: number | null = null;
   timerInterval: any;
 
+  audioPlayer = new Audio();
+  isPlaying = false;
+  currentTime = 0;
+  duration = 0;
+  progress = 0;
+
   audioContext!: AudioContext;
   analyser!: AnalyserNode;
   dataArray!: Uint8Array;
@@ -100,13 +106,30 @@ export class HomePage {
       };
 
         this.mediaRecorder.onstop = async () => {
-          this.recordedBlob = new Blob(this.audioChunks, { type: 'audio/mp3' });
+          this.recordedBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
 
           this.ngZone.run(() => {
             this.audioUrl = URL.createObjectURL(this.recordedBlob);
-            console.log("Preview ready:", this.audioUrl);
-          });
-  };
+            this.audioPlayer.src = this.audioUrl;
+            this.audioPlayer.load();
+
+            this.audioPlayer.ontimeupdate = () => {
+              this.ngZone.run(() => {
+              this.currentTime = this.audioPlayer.currentTime;
+              this.duration = this.audioPlayer.duration || 0;
+              this.progress = (this.currentTime / this.duration) * 100;
+              });
+           };
+
+           this.audioPlayer.onended = () => {
+             this.ngZone.run(() => {
+               this.isPlaying = false;
+               this.currentTime = 0;
+               this.progress = 0;
+             });
+           };
+        });
+      };
 
       this.mediaRecorder.start();
       this.isRecording = true;
@@ -233,6 +256,20 @@ private async triggerPushNotification(audioUrl: string) {
       const ms = Math.floor((elapsedMs % 1000) / 100);
       this.timeStamp = `00:${seconds < 10 ? '0' + seconds : seconds}.${ms}`;
     }
+  }
+
+  togglePlay() {
+  if (this.isPlaying) {
+    this.audioPlayer.pause();
+  } else {
+    this.audioPlayer.play();
+  }
+  this.isPlaying = !this.isPlaying;
+}
+
+  seekAudio(event: any) {
+    const value = event.detail.value;
+    this.audioPlayer.currentTime = (value / 100) * this.duration;
   }
 
   startWaveform(stream: MediaStream) {

@@ -23,6 +23,14 @@ import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { environment } from 'src/environments/environment';
 
+import { addIcons } from 'ionicons';
+import { play, pause } from 'ionicons/icons';
+
+addIcons({
+  play,
+  pause
+});
+
 @NgModule({
   declarations: [],
   imports: [

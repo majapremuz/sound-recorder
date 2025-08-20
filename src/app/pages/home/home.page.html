@@ -10,16 +10,32 @@
 
   <canvas #waveCanvas class="wave-canvas"></canvas>
 
-  <ion-button (click)="toggleRecording()">
+  <ion-button (click)="toggleRecording()" class="record-button">
   {{ isRecording ? 'Stop' : 'Record' }}
 </ion-button>
 
 <!-- Playback -->
-  <div *ngIf="audioUrl" style="margin-top: 20px;">
-    <h3>Preview:</h3>
-    <audio [src]="audioUrl" controls autoplay></audio>
+    <div *ngIf="audioUrl" class="custom-player">
+  <h3>Preview:</h3>
 
-    <ion-button (click)="sendRecording()">Send</ion-button>
+  <div class="player-controls">
+    <ion-button fill="clear" (click)="togglePlay()" class="play-button">
+      <ion-icon [name]="isPlaying ? 'pause' : 'play'" class="play-icon"></ion-icon>
+    </ion-button>
+
+    <ion-range
+      [value]="progress"
+      (ionChange)="seekAudio($event)"
+      min="0"
+      max="100"
+      step="1"
+      pin="true">
+    </ion-range>
+
+    <span>{{ currentTime | number:'1.0-0' }} / {{ duration | number:'1.0-0' }}s</span>
   </div>
+
+  <ion-button (click)="sendRecording()" class="send-button">Send</ion-button>
+</div>
 
 </ion-content>
