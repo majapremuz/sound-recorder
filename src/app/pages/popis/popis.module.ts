@@ -4,18 +4,18 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { PlayerPageRoutingModule } from './player-routing.module';
+import { PopisPageRoutingModule } from './popis-routing.module';
 
-import { PlayerPage } from './player.page';
+import { PopisPage } from './popis.page';
 
 @NgModule({
   imports: [
-    PlayerPage,
+    PopisPage,
     CommonModule,
     FormsModule,
     IonicModule,
-    PlayerPageRoutingModule
+    PopisPageRoutingModule
   ],
   declarations: []
 })
-export class PlayerPageModule {}
+export class PopisPageModule {}

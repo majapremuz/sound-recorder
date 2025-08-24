@@ -13,7 +13,7 @@ import { App } from '@capacitor/app';
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
-  standalone: true,
+  //standalone: true,
   imports: [CommonModule, IonicModule]
 })
 export class AppComponent {

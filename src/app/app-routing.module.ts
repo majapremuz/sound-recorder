@@ -14,8 +14,12 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'player',
-    loadChildren: () => import('./pages/player/player.module').then( m => m.PlayerPageModule)
+    path: 'popis',
+    loadChildren: () => import('./pages/popis/popis.module').then( m => m.PopisPageModule)
+  },
+  {
+    path: 'profil',
+    loadChildren: () => import('./pages/profil/profil.module').then( m => m.ProfilPageModule)
   },
 ];
 

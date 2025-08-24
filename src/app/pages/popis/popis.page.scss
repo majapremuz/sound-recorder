@@ -1,0 +1,73 @@
+ion-item {
+  --background: #ebebeb;
+  width: 90%;
+  --border-radius: 8px;
+  margin: 1rem auto;
+
+  p {
+    font-family: "Open Sans", sans-serif;
+    font-size: 0.8rem;
+  }
+}
+
+.item-inner {
+  padding: 0.3rem;
+}
+
+.play-button {
+  --background: transparent;
+  --box-shadow: none;
+
+  img {
+    height: 10vmin;
+  }
+}
+
+.no-audios {
+  text-align: center;
+  font-size: 1.2rem;
+  font-family: "Open Sans", sans-serif;
+}
+
+ion-footer {
+  box-shadow: none;
+  border-top: 2px solid #cacaca;
+  padding: 1rem 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.footer-button {
+  --background: transparent;
+  --box-shadow: none;
+  margin:  0;
+}
+
+.home-button,
+.list-button {
+  border-right: 2px solid #cacaca;
+}
+
+.footer-icon {
+  height: 10vmin;
+}
+
+p {
+  font-family: "Open Sans", sans-serif;
+  color: black;
+  font-size: 0.7rem;
+  text-transform: none;
+}

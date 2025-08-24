@@ -1,15 +1,17 @@
-
-<ion-content>
-
-  <div 
-  class="img-container"
-  [ngClass]="{ 'recording': isRecording, 'idle': !isRecording }"
-  (click)="startRecording()"
-  (click)="sendRecording()">
-  <img src="assets/audio-icon.png" alt="audio icon" class="mic-img"/>
-  </div>
- 
-  <h2>{{timeStamp}}</h2>
+<ion-content [fullscreen]="true">
+  <ion-list>
+    <p *ngIf="audios.length === 0" class="no-audios">Nema zvukova na popisu</p>
+    <ion-item *ngFor="let audio of audios">
+      <ion-label>
+        <p>{{ audio.datum || 'Audio' }}</p>
+        
+        <p>{{ audio.vrijeme || 'Audio' }} - {{ audio.name || 'Audio' }}</p>
+      </ion-label>
+      <ion-button class="play-button" (click)="togglePlay()">
+        <img src="assets/audio-icon.png" alt="play icon" class="play-icon">
+      </ion-button> <!--[src]="audio.url"-->
+    </ion-item>
+  </ion-list>
 
   <ion-footer>
 
@@ -35,5 +37,5 @@
         </ion-button>
 
   </ion-footer>
-
+  
 </ion-content>

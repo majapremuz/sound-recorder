@@ -1,15 +1,16 @@
+<ion-content [fullscreen]="true">
+<h1>Profil</h1>
 
-<ion-content>
+<ion-card 
+    class="notification-card" 
+    (click)="toggleNotifications()" 
+    [ngStyle]="{'background-color': notificationsEnabled ? '#4bca0c' : '#e03f41'}">
+    <ion-card-content>
+      <h2>Primanje PUSH obavijesti</h2>
+      <p class="notification-status">{{ notificationsEnabled ? 'Uključeno' : 'Isključeno' }}</p>
+    </ion-card-content>
+  </ion-card>
 
-  <div 
-  class="img-container"
-  [ngClass]="{ 'recording': isRecording, 'idle': !isRecording }"
-  (click)="startRecording()"
-  (click)="sendRecording()">
-  <img src="assets/audio-icon.png" alt="audio icon" class="mic-img"/>
-  </div>
- 
-  <h2>{{timeStamp}}</h2>
 
   <ion-footer>
 
@@ -35,5 +36,5 @@
         </ion-button>
 
   </ion-footer>
-
+  
 </ion-content>

@@ -84,83 +84,62 @@ export class HomePage {
   return true;
 }
 
-  async toggleRecording() {
-  if (!this.isRecording) {
-    const permissionGranted = await this.requestAudioPermission();
-    if (!permissionGranted) {
-      alert('Microphone permission is required.');
-      return; 
-    }
+  async startRecording() {
+  if (this.isRecording) return; // prevent double clicks
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.startWaveform(stream);
+  const permissionGranted = await this.requestAudioPermission();
+  if (!permissionGranted) {
+    alert('Microphone permission is required.');
+    return;
+  }
 
-      this.mediaRecorder = new MediaRecorder(stream);
-      this.audioChunks = [];
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.mediaRecorder = new MediaRecorder(stream);
+    this.audioChunks = [];
 
-      this.mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          this.audioChunks.push(e.data);
-        }
-      };
+    this.mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) {
+        this.audioChunks.push(e.data);
+      }
+    };
 
-        this.mediaRecorder.onstop = async () => {
-          this.recordedBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
+    this.mediaRecorder.onstop = async () => {
+      this.recordedBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
+      this.ngZone.run(() => {
+        this.audioUrl = URL.createObjectURL(this.recordedBlob);
+      });
 
-          this.ngZone.run(() => {
-            this.audioUrl = URL.createObjectURL(this.recordedBlob);
-            this.audioPlayer.src = this.audioUrl;
-            this.audioPlayer.load();
+      // Auto-send after recording finishes
+      await this.sendRecording();
+    };
 
-            this.audioPlayer.ontimeupdate = () => {
-              this.ngZone.run(() => {
-              this.currentTime = this.audioPlayer.currentTime;
-              this.duration = this.audioPlayer.duration || 0;
-              this.progress = (this.currentTime / this.duration) * 100;
-              });
-           };
+    this.mediaRecorder.start();
+    this.isRecording = true;
+    this.recordingStartTime = Date.now();
+    this.timerInterval = setInterval(() => this.updateTimer(), 100);
 
-           this.audioPlayer.onended = () => {
-             this.ngZone.run(() => {
-               this.isPlaying = false;
-               this.currentTime = 0;
-               this.progress = 0;
-             });
-           };
-        });
-      };
+    // Stop after 15s exactly
+    setTimeout(() => {
+      if (this.isRecording) {
+        this.stopRecording();
+      }
+    }, 15000);
 
-      this.mediaRecorder.start();
-      this.isRecording = true;
-      this.recordingStartTime = Date.now();
-      this.timerInterval = setInterval(() => this.updateTimer(), 100);
-
-      // Auto-stop after 15s (but DO NOT auto-send)
-      setTimeout(() => {
-        if (this.isRecording) {
-          this.stopRecording();
-        }
-      }, 15000);
-
-    } catch (err) {
-      console.error('Microphone permission denied:', err);
-      alert('Microphone access is required.');
-    }
-
-  } else {
-    this.stopRecording();
+  } catch (err) {
+    console.error('Microphone permission denied:', err);
+    alert('Microphone access is required.');
   }
 }
 
 stopRecording() {
   if (!this.isRecording) return;
   this.mediaRecorder.stop();
-  this.stopWaveform();
   this.isRecording = false;
   clearInterval(this.timerInterval);
   this.timeStamp = '00:00';
 }
+
 
 async sendRecording() {
   if (!this.recordedBlob) return;
@@ -171,15 +150,20 @@ async sendRecording() {
     // Convert Blob to File
     const file = new File([this.recordedBlob], fileName, { type: 'audio/webm' });
 
-    // Upload to "audios" bucket
-    await this.supabaseService.uploadFile('audios', fileName, file);
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('file', file);
 
-    // Get public URL
-    const publicUrl = this.supabaseService.getPublicUrl('audios', fileName);
-    console.log('File uploaded:', publicUrl);
+    // Upload to your API (placeholder URL for now)
+    const response: any = await this.http.post('https://your-api.com/upload', formData).toPromise();
 
-    // Trigger push notifications
-    await this.triggerPushNotification(publicUrl);
+    // Assume API responds with file URL
+    const audioUrl = response.url || '';
+
+    console.log('File uploaded to API:', audioUrl);
+
+    // Trigger push notification with URL
+    await this.triggerPushNotification(audioUrl);
 
     const toast = await this.toastController.create({
       message: 'Audio uploaded & notification sent!',
@@ -198,6 +182,7 @@ async sendRecording() {
     await toast.present();
   }
 }
+
 
 async initPush() {
   let permStatus = await PushNotifications.checkPermissions();
@@ -232,7 +217,7 @@ async initPush() {
     const audioUrl = notification.notification.data?.audioUrl;
     if (audioUrl) {
       // navigate to a route that plays the audio
-      this.router.navigate(['/player'], {
+      this.router.navigate(['/popis'], {
         queryParams: { url: audioUrl }
       });
     }
@@ -272,63 +257,9 @@ private async triggerPushNotification(audioUrl: string) {
     this.audioPlayer.currentTime = (value / 100) * this.duration;
   }
 
-  startWaveform(stream: MediaStream) {
-  this.audioContext = new AudioContext();
-  this.source = this.audioContext.createMediaStreamSource(stream);
-  this.analyser = this.audioContext.createAnalyser();
-  this.analyser.fftSize = 256;
-
-  const bufferLength = this.analyser.frequencyBinCount;
-  this.dataArray = new Uint8Array(bufferLength);
-
-  this.source.connect(this.analyser);
-
-  const canvas = this.waveCanvas.nativeElement;
-  const canvasCtx = canvas.getContext('2d')!;
-  const WIDTH = canvas.width = canvas.offsetWidth;
-  const HEIGHT = canvas.height = canvas.offsetHeight;
-
-  const draw = () => {
-    this.animationId = requestAnimationFrame(draw);
-    this.analyser.getByteTimeDomainData(this.dataArray);
-
-    canvasCtx.fillStyle = '#222222';
-    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    canvasCtx.lineWidth = 2;
-    canvasCtx.strokeStyle = '#ff0479';
-    canvasCtx.beginPath();
-
-    let sliceWidth = WIDTH / bufferLength;
-    let x = 0;
-
-    for (let i = 0; i < bufferLength; i++) {
-      const v = this.dataArray[i] / 128.0;
-      const y = (v * HEIGHT) / 2;
-
-      if (i === 0) {
-        canvasCtx.moveTo(x, y);
-      } else {
-        canvasCtx.lineTo(x, y);
-      }
-
-      x += sliceWidth;
-    }
-
-    canvasCtx.lineTo(WIDTH, HEIGHT / 2);
-    canvasCtx.stroke();
-  };
-
-  draw();
-}
-
-stopWaveform() {
-  cancelAnimationFrame(this.animationId);
-  if (this.audioContext) {
-    this.audioContext.close();
+  navigateTo(page: string) {
+    this.router.navigate([`/${page}`]);
   }
-}
-
 
   async initTranslate(){
     this.translate['test_string'] = await this.dataCtrl.translateWord("TEST.STRING");
