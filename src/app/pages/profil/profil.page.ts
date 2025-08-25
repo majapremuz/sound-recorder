@@ -28,25 +28,30 @@ export class ProfilPage implements OnInit {
   }
 
   async toggleNotifications() {
-    localStorage.setItem('notificationsEnabled', JSON.stringify(this.notificationsEnabled));
+  // Flip the state first
+  this.notificationsEnabled = !this.notificationsEnabled;
 
-    if (this.notificationsEnabled) {
-      // Re-enable notifications
-      const permStatus = await PushNotifications.checkPermissions();
-      if (permStatus.receive === 'granted') {
-        await PushNotifications.register();
-      }
+  // Save to storage
+  localStorage.setItem('notificationsEnabled', JSON.stringify(this.notificationsEnabled));
 
-      // TODO: send token back to backend again
-      console.log('Notifications enabled');
-    } else {
-      // Disable: remove token from backend
-      const token = (await PushNotifications.getDeliveredNotifications()).notifications?.[0]?.id;
-      // Call your backend to unregister this device
-      await this.http.post('https://your-api.com/disable-token', { token }).toPromise();
-      console.log('Notifications disabled');
-    }
+  // Make sure permissions are granted
+  const permStatus = await PushNotifications.checkPermissions();
+  if (permStatus.receive !== 'granted') {
+    await PushNotifications.requestPermissions();
   }
+
+  // Get stored token (from registration step)
+  const token = localStorage.getItem('pushToken');
+
+  if (token) {
+    await this.http.post(
+      'https://traffic-call.com/api/pushchange.php',
+      { token, active: this.notificationsEnabled ? 1 : 0 }
+    ).toPromise();
+  }
+
+  console.log('Notifications ' + (this.notificationsEnabled ? 'enabled' : 'disabled'));
+}
 
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);

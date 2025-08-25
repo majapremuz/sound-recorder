@@ -27,7 +27,7 @@ export class PopisPage implements OnInit {
 
   async loadAudios() {
     try {
-      const response: any = await this.http.get('https://your-api.com/audios').toPromise();
+      const response: any = await this.http.get('https://traffic-call.com/api/files.php').toPromise();
       this.audios = response.audios || [];
     } catch (err) {
       console.error('Failed to load audios:', err);

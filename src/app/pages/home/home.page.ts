@@ -5,7 +5,6 @@ import { ContentApiInterface, ContentObject } from 'src/app/model/content';
 import { ControllerService } from 'src/app/services/controller.service';
 import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { HttpClient } from '@angular/common/http';
-import { SupabaseService } from 'src/app/services/supabase.service';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -51,7 +50,6 @@ export class HomePage {
     private dataCtrl: ControllerService,
     private androidPermissions: AndroidPermissions,
     private http: HttpClient,
-    private supabaseService: SupabaseService,
     private toastController: ToastController,
     private router: Router,
     private ngZone: NgZone
@@ -104,14 +102,14 @@ export class HomePage {
       }
     };
 
+    // ✅ Only place where sendRecording() is called
     this.mediaRecorder.onstop = async () => {
       this.recordedBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
       this.ngZone.run(() => {
         this.audioUrl = URL.createObjectURL(this.recordedBlob);
       });
 
-      // Auto-send after recording finishes
-      await this.sendRecording();
+      await this.sendRecording(); // happens only once here
     };
 
     this.mediaRecorder.start();
@@ -119,10 +117,10 @@ export class HomePage {
     this.recordingStartTime = Date.now();
     this.timerInterval = setInterval(() => this.updateTimer(), 100);
 
-    // Stop after 15s exactly
+    // Auto-stop after 15s (but does NOT call sendRecording directly)
     setTimeout(() => {
       if (this.isRecording) {
-        this.stopRecording();
+        this.stopRecording(); // only stops, doesn’t send
       }
     }, 15000);
 
@@ -134,39 +132,46 @@ export class HomePage {
 
 stopRecording() {
   if (!this.isRecording) return;
-  this.mediaRecorder.stop();
+  this.mediaRecorder.stop(); // triggers onstop → sendRecording()
   this.isRecording = false;
   clearInterval(this.timerInterval);
   this.timeStamp = '00:00';
 }
-
 
 async sendRecording() {
   if (!this.recordedBlob) return;
 
   try {
     const fileName = `${Date.now()}.webm`;
+    console.log('Uploading file:', fileName);
 
-    // Convert Blob to File
-    const file = new File([this.recordedBlob], fileName, { type: 'audio/webm' });
+    // Convert blob to base64
+    let base64Data = await this.blobToBase64(this.recordedBlob);
+    console.log('Base64 data :', base64Data);
 
-    // Prepare form data
-    const formData = new FormData();
-    formData.append('file', file);
+    // Remove prefix like "data:audio/webm;base64,"
+    if (typeof base64Data === 'string') {
+      const commaIndex = base64Data.indexOf(',');
+      if (commaIndex !== -1) {
+        base64Data = base64Data.substring(commaIndex + 1);
+      }
+    }
 
-    // Upload to your API (placeholder URL for now)
-    const response: any = await this.http.post('https://your-api.com/upload', formData).toPromise();
+    // Send as JSON
+    const response: any = await this.http.post(
+      'https://traffic-call.com/api/files.php',
+      {
+        filename: fileName,
+        filedata: base64Data
+      }
+    ).toPromise();
 
-    // Assume API responds with file URL
+
     const audioUrl = response.url || '';
-
-    console.log('File uploaded to API:', audioUrl);
-
-    // Trigger push notification with URL
-    await this.triggerPushNotification(audioUrl);
+    console.log('File uploaded:', audioUrl);
 
     const toast = await this.toastController.create({
-      message: 'Audio uploaded & notification sent!',
+      message: 'Audio uploaded successfully!',
       duration: 2000,
       color: 'success'
     });
@@ -183,6 +188,50 @@ async sendRecording() {
   }
 }
 
+/*async sendRecording() {
+  try {
+    // Wait 15 seconds before actually sending
+    await new Promise(resolve => setTimeout(resolve, 15000));
+
+    const response: any = await this.http.post(
+      'https://traffic-call.com/api/token.php',
+      {
+        title: 'Test Push',
+        body: 'This is a test push message',
+        data: {
+          audioUrl: '' // leave empty since no file
+        }
+      }
+    ).toPromise();
+
+    console.log('Push sent:', response);
+
+    const toast = await this.toastController.create({
+      message: 'Test push sent successfully!',
+      duration: 2000,
+      color: 'success'
+    });
+    await toast.present();
+
+  } catch (err) {
+    console.error('Push failed:', err);
+    const toast = await this.toastController.create({
+      message: 'Failed to send push',
+      duration: 2000,
+      color: 'danger'
+    });
+    await toast.present();
+  }
+}*/
+
+blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 async initPush() {
   let permStatus = await PushNotifications.checkPermissions();
@@ -196,39 +245,25 @@ async initPush() {
 
   // Called when device is registered with FCM
   PushNotifications.addListener('registration', async (token) => {
-  console.log('Device FCM token:', token.value);
+    console.log('Device FCM token:', token.value);
 
-  // Save token to Supabase
-  await this.supabaseService.client
-    .from('device_tokens')
-    .upsert({ token: token.value });
-});
+    // Send token to your backend
+    await this.http.post('https://traffic-call.com/api/token.php', { token: token.value }).toPromise();
+  });
 
-
-  // Called when a notification is received while app is in foreground
   PushNotifications.addListener('pushNotificationReceived', (notification) => {
     console.log('Push received in foreground:', notification);
   });
 
-  // Called when the user taps the notification
   PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
     console.log('Notification action:', notification);
-
     const audioUrl = notification.notification.data?.audioUrl;
     if (audioUrl) {
-      // navigate to a route that plays the audio
-      this.router.navigate(['/popis'], {
-        queryParams: { url: audioUrl }
-      });
+      this.router.navigate(['/popis'], { queryParams: { url: audioUrl } });
     }
   });
 }
 
-private async triggerPushNotification(audioUrl: string) {
-  await this.supabaseService.client.functions.invoke('send-push', {
-    body: { audioUrl }
-  });
-}
 
   updateTimer() {
     if (!this.recordingStartTime) return;
