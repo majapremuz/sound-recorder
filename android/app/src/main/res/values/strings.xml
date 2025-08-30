@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Sound Recorder</string>
-    <string name="title_activity_main">Sound Recorder</string>
+    <string name="app_name">trafic-call</string>
+    <string name="title_activity_main">traffic-call</string>
     <string name="package_name">io.ionic.sound-recorder</string>
     <string name="custom_url_scheme">io.ionic.sound-recorder</string>
 </resources>

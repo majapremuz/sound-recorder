@@ -11,19 +11,19 @@ ion-content {
   }
 
 .recording {
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 51%, rgb(43, 235, 0) 100%);
-    animation: pulseGradient 2s infinite alternate ease-in-out;
-  }
+  background: radial-gradient(circle, rgba(255, 255, 255, 1) 50%, rgb(43, 235, 0) 100%);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  animation: pulseGradient 2s infinite ease-in-out;
+}
 
-  @keyframes pulseGradient {
-  0% {
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 51%, rgba(43, 235, 0, 1) 100%);
+@keyframes pulseGradient {
+  0%, 100% {
+    background-size: 115% 115%;
   }
   50% {
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 30%, rgba(43, 235, 0, 0.7) 100%);
-  }
-  100% {
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 51%, rgba(43, 235, 0, 1) 100%);
+    background-size: 100% 100%;
   }
 }
 
@@ -57,6 +57,8 @@ ion-content {
   height: 50vmin;
   width: 50vmin;
   filter: invert(54%) sepia(11%) saturate(13%) hue-rotate(316deg) brightness(98%) contrast(81%);
+  position: relative;
+  z-index: 2;
 }
 
 h2 {

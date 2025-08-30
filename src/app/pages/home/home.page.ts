@@ -161,15 +161,18 @@ async sendRecording() {
     const response: any = await this.http.post(
       'https://traffic-call.com/api/files.php',
       {
-        filename: fileName,
-        filedata: base64Data
-      }
+        filedata: base64Data,
+        filename: fileName
+      },
+      { responseType: 'text' }
     ).toPromise();
 
+    console.log('Full response from server:', response);
 
     const audioUrl = response.url || '';
     console.log('File uploaded:', audioUrl);
 
+    // If we reach here, HTTP POST succeeded
     const toast = await this.toastController.create({
       message: 'Audio uploaded successfully!',
       duration: 2000,
@@ -178,7 +181,7 @@ async sendRecording() {
     await toast.present();
 
   } catch (err) {
-    console.error('Upload failed:', err);
+    console.error('Failed to send audio:', err);
     const toast = await this.toastController.create({
       message: 'Failed to send audio',
       duration: 2000,
