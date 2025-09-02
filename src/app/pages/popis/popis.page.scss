@@ -61,6 +61,20 @@ ion-footer {
   border-right: 2px solid #cacaca;
 }
 
+.play-icon {
+  font-size: 28px;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.play-icon[name="play-circle"] {
+  background: url("../../../assets/play-icon.png");
+}
+
+.play-icon[name="pause-circle"] {
+  background: url("../../../assets/pause-icon.png");
+  transform: scale(1.1);
+}
+
 .footer-icon {
   height: 10vmin;
 }

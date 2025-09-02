@@ -3,10 +3,12 @@
     <p *ngIf="audios.length === 0" class="no-audios">Nema zvukova na popisu</p>
     <ion-item *ngFor="let audio of audios">
       <ion-label>
-        <p>{{ audio.name || 'Audio' }}</p>
+        <p>{{ audio.name }}</p>
       </ion-label>
-      <ion-button class="play-button" (click)="playAudio(audio)">
-        <img src="assets/audio-icon.png" alt="play icon" class="play-icon">
+       <ion-button class="play-button" (click)="playAudio(audio)">
+        <img 
+          [src]="audio.isPlaying ? 'assets/pause-icon.png' : 'assets/play-icon.png'" 
+          class="play-icon">
       </ion-button>
     </ion-item>
   </ion-list>

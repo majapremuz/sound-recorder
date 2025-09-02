@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 export class PopisPage implements OnInit {
   audios: any[] = [];
   audioPlayer = new Audio();
-  isPlaying = false;
+  currentAudio: any = null;
 
   constructor(
     private http: HttpClient,
@@ -23,57 +23,62 @@ export class PopisPage implements OnInit {
 
   ngOnInit() {
     this.loadAudios();
+
+    // Reset when audio ends
+    this.audioPlayer.addEventListener('ended', () => {
+      if (this.currentAudio) {
+        this.currentAudio.isPlaying = false; // switch back icon
+        this.currentAudio = null; // clear reference
+      }
+    });
   }
 
-async loadAudios() {
-  try {
-    // Treat response as text
-    const response = await this.http.get('https://traffic-call.com/api/files.php', { responseType: 'text' }).toPromise() as string;
-    console.log('Raw response from server:', response);
-
-    let audiosArray: any[] = [];
-
+  async loadAudios() {
     try {
-      // Try parsing JSON first
-      audiosArray = JSON.parse(response);
-      if (!Array.isArray(audiosArray)) audiosArray = [];
-    } catch {
-      // Fallback: split lines, trim, filter out HTML tags / empty lines
-      audiosArray = response
-  .split('\n')
-  .map(f => f.trim())
-  .filter(f => f && f.endsWith('.webm'))  // keep only proper .webm filenames
-  .map(f => ({ name: f.replace(/[^a-zA-Z0-9_\-\.]/g, ''), url: `https://traffic-call.com/files/${f.replace(/[^a-zA-Z0-9_\-\.]/g, '')}` }));
+      const response: any = await this.http.get('https://traffic-call.com/api/filelist.php').toPromise();
+      console.log('Raw response from server:', response);
+
+      if (Array.isArray(response)) {
+        this.audios = response.map(file => ({
+          name: file.title || file.filename,
+          url: `https://traffic-call.com/files/${file.filename}`,
+          isPlaying: false
+        }));
+      } else {
+        console.warn('Unexpected response format:', response);
+        this.audios = [];
+      }
+    } catch (err) {
+      console.error('Failed to load audios:', err);
+      this.audios = [];
     }
-
-    this.audios = audiosArray;
-
-    if (!this.audios.length) {
-      console.warn('No valid audios returned from server.');
-    }
-
-    console.log('Loaded audios:', this.audios);
-
-  } catch (err) {
-    console.error('Failed to load audios:', err);
-    this.audios = [];
   }
-}
 
-  togglePlay() {
-  if (this.isPlaying) {
-    this.audioPlayer.pause();
-  } else {
+  playAudio(audio: any) {
+    // If the same audio is clicked -> toggle play/pause
+    if (this.currentAudio === audio) {
+      if (audio.isPlaying) {
+        this.audioPlayer.pause();
+        audio.isPlaying = false;
+      } else {
+        this.audioPlayer.play();
+        audio.isPlaying = true;
+      }
+      return;
+    }
+
+    // Stop previous audio if another one is playing
+    if (this.currentAudio) {
+      this.currentAudio.isPlaying = false;
+      this.audioPlayer.pause();
+    }
+
+    // Start new audio
+    this.audioPlayer.src = audio.url;
     this.audioPlayer.play();
+    audio.isPlaying = true;
+    this.currentAudio = audio;
   }
-  this.isPlaying = !this.isPlaying;
-}
-
-playAudio(audio: any) {
-  this.audioPlayer.src = audio.url;
-  this.audioPlayer.play();
-  this.isPlaying = true;
-}
 
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);
