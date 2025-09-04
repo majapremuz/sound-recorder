@@ -1,0 +1,108 @@
+ion-content {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.idle {
+  background: radial-gradient(circle at 50% 50%, rgb(255, 255, 255) 51%, rgb(255, 4, 0) 100%);
+  transition: background 0.3s ease-in-out;
+}
+
+.recording {
+  background: radial-gradient(circle, rgb(255, 255, 255) 50%, rgb(43, 235, 0) 100%);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  animation: pulseGradient 2s infinite ease-in-out;
+}
+
+@keyframes pulseGradient {
+  0%, 100% {
+    background-size: 115% 115%;
+  }
+  50% {
+    background-size: 100% 100%;
+  }
+}
+.record-button,
+.send-button {
+  width: 100%;
+  height: 3rem;
+  --background: #ff0479;
+  --color: #ffffff;
+  font-size: 1.2rem;
+}
+
+.img-container {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 5px solid #9b9a9a;
+  border-radius: 50%;
+  height: 80vmin;
+  width: 80vmin;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.mic-img {
+  height: 50vmin;
+  width: 50vmin;
+  filter: invert(54%) sepia(11%) saturate(13%) hue-rotate(316deg) brightness(98%) contrast(81%);
+  position: relative;
+  z-index: 2;
+}
+
+h2 {
+  text-align: center;
+  padding: 1rem 0;
+  margin-top: 30rem;
+}
+
+ion-footer {
+  box-shadow: none;
+  border-top: 2px solid #cacaca;
+  padding: 1rem 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.footer-button {
+  --background: transparent;
+  --box-shadow: none;
+  margin: 0;
+}
+
+.home-button,
+.list-button {
+  border-right: 2px solid #cacaca;
+}
+
+.footer-icon {
+  height: 10vmin;
+}
+
+p {
+  font-family: "Open Sans", sans-serif;
+  color: black;
+  font-size: 0.7rem;
+  text-transform: none;
+}/*# sourceMappingURL=home.page.css.map */

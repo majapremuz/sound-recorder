@@ -1,0 +1,59 @@
+h1 {
+  font-family: "Open Sans", sans-serif;
+  text-align: center;
+}
+
+h2 {
+  color: black;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 900;
+}
+
+.notification-status {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+
+ion-footer {
+  box-shadow: none;
+  border-top: 2px solid #cacaca;
+  padding: 1rem 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.footer-button {
+  --background: transparent;
+  --box-shadow: none;
+  margin: 0;
+}
+
+.home-button,
+.list-button {
+  border-right: 2px solid #cacaca;
+}
+
+.footer-icon {
+  height: 10vmin;
+}
+
+p {
+  font-family: "Open Sans", sans-serif;
+  color: black;
+  font-size: 0.7rem;
+  text-transform: none;
+}/*# sourceMappingURL=profil.page.css.map */

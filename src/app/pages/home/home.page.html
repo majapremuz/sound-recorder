@@ -4,11 +4,10 @@
   <div 
   class="img-container"
   [ngClass]="{ 'recording': isRecording, 'idle': !isRecording }"
-  (click)="startRecording()"
-  (click)="sendRecording()">
+  (click)="toggleRecording()">
   <img src="assets/play-icon.png" alt="audio icon" class="mic-img"/>
   </div>
- 
+
   <h2>{{timeStamp}}</h2>
 
   <ion-footer>

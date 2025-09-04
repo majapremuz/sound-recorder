@@ -26,6 +26,7 @@ export class HomePage {
   timeStamp = '00:00';
   recordingStartTime: number | null = null;
   timerInterval: any;
+  autoStopTimeout: any;
 
   audioPlayer = new Audio();
   isPlaying = false;
@@ -60,7 +61,7 @@ export class HomePage {
 
   ionViewWillEnter(){
     this.dataCtrl.setHomePage(true);
-    // do something when in moment home page opens
+    this.initPush();
   }
 
   ionViewWillLeave(){
@@ -83,7 +84,7 @@ export class HomePage {
 }
 
   async startRecording() {
-  if (this.isRecording) return; // prevent double clicks
+  if (this.isRecording) return;
 
   const permissionGranted = await this.requestAudioPermission();
   if (!permissionGranted) {
@@ -96,20 +97,29 @@ export class HomePage {
     this.mediaRecorder = new MediaRecorder(stream);
     this.audioChunks = [];
 
+    // Remove any previous timeout
+    if (this.autoStopTimeout) {
+      clearTimeout(this.autoStopTimeout);
+      this.autoStopTimeout = null;
+    }
+
     this.mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) {
-        this.audioChunks.push(e.data);
-      }
+      if (e.data.size > 0) this.audioChunks.push(e.data);
     };
 
-    // ✅ Only place where sendRecording() is called
+    // Only this recorder instance triggers sendRecording
     this.mediaRecorder.onstop = async () => {
+      if (!this.audioChunks.length) return; // nothing recorded
       this.recordedBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
       this.ngZone.run(() => {
         this.audioUrl = URL.createObjectURL(this.recordedBlob);
       });
 
-      await this.sendRecording(); // happens only once here
+      await this.sendRecording();
+
+      // Reset for next recording
+      this.audioChunks = [];
+      this.mediaRecorder = null!;
     };
 
     this.mediaRecorder.start();
@@ -117,11 +127,9 @@ export class HomePage {
     this.recordingStartTime = Date.now();
     this.timerInterval = setInterval(() => this.updateTimer(), 100);
 
-    // Auto-stop after 15s (but does NOT call sendRecording directly)
-    setTimeout(() => {
-      if (this.isRecording) {
-        this.stopRecording(); // only stops, doesn’t send
-      }
+    // Auto-stop after 15s
+    this.autoStopTimeout = setTimeout(() => {
+      if (this.isRecording) this.stopRecording();
     }, 15000);
 
   } catch (err) {
@@ -132,10 +140,25 @@ export class HomePage {
 
 stopRecording() {
   if (!this.isRecording) return;
-  this.mediaRecorder.stop(); // triggers onstop → sendRecording()
+
+  // Cancel the auto-stop timeout if still active
+  if (this.autoStopTimeout) {
+    clearTimeout(this.autoStopTimeout);
+    this.autoStopTimeout = null;
+  }
+
+  this.mediaRecorder.stop();
   this.isRecording = false;
   clearInterval(this.timerInterval);
   this.timeStamp = '00:00';
+}
+
+toggleRecording() {
+  if (this.isRecording) {
+    this.stopRecording();
+  } else {
+    this.startRecording();
+  }
 }
 
 async sendRecording() {
@@ -147,9 +170,7 @@ async sendRecording() {
 
     // Convert blob to base64
     let base64Data = await this.blobToBase64(this.recordedBlob);
-    console.log('Base64 data :', base64Data);
 
-    // Remove prefix like "data:audio/webm;base64,"
     if (typeof base64Data === 'string') {
       const commaIndex = base64Data.indexOf(',');
       if (commaIndex !== -1) {
@@ -157,24 +178,31 @@ async sendRecording() {
       }
     }
 
-    // Send as JSON
+    // Get the current device token
+    const deviceToken = localStorage.getItem('pushToken'); 
+    if (!deviceToken) {
+      console.warn('No device token found – push may not work');
+    }
+
+    // Send audio + token in the same request
     const response: any = await this.http.post(
       'https://traffic-call.com/api/files.php',
       {
         filedata: base64Data,
-        filename: fileName
-      },
-      { responseType: 'text' }
+        filename: fileName,
+        token: deviceToken,
+        title: 'Nova poruka',
+        body: 'Dobili ste novu audio poruku',
+        data: {
+          audioUrl: `https://traffic-call.com/files/${fileName}`
+        }
+      }
     ).toPromise();
 
     console.log('Full response from server:', response);
 
-    const audioUrl = response.url || '';
-    console.log('File uploaded:', audioUrl);
-
-    // If we reach here, HTTP POST succeeded
     const toast = await this.toastController.create({
-      message: 'Audio uploaded successfully!',
+      message: 'Audio poslan!',
       duration: 2000,
       color: 'success'
     });
@@ -183,7 +211,7 @@ async sendRecording() {
   } catch (err) {
     console.error('Failed to send audio:', err);
     const toast = await this.toastController.create({
-      message: 'Failed to send audio',
+      message: 'Slanje audio poruke nije uspjelo',
       duration: 2000,
       color: 'danger'
     });
@@ -191,41 +219,6 @@ async sendRecording() {
   }
 }
 
-/*async sendRecording() {
-  try {
-    // Wait 15 seconds before actually sending
-    await new Promise(resolve => setTimeout(resolve, 15000));
-
-    const response: any = await this.http.post(
-      'https://traffic-call.com/api/token.php',
-      {
-        title: 'Test Push',
-        body: 'This is a test push message',
-        data: {
-          audioUrl: '' // leave empty since no file
-        }
-      }
-    ).toPromise();
-
-    console.log('Push sent:', response);
-
-    const toast = await this.toastController.create({
-      message: 'Test push sent successfully!',
-      duration: 2000,
-      color: 'success'
-    });
-    await toast.present();
-
-  } catch (err) {
-    console.error('Push failed:', err);
-    const toast = await this.toastController.create({
-      message: 'Failed to send push',
-      duration: 2000,
-      color: 'danger'
-    });
-    await toast.present();
-  }
-}*/
 
 blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -249,6 +242,10 @@ async initPush() {
   // Called when device is registered with FCM
   PushNotifications.addListener('registration', async (token) => {
     console.log('Device FCM token:', token.value);
+
+    // Save token locally
+   localStorage.setItem('pushToken', token.value);
+   console.log('Push token saved locally.', token.value);
 
     // Send token to your backend
     await this.http.post('https://traffic-call.com/api/token.php', { token: token.value }).toPromise();

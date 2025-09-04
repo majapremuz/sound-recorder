@@ -21,12 +21,12 @@ export const environment = {
   db_version: '1.2.8',
 
   firebase: {
-    apiKey: "AIzaSyCVs8zmwT8YMlg3hvGoRWCxgJmPgrmE6OM",
-    authDomain: "sound-recorder-93263.firebaseapp.com",
-    projectId: "sound-recorder-93263",
-    storageBucket: "sound-recorder-93263.firebasestorage.app",
-    messagingSenderId: "499813238505",
-    appId: "1:499813238505:web:139dcb98da3700bc465278",
-    measurementId: "G-G8QTRXS97M"
+  apiKey: "AIzaSyCVs8zmwT8YMlg3hvGoRWCxgJmPgrmE6OM",
+  authDomain: "sound-recorder-93263.firebaseapp.com",
+  projectId: "sound-recorder-93263",
+  storageBucket: "sound-recorder-93263.firebasestorage.app",
+  messagingSenderId: "499813238505",
+  appId: "1:499813238505:web:78c164f42826bd17465278",
+  measurementId: "G-93T266ZH57"
   }
 };

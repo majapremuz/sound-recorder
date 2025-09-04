@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.sound-recorder',
-  appName: 'traffic-call',
+  appId: 'com.prolink.soundrecorder',
+  appName: 'Traffic call',
   webDir: 'www'
 };
 

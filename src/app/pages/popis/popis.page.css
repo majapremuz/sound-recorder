@@ -3,11 +3,10 @@ ion-item {
   width: 90%;
   --border-radius: 8px;
   margin: 1rem auto;
-
-  p {
-    font-family: "Open Sans", sans-serif;
-    font-size: 0.8rem;
-  }
+}
+ion-item p {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.8rem;
 }
 
 .item-inner {
@@ -22,10 +21,9 @@ ion-list {
 .play-button {
   --background: transparent;
   --box-shadow: none;
-
-  img {
-    height: 10vmin;
-  }
+}
+.play-button img {
+  height: 10vmin;
 }
 
 .no-audios {
@@ -59,7 +57,7 @@ ion-footer {
 .footer-button {
   --background: transparent;
   --box-shadow: none;
-  margin:  0;
+  margin: 0;
 }
 
 .home-button,
@@ -72,11 +70,11 @@ ion-footer {
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.play-icon[name="play-circle"] {
+.play-icon[name=play-circle] {
   background: url("../../../assets/play-icon.png");
 }
 
-.play-icon[name="pause-circle"] {
+.play-icon[name=pause-circle] {
   background: url("../../../assets/pause-icon.png");
   transform: scale(1.1);
 }
@@ -90,4 +88,4 @@ p {
   color: black;
   font-size: 0.7rem;
   text-transform: none;
-}
+}/*# sourceMappingURL=popis.page.css.map */
