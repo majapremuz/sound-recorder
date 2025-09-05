@@ -27,7 +27,7 @@ export const environment = {
   projectId: "sound-recorder-93263",
   storageBucket: "sound-recorder-93263.firebasestorage.app",
   messagingSenderId: "499813238505",
-  appId: "1:499813238505:web:78c164f42826bd17465278",
-  measurementId: "G-93T266ZH57"
+  appId: "1:499813238505:web:7a61fd126115a41d465278",
+  measurementId: "G-KH84EJ6BQT"
   }
 };

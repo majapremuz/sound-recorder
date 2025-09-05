@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:499813238505:android:12881450d5d4b79f465278",
+        "mobilesdk_app_id": "1:499813238505:android:d79037506438d045465278",
         "android_client_info": {
-          "package_name": "com.prolink.soundrecorder"
+          "package_name": "com.prolink.trafficcall"
         }
       },
       "oauth_client": [],
