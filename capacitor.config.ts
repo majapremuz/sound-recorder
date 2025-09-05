@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.prolink.soundrecorder',
+  appId: 'com.prolink.trafficcall',
   appName: 'Traffic call',
   webDir: 'www'
 };

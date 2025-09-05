@@ -1,0 +1,20 @@
+{
+	"appId": "com.prolink.trafficcall",
+	"appName": "Traffic call",
+	"webDir": "www",
+	"packageClassList": [
+		"FCMPlugin",
+		"FCMPlugin",
+		"MediaPlugin",
+		"MediaPlugin",
+		"BarcodeScannerPlugin",
+		"BarcodeScannerPlugin",
+		"AppPlugin",
+		"HapticsPlugin",
+		"KeyboardPlugin",
+		"PushNotificationsPlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin",
+		"CDVPlugin"
+	]
+}

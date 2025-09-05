@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.prolink.soundrecorder"
+    namespace "com.prolink.trafficcall"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.prolink.soundrecorder"
+        applicationId "com.prolink.trafficcall"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
