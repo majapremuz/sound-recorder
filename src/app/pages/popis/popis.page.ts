@@ -34,25 +34,33 @@ export class PopisPage implements OnInit {
   }
 
   async loadAudios() {
-    try {
-      const response: any = await this.http.get('https://traffic-call.com/api/filelist.php').toPromise();
-      console.log('Raw response from server:', response);
+  try {
+    const response: any = await this.http.get('https://traffic-call.com/api/filelist.php').toPromise();
+    console.log('Raw response from server:', response);
 
-      if (Array.isArray(response)) {
-        this.audios = response.map(file => ({
-          name: file.title || file.filename,
-          url: `https://traffic-call.com/files/${file.filename}`,
-          isPlaying: false
-        }));
-      } else {
-        console.warn('Unexpected response format:', response);
-        this.audios = [];
+    if (Array.isArray(response)) {
+      this.audios = response.map(file => ({
+        name: file.title || file.filename,
+        url: `https://traffic-call.com/files/${file.filename}`,
+        isPlaying: false
+      }));
+
+      //Automatically play the first audio if list is not empty
+      if (this.audios.length > 0) {
+        setTimeout(() => {
+          this.playAudio(this.audios[0]);
+        }, 300);
       }
-    } catch (err) {
-      console.error('Failed to load audios:', err);
+
+    } else {
+      console.warn('Unexpected response format:', response);
       this.audios = [];
     }
+  } catch (err) {
+    console.error('Failed to load audios:', err);
+    this.audios = [];
   }
+}
 
   playAudio(audio: any) {
     // If the same audio is clicked -> toggle play/pause
