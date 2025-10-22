@@ -10,6 +10,7 @@
 		"BarcodeScannerPlugin",
 		"BarcodeScannerPlugin",
 		"AppPlugin",
+		"GeolocationPlugin",
 		"HapticsPlugin",
 		"KeyboardPlugin",
 		"PushNotificationsPlugin",

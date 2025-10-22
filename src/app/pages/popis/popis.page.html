@@ -1,43 +1,64 @@
 <ion-content [fullscreen]="true">
   <ion-list>
-    <p *ngIf="audios.length === 0" class="no-audios">Nema zvukova na popisu</p>
-    <ion-item *ngFor="let audio of audios">
-      <ion-label>
-        <p>{{ audio.name }}</p>
-      </ion-label>
-       <ion-button class="play-button" (click)="playAudio(audio)">
-        <img 
-          [src]="audio.isPlaying ? 'assets/pause-icon.png' : 'assets/play-icon.png'" 
-          class="play-icon">
+  <p *ngIf="audios.length === 0" class="no-audios">Nema zvukova na popisu</p>
+
+  <ion-item *ngFor="let audio of audios" lines="none">
+    <div class="item-grid">
+      
+      <!-- Name -->
+      <div class="label-wrap">
+        <p class="title">{{ audio.name }}</p>
+      </div>
+
+      <!-- Map button -->
+      <ion-button class="map-button" 
+        *ngIf="audio.latitude && audio.longitude" 
+        (click)="toggleMap(audio)">
+        <img src="assets/map marker.png" alt="map icon">
       </ion-button>
 
-    </ion-item>
-  </ion-list>
+      <!-- Play button -->
+      <ion-button class="play-button" (click)="playAudio(audio)">
+        <img [src]="audio.isPlaying ? 'assets/pause-icon.png' : 'assets/play-icon.png'" class="play-icon" />
+      </ion-button>
+
+      <!-- Map container -->
+      <div [id]="audio.mapId" class="map" [class.visible]="audio.showMap">
+        <div class="map-loader" *ngIf="audio.isLoading">
+          <ion-spinner name="crescent"></ion-spinner>
+        </div>
+      </div>
+
+      <ng-template #noLocation>
+      <p class="no-location">No location available</p>
+    </ng-template>
+
+    </div>
+  </ion-item>
+</ion-list>
 
 </ion-content>
 
+
 <ion-footer>
+  <ion-button class="footer-button home-button" (click)="navigateTo('home')">
+    <div class="footer-btn-container">
+      <img src="assets/home.png" alt="home icon" class="footer-icon">
+      <p>Početni ekran</p>
+    </div> 
+  </ion-button>
 
-        <ion-button class="footer-button home-button" (click)="navigateTo('home')">
-          <div class="footer-btn-container">
-            <img src="assets/home.png" alt="home icon" class="footer-icon">
-            <p>Početni ekran</p>
-          </div> 
-        </ion-button>
+  <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
+    <div class="footer-btn-container">
+      <img src="assets/list.png" alt="list icon" class="footer-icon">
+      <p>Popis objava</p>
+    </div>
+  </ion-button>
 
-        <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
-          <div class="footer-btn-container">
-            <img src="assets/list.png" alt="list icon" class="footer-icon">
-            <p>Popis objava</p>
-          </div>
-        </ion-button>
-
-        <ion-button class="footer-button" (click)="navigateTo('profil')">
-          <div class="footer-btn-container">
-            <img src="assets/profil.png" alt="profil icon" class="footer-icon">
-            <p>Korisnički profil</p>
-          </div>
-        </ion-button>
-
-  </ion-footer>
-  
+  <ion-button class="footer-button" (click)="navigateTo('profil')">
+    <div class="footer-btn-container">
+      <img src="assets/profil.png" alt="profil icon" class="footer-icon">
+      <p>Korisnički profil</p>
+    </div>
+  </ion-button>
+</ion-footer>

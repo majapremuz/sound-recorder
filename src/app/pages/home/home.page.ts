@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { Geolocation } from '@capacitor/geolocation';
 
 
 @Component({
@@ -27,6 +28,7 @@ export class HomePage {
   recordingStartTime: number | null = null;
   timerInterval: any;
   autoStopTimeout: any;
+  hasSent = false;
 
   audioPlayer = new Audio();
   isPlaying = false;
@@ -84,6 +86,7 @@ export class HomePage {
 }
 
   async startRecording() {
+  await Geolocation.requestPermissions();
   if (this.isRecording) return;
 
   const permissionGranted = await this.requestAudioPermission();
@@ -96,8 +99,9 @@ export class HomePage {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     this.mediaRecorder = new MediaRecorder(stream);
     this.audioChunks = [];
+    this.hasSent = false; // reset for new recording
 
-    // Remove any previous timeout
+    // clear any leftover timeout
     if (this.autoStopTimeout) {
       clearTimeout(this.autoStopTimeout);
       this.autoStopTimeout = null;
@@ -107,9 +111,11 @@ export class HomePage {
       if (e.data.size > 0) this.audioChunks.push(e.data);
     };
 
-    // Only this recorder instance triggers sendRecording
     this.mediaRecorder.onstop = async () => {
-      if (!this.audioChunks.length) return; // nothing recorded
+      if (this.hasSent) return; // 🔒 prevent double send
+      this.hasSent = true;
+
+      if (!this.audioChunks.length) return;
       this.recordedBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
       this.ngZone.run(() => {
         this.audioUrl = URL.createObjectURL(this.recordedBlob);
@@ -117,7 +123,6 @@ export class HomePage {
 
       await this.sendRecording();
 
-      // Reset for next recording
       this.audioChunks = [];
       this.mediaRecorder = null!;
     };
@@ -141,13 +146,17 @@ export class HomePage {
 stopRecording() {
   if (!this.isRecording) return;
 
-  // Cancel the auto-stop timeout if still active
+  // Cancel the auto-stop timeout
   if (this.autoStopTimeout) {
     clearTimeout(this.autoStopTimeout);
     this.autoStopTimeout = null;
   }
 
-  this.mediaRecorder.stop();
+  // Stop safely
+  if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+    this.mediaRecorder.stop();
+  }
+
   this.isRecording = false;
   clearInterval(this.timerInterval);
   this.timeStamp = '00:00';
@@ -170,7 +179,6 @@ async sendRecording() {
 
     // Convert blob to base64
     let base64Data = await this.blobToBase64(this.recordedBlob);
-
     if (typeof base64Data === 'string') {
       const commaIndex = base64Data.indexOf(',');
       if (commaIndex !== -1) {
@@ -178,31 +186,52 @@ async sendRecording() {
       }
     }
 
-    // Get the current device token
-    const deviceToken = localStorage.getItem('pushToken'); 
-    if (!deviceToken) {
-      console.warn('No device token found – push may not work');
-    }
+    // ✅ Request permission and get GPS coordinates
+    const perm = await Geolocation.requestPermissions();
+      if (perm.location !== 'granted') {
+        console.warn('Location permission denied');
+        return;
+      }
 
-    // Send audio + token in the same request
-    const response: any = await this.http.post(
-      'https://traffic-call.com/api/files.php',
-      {
+    await new Promise(r => setTimeout(r, 500));
+
+    const position = await Geolocation.getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 10000
+    });
+
+    const coords = {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude
+    };
+    console.log('GPS coordinates:', coords);
+
+    // Get the current device token
+    const deviceToken = localStorage.getItem('pushToken');
+    if (!deviceToken) console.warn('No device token found – push may not work');
+
+    // ✅ Send audio + token + location in the same request
+      const payload = {
         filedata: base64Data,
         filename: fileName,
         token: deviceToken,
-        title: 'Nova poruka',
-        body: 'Dobili ste novu audio poruku',
-        data: {
-          audioUrl: `https://traffic-call.com/files/${fileName}`
-        }
-      }
-    ).toPromise();
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      };
 
-    console.log('Full response from server:', response);
+      // ✅ Log the payload before sending
+      console.log('Sending payload:', payload);
+
+      // ✅ Send the request
+      const response: any = await this.http.post(
+        'https://traffic-call.com/api/files.php',
+        payload
+      ).toPromise();
+
+      console.log('Full response from server:', response);
 
     const toast = await this.toastController.create({
-      message: 'Audio poslan!',
+      message: 'Audio i lokacija poslani!',
       duration: 2000,
       color: 'success'
     });
@@ -211,14 +240,13 @@ async sendRecording() {
   } catch (err) {
     console.error('Failed to send audio:', err);
     const toast = await this.toastController.create({
-      message: 'Slanje audio poruke nije uspjelo',
+      message: 'Slanje nije uspjelo',
       duration: 2000,
       color: 'danger'
     });
     await toast.present();
   }
 }
-
 
 blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -239,17 +267,28 @@ async initPush() {
     await PushNotifications.register();
   }
 
-  // Called when device is registered with FCM
+  // ✅ Reattach listeners every time
   PushNotifications.addListener('registration', async (token) => {
     console.log('Device FCM token:', token.value);
 
     // Save token locally
-   localStorage.setItem('pushToken', token.value);
-   console.log('Push token saved locally.', token.value);
+    localStorage.setItem('pushToken', token.value);
+    console.log('Push token saved locally:', token.value);
 
     // Send token to your backend
-    await this.http.post('https://traffic-call.com/api/token.php', { token: token.value }).toPromise();
+    try {
+      await this.http.post('https://traffic-call.com/api/token.php', { token: token.value }).toPromise();
+    } catch (err) {
+      console.error('Failed to send token to backend:', err);
+    }
   });
+
+  // ✅ If already registered before, restore token if possible
+  const existingToken = localStorage.getItem('pushToken');
+  if (!existingToken) {
+    console.warn('No push token found, trying to re-register...');
+    await PushNotifications.register();
+  }
 
   PushNotifications.addListener('pushNotificationReceived', (notification) => {
     console.log('Push received in foreground:', notification);
@@ -263,7 +302,6 @@ async initPush() {
     }
   });
 }
-
 
   updateTimer() {
     if (!this.recordingStartTime) return;

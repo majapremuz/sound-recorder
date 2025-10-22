@@ -64,7 +64,15 @@ ion-content {
 h2 {
   text-align: center;
   padding: 1rem 0;
-  margin-top: 30rem;
+  margin-top: 40%;
+}
+
+@media screen  and (min-width: 800px) {
+  h2 {
+    margin-top: 10%;
+    font-size: 3rem;
+  }
+  
 }
 
 ion-footer {
