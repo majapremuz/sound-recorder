@@ -237,6 +237,10 @@ async sendRecording() {
     });
     await toast.present();
 
+    this.ngZone.run(() => {
+      this.router.navigate(['/popis']);
+    });
+
   } catch (err) {
     console.error('Failed to send audio:', err);
     const toast = await this.toastController.create({

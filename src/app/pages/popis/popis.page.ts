@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
@@ -19,20 +19,24 @@ export class PopisPage implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
-    this.loadAudios();
+  this.loadAudios();
 
-    // Reset when audio ends
-    this.audioPlayer.addEventListener('ended', () => {
-      if (this.currentAudio) {
-        this.currentAudio.isPlaying = false; // switch back icon
-        this.currentAudio = null; // clear reference
-      }
-    });
-  }
+  // ✅ Reset play icon when the audio ends (always re-runs in Angular)
+  this.audioPlayer.addEventListener('ended', () => {
+    if (this.currentAudio) {
+      this.ngZone.run(() => {
+        console.log('Audio ended:', this.currentAudio.name);
+        this.currentAudio.isPlaying = false;
+        this.currentAudio = null;
+      });
+    }
+  });
+}
 
   onViewDidEnter() {
     // Once the view and animations are ready
@@ -77,6 +81,10 @@ export class PopisPage implements OnInit {
         const firstAudio = this.audios[0];
         console.log('Auto-playing first audio:', firstAudio.name);
 
+        firstAudio.showMap = true;
+        setTimeout(() => this.initMap(firstAudio), 500);
+
+
         setTimeout(() => {
           try {
             this.playAudio(firstAudio);
@@ -108,41 +116,68 @@ export class PopisPage implements OnInit {
   }
 }
 
-  playAudio(audio: any) {
+playAudio(audio: any) {
   const jingleUrl = 'assets/jingle.mp3';
 
-  // toggle same audio
+  // 🎧 If clicking the same audio (pause/resume)
   if (this.currentAudio === audio) {
     if (audio.isPlaying) {
       this.audioPlayer.pause();
       audio.isPlaying = false;
     } else {
-      this.audioPlayer.play();
+      this.audioPlayer.play().catch(err => console.warn('Play blocked:', err));
       audio.isPlaying = true;
     }
     return;
   }
 
-  // stop previous
+  // 🛑 Stop previously playing audio
   if (this.currentAudio) {
     this.currentAudio.isPlaying = false;
     this.audioPlayer.pause();
+    this.audioPlayer.currentTime = 0;
   }
 
-  // set new current
-  audio.isPlaying = true;
+  // 🆕 Set current
   this.currentAudio = audio;
+  audio.isPlaying = true;
 
-  // play jingle then main audio
+  // ▶️ Play jingle
   const jingle = new Audio(jingleUrl);
-  jingle.play();
+  jingle.play().catch(err => console.warn('Jingle blocked:', err));
 
   jingle.addEventListener('ended', () => {
-    this.audioPlayer.src = audio.url;
-    this.audioPlayer.play();
+    // 🎵 After jingle, play the main audio
+    this.audioPlayer.src = `https://traffic-call.com/files/${audio.url}`;
 
-    // initialize map after the slide animation finishes
+    // Remove any old listeners just to be safe
+    this.audioPlayer.onended = null;
+
+    // 🔊 Start main playback
+    this.audioPlayer.play()
+      .then(() => console.log('Playing main audio:', audio.name))
+      .catch(err => console.warn('Main audio play blocked:', err));
+
+    // 🎯 When main audio ends, reset UI
+    this.audioPlayer.addEventListener('ended', () => {
+      this.ngZone.run(() => {
+        console.log('✅ Main audio finished:', audio.name);
+        audio.isPlaying = false;
+        this.currentAudio = null;
+      });
+    }, { once: true }); // ← important: fires once only
+
+    // 🗺 Initialize map after playback starts
     setTimeout(() => this.initMap(audio), 420);
+  });
+
+  // ❌ If jingle fails to load or play, also reset
+  jingle.addEventListener('error', () => {
+    this.ngZone.run(() => {
+      console.warn('Jingle playback failed');
+      audio.isPlaying = false;
+      this.currentAudio = null;
+    });
   });
 }
 
@@ -181,8 +216,7 @@ initMap(audio: any) {
       zoomControl: false,
       attributionControl: false,
       dragging: true,
-      scrollWheelZoom: true,
-      tap: true,
+      scrollWheelZoom: true
     });
 
     (mapContainer as any)._leaflet_map = map;
