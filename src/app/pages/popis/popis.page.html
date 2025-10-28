@@ -10,13 +10,6 @@
         <p class="title">{{ audio.name }}</p>
       </div>
 
-      <!-- Map button -->
-      <ion-button class="map-button" 
-        *ngIf="audio.latitude && audio.longitude" 
-        (click)="toggleMap(audio)">
-        <img src="assets/map marker.png" alt="map icon">
-      </ion-button>
-
       <!-- Play button -->
       <ion-button class="play-button" (click)="playAudio(audio)">
         <img [src]="audio.isPlaying ? 'assets/pause-icon.png' : 'assets/play-icon.png'" class="play-icon" />
