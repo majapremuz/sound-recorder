@@ -13,7 +13,7 @@ export const environment = {
     },
     multimedia: '/Assets/multimedia'
   },
-  google_map_api: 'AIzaSyCcpGQ3vrmOld_eD9D5RuxT-86MShM_DPY',
+  google_map_api: 'GOOGLE_API_KEY',
   cache_key: 'cache-key-',
   def_image: 'assets/imgs/no-image-icon-23485.png',
   company_id: 2,
