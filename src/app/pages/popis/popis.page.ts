@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import * as L from 'leaflet';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-popis',
@@ -64,7 +64,9 @@ export class PopisPage implements OnInit {
         longitude: file.longitude,
         mapId: `map-${index}`,
         isPlaying: false,
-        showMap: false
+        showMap: false,
+        city: file.city,
+        street: file.street
       }));
 
       // ✅ Initialize maps correctly (not the whole array)
@@ -178,65 +180,73 @@ export class PopisPage implements OnInit {
   });
 }
 
-initMap(audio: any) {
-  const mapContainer = document.getElementById(audio.mapId);
+loadGoogleMaps(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).google && (window as any).google.maps) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.google_map_api}`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject('Google Maps failed to load.');
+    document.head.appendChild(script);
+  });
+}
+
+async initMap(audio: any) {
+  const mapId = audio.mapId;
+  
+  // Wait until the element actually exists
+  await this.waitForElement(`#${mapId}`);
+
+  const mapContainer = document.getElementById(mapId);
   if (!mapContainer) return;
+
+  await this.loadGoogleMaps();
 
   const lat = parseFloat(audio.latitude);
   const lon = parseFloat(audio.longitude);
+  if (isNaN(lat) || isNaN(lon)) return;
 
-  // ❌ stop if coordinates are invalid
-  if (isNaN(lat) || isNaN(lon)) {
-    console.warn('No valid location for:', audio.name);
-    return;
-  }
+  const map = new google.maps.Map(mapContainer, {
+    center: { lat, lng: lon },
+    zoom: 17,
+    disableDefaultUI: true,
+  });
 
-  const center: [number, number] = [lat, lon];
-  console.log('Marker coordinates used:', center);
+  const markerIcon = {
+    url: 'assets/google_map_marker.png',
+    scaledSize: new google.maps.Size(70, 50),
+    anchor: new google.maps.Point(20, 50),
+  };
 
-  if ((mapContainer as any)._leaflet_map) {
-    const map = (mapContainer as any)._leaflet_map;
-    setTimeout(() => {
-      map.invalidateSize();
-      map.setView(center, 20);
-    }, 400);
-    return;
-  }
+  new google.maps.Marker({
+    position: { lat, lng: lon },
+    map,
+    icon: markerIcon,
+  });
+}
 
-  audio.isLoading = true;
-
-  setTimeout(() => {
-    const map = L.map(audio.mapId, {
-      center,
-      zoom: 16,
-      zoomControl: false,
-      attributionControl: false,
-      dragging: true,
-      scrollWheelZoom: true
+private waitForElement(selector: string): Promise<void> {
+  return new Promise((resolve) => {
+    const el = document.querySelector(selector);
+    if (el) {
+      resolve();
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      const el2 = document.querySelector(selector);
+      if (el2) {
+        observer.disconnect();
+        resolve();
+      }
     });
-
-    (mapContainer as any)._leaflet_map = map;
-
-    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 20,
-      detectRetina: true,
-    }).addTo(map);
-
-    tileLayer.on('load', () => {
-      audio.isLoading = false;
-      map.invalidateSize();
-      map.setView(center, 20);
-    });
-
-    const customIcon = L.icon({
-      iconUrl: 'assets/map marker.png',
-      iconSize: [35, 45],
-      iconAnchor: [17, 45],
-    });
-
-    L.marker(center, { icon: customIcon }).addTo(map);
-    setTimeout(() => map.invalidateSize(), 900);
-  }, 400);
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
 }
 
   navigateTo(page: string) {

@@ -9,6 +9,7 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
+import { environment } from 'src/environments/environment';
 
 
 @Component({
@@ -206,6 +207,9 @@ async sendRecording() {
     };
     console.log('GPS coordinates:', coords);
 
+    const address = await this.reverseGeocode(coords.latitude, coords.longitude);
+    console.log('Reverse geocode result:', address);
+
     // Get the current device token
     const deviceToken = localStorage.getItem('pushToken');
     if (!deviceToken) console.warn('No device token found – push may not work');
@@ -217,6 +221,9 @@ async sendRecording() {
         token: deviceToken,
         latitude: coords.latitude,
         longitude: coords.longitude,
+        city: address.city,
+        street: address.street,
+        country: address.country
       };
 
       // ✅ Log the payload before sending
@@ -259,6 +266,35 @@ blobToBase64(blob: Blob): Promise<string> {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
+}
+
+async reverseGeocode(lat: number, lon: number): Promise<{ city: string; street: string, country: string }> {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${environment.google_map_api}`;
+    const response: any = await this.http.get(url).toPromise();
+
+    if (response.status === 'OK' && response.results.length > 0) {
+      const address = response.results[0].address_components;
+
+      let city = '';
+      let street = '';
+      let country = '';
+
+      for (const comp of address) {
+        if (comp.types.includes('locality')) city = comp.long_name;
+        if (comp.types.includes('route')) street = comp.long_name;
+        if (comp.types.includes('country')) country = comp.long_name;
+      }
+
+      return { city, street, country };
+    } else {
+      console.warn('Geocoding failed:', response);
+      return { city: '', street: '', country: '' };
+    }
+  } catch (err) {
+    console.error('Reverse geocoding error:', err);
+    return { city: '', street: '', country: '' };
+  }
 }
 
 async initPush() {
