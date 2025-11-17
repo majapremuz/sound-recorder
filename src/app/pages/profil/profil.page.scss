@@ -1,23 +1,24 @@
 h1 {
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto";
   text-align: center;
 }
 
 h2 {
   color: black;
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto";
   font-weight: 900;
 }
 
 .notification-status {
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto";
   font-size: 0.9rem;
   margin: 1rem 0;
 }
 
 ion-footer {
   box-shadow: none;
-  border-top: 2px solid #cacaca;
+  background-color: #f0f0f0;
+  height: 5rem;
   padding: 1rem 0;
   position: absolute;
   bottom: 0;
@@ -44,7 +45,7 @@ ion-footer {
 
 .home-button,
 .list-button {
-  border-right: 2px solid #cacaca;
+  border-right: 2px solid #ffffff;
 }
 
 .footer-icon {
@@ -52,7 +53,7 @@ ion-footer {
 }
 
 p {
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto";
   color: black;
   font-size: 0.7rem;
   text-transform: none;

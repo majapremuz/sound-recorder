@@ -270,7 +270,7 @@ blobToBase64(blob: Blob): Promise<string> {
 
 async reverseGeocode(lat: number, lon: number): Promise<{ city: string; street: string, country: string }> {
   try {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${environment.google_map_api}`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${environment.google_map_api}&language=hr`;
     const response: any = await this.http.get(url).toPromise();
 
     if (response.status === 'OK' && response.results.length > 0) {

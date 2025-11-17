@@ -1,3 +1,7 @@
+ion-header {
+  box-shadow: none;
+}
+
 ion-content {
   padding: 0;
   margin: 0;
@@ -5,10 +9,10 @@ ion-content {
 
 }
 
-.idle {
+/*.idle {
     background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 51%, rgb(255, 4, 0) 100%);
     transition: background 0.3s ease-in-out;
-  }
+  }*/
 
 .recording {
   background: radial-gradient(circle, rgba(255, 255, 255, 1) 50%, rgb(43, 235, 0) 100%);
@@ -42,7 +46,8 @@ ion-content {
   top: 30%;
   left: 50%;
   transform: translate(-50%, -50%);
-  border: 5px solid #9b9a9a;
+  background: radial-gradient(circle at 50% 50%, rgba(253, 253, 253, 1) 50%, rgba(230, 230, 230, 1) 100%);
+  border: 10px solid #e6e6e6;
   border-radius: 50%;
   height: 80vmin;
   width: 80vmin;
@@ -54,9 +59,9 @@ ion-content {
 }
 
 .mic-img {
-  height: 50vmin;
+  //height: 50vmin;
   width: 50vmin;
-  filter: invert(54%) sepia(11%) saturate(13%) hue-rotate(316deg) brightness(98%) contrast(81%);
+  //filter: invert(54%) sepia(11%) saturate(13%) hue-rotate(316deg) brightness(98%) contrast(81%);
   position: relative;
   z-index: 2;
 }
@@ -86,7 +91,8 @@ h2 {
 
 ion-footer {
   box-shadow: none;
-  border-top: 2px solid #cacaca;
+  background-color: #f0f0f0;
+  height: 5rem;
   padding: 1rem 0;
   position: absolute;
   bottom: 0;
@@ -113,7 +119,7 @@ ion-footer {
 
 .home-button,
 .list-button {
-  border-right: 2px solid #cacaca;
+  border-right: 2px solid #ffffff;
 }
 
 .footer-icon {
@@ -121,7 +127,7 @@ ion-footer {
 }
 
 p {
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto";
   color: black;
   font-size: 0.7rem;
   text-transform: none;

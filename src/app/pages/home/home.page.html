@@ -1,11 +1,15 @@
-
+<ion-header>
+  <ion-toolbar>
+    <img src="assets/header_img.png" alt="header image">
+  </ion-toolbar>
+</ion-header>
 <ion-content>
 
   <div 
   class="img-container"
   [ngClass]="{ 'recording': isRecording, 'idle': !isRecording }"
   (click)="toggleRecording()">
-  <img src="assets/play-icon.png" alt="audio icon" class="mic-img"/>
+  <img src="assets/microphone.png" alt="audio icon" class="mic-img"/>
   </div>
 
   <h2>{{timeStamp}}</h2>

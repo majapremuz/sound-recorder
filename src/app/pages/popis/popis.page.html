@@ -7,13 +7,17 @@
       
       <!-- Name -->
       <div class="label-wrap">
-        <p class="title">{{ audio.date }}, {{ audio.time }}</p>
-        <p class="adress" *ngIf="audio.city && audio.street">{{ audio.city }}, {{ audio.street }}</p>
+        <p class="adress" *ngIf="audio.city && audio.street">{{ audio.street }}</p>
+        <br>
+        <p class="city" >{{ audio.city }}</p>
+        <br>
+        <p class="time">{{ audio.time }}</p>
+        <p class="date">{{ audio.date }}</p>
       </div>
 
       <!-- Play button -->
       <ion-button class="play-button" (click)="playAudio(audio)">
-        <img [src]="audio.isPlaying ? 'assets/pause-icon.png' : 'assets/play-icon.png'" class="play-icon" />
+        <img [src]="audio.isPlaying ? 'assets/pause-icon.png' : 'assets/microphone.png'" class="play-icon" />
       </ion-button>
 
       <!-- Map container -->

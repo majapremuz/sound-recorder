@@ -1,0 +1,1 @@
+  google_map_api: 'AIzaSyD1xscctumKOh6K2O9D5NiB7IJdyQvGTVw',

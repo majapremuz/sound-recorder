@@ -126,7 +126,7 @@ export class PopisPage implements OnInit {
 }
 
   playAudio(audio: any) {
-  const jingleUrl = 'assets/jingle.mp3';
+  const jingleUrl = 'assets/jingle.wav';
 
   //If clicking the same audio (pause/resume)
   if (this.currentAudio === audio) {
