@@ -1,18 +1,59 @@
+ion-content {
+  font-family: "Roboto";
+}
+
 h1 {
   font-family: "Roboto";
   text-align: center;
 }
 
 h2 {
-  color: black;
+  color: #757575;
   font-family: "Roboto";
   font-weight: 900;
 }
 
-.notification-status {
-  font-family: "Roboto";
-  font-size: 0.9rem;
+p {
+  margin-left: 1rem;
+}
+
+.notification,
+.location {
+  margin: 1rem;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wrapper {
+  margin-right: 1.3rem;
+}
+
+.border {
+  border-bottom: 1px solid rgb(133, 132, 132);
+  width: 60%;
   margin: 1rem 0;
+}
+
+.card {
+  --background: #ebebeb;
+  width: 90%;
+  border-radius: 8px;
+  margin: 1rem auto 0 auto;
+  padding: 2rem;
+  box-shadow: none;
+  color: black;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  p {
+    font-family: "Roboto";
+    font-size: 1.2rem;
+    text-align: left;
+  }
 }
 
 ion-footer {
@@ -20,7 +61,7 @@ ion-footer {
   background-color: #f0f0f0;
   height: 5rem;
   padding: 1rem 0;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
@@ -48,8 +89,21 @@ ion-footer {
   border-right: 2px solid #ffffff;
 }
 
+.card-img {
+  height: 8vmin;
+}
+
+.filter {
+  filter: invert(48%) sepia(100%) saturate(438%) hue-rotate(139deg) brightness(97%) contrast(98%);
+}
+
+.space {
+  margin: 8rem 0;
+}
+
 .footer-icon {
   height: 10vmin;
+  margin-left: 1rem;
 }
 
 p {

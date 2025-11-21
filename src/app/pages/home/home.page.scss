@@ -9,10 +9,10 @@ ion-content {
 
 }
 
-/*.idle {
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 51%, rgb(255, 4, 0) 100%);
+.idle {
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 51%, rgb(0, 166, 200) 100%);
     transition: background 0.3s ease-in-out;
-  }*/
+  }
 
 .recording {
   background: radial-gradient(circle, rgba(255, 255, 255, 1) 50%, rgb(43, 235, 0) 100%);
@@ -81,9 +81,9 @@ h2 {
   
 }
 
-@media screen  and (min-width: 360px) {
+@media screen  and (min-width: 350px) {
   h2 {
-    margin-top: 120vmin;
+    margin-top: 95vmin;
     font-size: 3rem;
   }
   
@@ -94,13 +94,13 @@ ion-footer {
   background-color: #f0f0f0;
   height: 5rem;
   padding: 1rem 0;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 .footer-btn-container {
