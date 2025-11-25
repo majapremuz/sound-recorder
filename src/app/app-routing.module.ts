@@ -21,6 +21,18 @@ const routes: Routes = [
     path: 'profil',
     loadChildren: () => import('./pages/profil/profil.module').then( m => m.ProfilPageModule)
   },
+  {
+    path: 'login',
+    loadChildren: () => import('./pages/login/login.module').then( m => m.LoginPageModule)
+  },
+  {
+    path: 'password-reset',
+    loadChildren: () => import('./pages/password-reset/password-reset.module').then( m => m.PasswordResetPageModule)
+  },
+  {
+    path: 'popis-lokacija',
+    loadChildren: () => import('./pages/popis-lokacija/popis-lokacija.module').then( m => m.PopisLokacijaPageModule)
+  },
 ];
 
 @NgModule({

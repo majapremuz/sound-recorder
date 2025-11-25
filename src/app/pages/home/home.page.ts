@@ -10,6 +10,7 @@ import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { environment } from 'src/environments/environment';
+import { AuthService } from 'src/app/services/auth.service';
 
 
 @Component({
@@ -47,6 +48,7 @@ export class HomePage {
   message = '';
 
   translate: any = [];
+  isLoggedIn = false;
 
   contents: Array<ContentObject> = [];
 
@@ -56,7 +58,8 @@ export class HomePage {
     private http: HttpClient,
     private toastController: ToastController,
     private router: Router,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private authService: AuthService
   ) {
     this.initTranslate();
   }
@@ -70,6 +73,10 @@ export class HomePage {
   ionViewWillLeave(){
     this.dataCtrl.setHomePage(false);
   }
+
+  ngOnInit() {
+  this.isLoggedIn = this.authService.isLoggedIn();
+}
 
   async requestAudioPermission(): Promise<boolean> {
   const result = await this.androidPermissions.checkPermission(
@@ -164,12 +171,18 @@ stopRecording() {
 }
 
 toggleRecording() {
+  if (!this.isLoggedIn) {
+    this.router.navigate(['/login']);
+    return;
+  }
+
   if (this.isRecording) {
     this.stopRecording();
   } else {
     this.startRecording();
   }
 }
+
 
 async sendRecording() {
   if (!this.recordedBlob) return;

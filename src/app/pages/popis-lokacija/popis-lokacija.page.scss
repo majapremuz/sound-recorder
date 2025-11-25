@@ -1,60 +1,55 @@
 ion-content {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
   font-family: "Roboto";
+}
+
+.title {
+display: flex;
+justify-content: flex-start;
+align-items: center;
+border: 1px solid #92949c;
+border-radius: 15px;
+padding: 1rem;
+margin-left: 1rem;
+margin-top: 2rem;
+width: 90%;
 }
 
 h1 {
-  font-family: "Roboto";
   text-align: center;
+  color: #5f5f5f;
 }
 
 h2 {
-  color: #757575;
-  font-family: "Roboto";
-  font-weight: 900;
-}
-
-p {
-  margin-left: 1rem;
-}
-
-.notification,
-.location {
-  margin: 1rem;
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+ color: #5f5f5f;
 }
 
 .wrapper {
   margin-right: 1.3rem;
-}
-
-.border {
   border-bottom: 1px solid rgb(133, 132, 132);
-  width: 60%;
-  margin: 1rem 0;
+  width: 50%;
 }
 
-.card {
-  --background: #ebebeb;
-  width: 90%;
-  border-radius: 8px;
-  margin: 1rem auto 0 auto;
-  padding: 2rem;
+.card-img {
+    height: 4vh;
+    margin: 0 1rem;
+}
+
+.notification {
+  margin: 1rem;
   box-shadow: none;
-  color: black;
-  font-size: 1rem;
-  font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0.5rem;
+}
 
-  p {
-    font-family: "Roboto";
-    font-size: 1.2rem;
-    text-align: left;
-  }
+.notification-status {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.9rem;
+  margin: 1rem 0;
 }
 
 ion-footer {
@@ -62,7 +57,7 @@ ion-footer {
   background-color: #f0f0f0;
   height: 5rem;
   padding: 1rem 0;
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
@@ -82,7 +77,7 @@ ion-footer {
 .footer-button {
   --background: transparent;
   --box-shadow: none;
-  margin:  0;
+  margin: 0;
 }
 
 .home-button,
@@ -90,27 +85,13 @@ ion-footer {
   border-right: 2px solid #ffffff;
 }
 
-svg {
-  width: 20vmin;
-  height: 10vmin;
-}
-
-.card-img {
-  height: 8vmin;
-}
-
-.space {
-  margin: 8rem 0;
-}
-
 .footer-icon {
   height: 10vmin;
-  margin-left: 1rem;
 }
 
 p {
-  font-family: "Roboto";
+  font-family: "Open Sans", sans-serif;
   color: black;
   font-size: 0.7rem;
   text-transform: none;
-}
+}/*# sourceMappingURL=profil.page.css.map */

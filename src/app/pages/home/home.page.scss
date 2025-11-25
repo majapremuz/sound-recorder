@@ -66,11 +66,58 @@ ion-content {
   z-index: 2;
 }
 
+.mic-button.locked {
+  filter: invert(99%) sepia(18%) saturate(70%) hue-rotate(275deg) brightness(119%) contrast(84%);
+}
+
+
 h2 {
   text-align: center;
   padding: 1rem 0;
   margin-top: 110vmin;
   font-size: 2rem;
+}
+
+.not-login {
+  z-index: 999;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.912);
+  width: 80%;
+  border: 10px solid #e6e6e6;
+  border-radius: 10px;
+}
+
+.not-login-text {
+  padding: 1rem;
+  font-family: "Roboto";
+  color: rgb(110, 108, 108);
+  font-size: 1rem;
+}
+
+.login-button {
+  --background: #ebebeb;
+  width: 90%;
+  --border-radius: 8px;
+  margin: 0.8rem;
+  gap: 8px;
+  --box-shadow: none;
+
+  p {
+    font-family: "Roboto";
+    font-size: 0.8rem;
+    text-align: left;
+    vertical-align: 10px;
+    display: table-cell;
+    color: black;
+  }
+
+  svg {
+  width: 20vmin;
+  height: 7vmin;
+}
 }
 
 @media screen  and (min-width: 800px) {

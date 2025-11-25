@@ -11,6 +11,8 @@ export interface ApiResult {
   message: string;
   status: boolean;
   status_code: number;
+  signature: string;
+  timestamp: string;
 }
 
 export interface ErrorMessage {
@@ -467,7 +469,7 @@ export class ControllerService {
   }
 
 
-  private checkCache(key: string, cache_time: number): Promise<ApiResult>{
+  public checkCache(key: string, cache_time: number): Promise<ApiResult>{
     let promise = new Promise<ApiResult>((resolve, reject) => {
         this.getStorage(key).then(data_str => {
           if(data_str != null){

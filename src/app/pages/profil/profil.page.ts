@@ -53,6 +53,10 @@ export class ProfilPage implements OnInit {
   console.log('Notifications ' + (this.notificationsEnabled ? 'enabled' : 'disabled'));
 }
 
+  openLocations() {
+    this.navigateTo('popis-lokacija');
+  }
+
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);
   }
