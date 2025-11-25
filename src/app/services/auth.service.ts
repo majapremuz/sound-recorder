@@ -61,6 +61,39 @@ export class AuthService {
   return !!(tokenData && tokenData.access_token);
 }
 
+changePassword(oldPassword: string, newPassword: string): Promise<any> {
+  const url = `${environment.rest_server.protokol}${environment.rest_server.host}${environment.rest_server.functions.api}user/change-password`;
+
+  const body = {
+    old_password: oldPassword,
+    new_password: newPassword
+  };
+
+  return new Promise((resolve, reject) => {
+
+    //❗ When backend is ready, UNCOMMENT the HTTP request
+    /*
+    this.http.post<any>(url, body, { headers: this.getAuthHeaders() }).subscribe({
+      next: (res) => {
+        if (res.status) {
+          resolve(res);
+        } else {
+          reject(res.message || "Lozinka nije promijenjena.");
+        }
+      },
+      error: (err) => {
+        reject("Greška prilikom mijenjanja lozinke.");
+      }
+    });
+    */
+
+    // Temporary mock behavior (so your UI works now)
+    console.log("Password change requested (MOCK):", body);
+    setTimeout(() => resolve({ status: true, message: "Mock password change OK" }), 1000);
+
+  });
+}
+
   getTokenData(): any {
   const token = localStorage.getItem(this.tokenKey);
   return token ? JSON.parse(token) : null;

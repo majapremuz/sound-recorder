@@ -57,6 +57,10 @@ export class ProfilPage implements OnInit {
     this.navigateTo('popis-lokacija');
   }
 
+  changePassword() {
+    this.navigateTo('promjena-lozinke');
+  }
+
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);
   }

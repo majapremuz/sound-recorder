@@ -33,6 +33,10 @@ const routes: Routes = [
     path: 'popis-lokacija',
     loadChildren: () => import('./pages/popis-lokacija/popis-lokacija.module').then( m => m.PopisLokacijaPageModule)
   },
+  {
+    path: 'promjena-lozinke',
+    loadChildren: () => import('./pages/promjena-lozinke/promjena-lozinke.module').then( m => m.PromjenaLozinkePageModule)
+  },
 ];
 
 @NgModule({
