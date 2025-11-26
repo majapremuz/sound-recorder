@@ -37,6 +37,18 @@ const routes: Routes = [
     path: 'promjena-lozinke',
     loadChildren: () => import('./pages/promjena-lozinke/promjena-lozinke.module').then( m => m.PromjenaLozinkePageModule)
   },
+  {
+    path: 'izbor-jezika',
+    loadChildren: () => import('./pages/izbor-jezika/izbor-jezika.module').then( m => m.IzborJezikaPageModule)
+  },
+  {
+    path: 'brisanje-racuna',
+    loadChildren: () => import('./pages/brisanje-racuna/brisanje-racuna.module').then( m => m.BrisanjeRacunaPageModule)
+  },
+  {
+    path: 'odjava',
+    loadChildren: () => import('./pages/odjava/odjava.module').then( m => m.OdjavaPageModule)
+  },
 ];
 
 @NgModule({

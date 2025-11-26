@@ -61,6 +61,18 @@ export class ProfilPage implements OnInit {
     this.navigateTo('promjena-lozinke');
   }
 
+  changeLanguage() {
+    this.navigateTo('izbor-jezika');
+  }
+
+  deleteAccount() {
+    this.navigateTo('brisanje-racuna');
+  }
+
+  logout() {
+    this.navigateTo('odjava');
+  }
+
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);
   }
