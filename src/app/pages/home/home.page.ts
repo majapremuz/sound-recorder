@@ -11,6 +11,8 @@ import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { environment } from 'src/environments/environment';
 import { AuthService } from 'src/app/services/auth.service';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+
 
 
 @Component({
@@ -18,7 +20,7 @@ import { AuthService } from 'src/app/services/auth.service';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, TranslateModule]
 })
 export class HomePage {
   @ViewChild('waveCanvas', { static: false }) waveCanvas!: ElementRef<HTMLCanvasElement>;

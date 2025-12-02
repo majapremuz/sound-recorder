@@ -8,13 +8,15 @@ import { environment } from 'src/environments/environment';
 import { AlertType, DataService } from 'src/app/services/data.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { navigate } from 'ionicons/icons';
+import { TranslateModule } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, TranslateModule]
 })
 export class LoginPage implements OnInit {
   isLogin: boolean = true;

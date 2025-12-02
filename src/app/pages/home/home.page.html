@@ -7,12 +7,10 @@
 
   <div class="not-login" *ngIf="!isLoggedIn">
     <h1 class="not-login-text">
-      Poštovani,
-      <br>
-      za slanje prometnog izvještaja potrebno je prijaviti se u aplikaciju.
+      {{ 'NOT_LOGGED' | translate }}
     </h1>
     <ion-button class="login-button" (click)="navigateTo('login')">
-      <p>Prijava i registracija</p>
+      <p>{{ 'LOGIN' | translate }}</p>
       <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 400" preserveAspectRatio="xMidYMid meet">
      <defs>
     <linearGradient id="grad1" x1="0%" x2="100%" y1="0%" y2="0%">
@@ -57,21 +55,21 @@
         <ion-button class="footer-button home-button" (click)="navigateTo('home')">
           <div class="footer-btn-container">
             <img src="assets/home.png" alt="home icon" class="footer-icon">
-            <p>Početni ekran</p>
+            <p>{{ 'HOME' | translate }}</p>
           </div> 
         </ion-button>
 
         <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
           <div class="footer-btn-container">
             <img src="assets/list.png" alt="list icon" class="footer-icon">
-            <p>Popis objava</p>
+            <p>{{ 'LIST' | translate }}</p>
           </div>
         </ion-button>
 
         <ion-button class="footer-button" (click)="navigateTo('profil')">
           <div class="footer-btn-container">
             <img src="assets/profil.png" alt="profil icon" class="footer-icon">
-            <p>Korisnički profil</p>
+            <p>{{ 'PROFILE' | translate }}</p>
           </div>
         </ion-button>
 

@@ -5,16 +5,24 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { HttpClient } from '@angular/common/http';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-profil',
   templateUrl: './profil.page.html',
   styleUrls: ['./profil.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule]
+  imports: [CommonModule, IonicModule, FormsModule, TranslateModule]
 })
 export class ProfilPage implements OnInit {
   notificationsEnabled = true;
+  selectedLang = 'hr';
+
+  languages = [
+  { code: 'hr', name: 'Hrvatski', flag: 'assets/croatia.png' },
+  { code: 'en', name: 'English', flag: 'assets/usa.png' },
+  { code: 'de', name: 'Deutsch', flag: 'assets/germany.png' }
+];
 
   constructor(
     private router: Router,
@@ -22,10 +30,17 @@ export class ProfilPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    // Load saved state from storage
-    const saved = localStorage.getItem('notificationsEnabled');
-    this.notificationsEnabled = saved !== null ? JSON.parse(saved) : true;
-  }
+  const savedLang = localStorage.getItem('appLanguage');
+  this.selectedLang = savedLang ? savedLang : 'hr';
+
+  const saved = localStorage.getItem('notificationsEnabled');
+  this.notificationsEnabled = saved !== null ? JSON.parse(saved) : true;
+}
+
+
+  get currentLang() {
+  return this.languages.find(l => l.code === this.selectedLang) || this.languages[0];
+}
 
   async toggleNotifications() {
   // Flip the state first

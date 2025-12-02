@@ -4,13 +4,14 @@ import { IonicModule } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-popis',
   templateUrl: './popis.page.html',
   styleUrls: ['./popis.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, TranslateModule]
 })
 export class PopisPage implements OnInit {
   audios: any[] = [];

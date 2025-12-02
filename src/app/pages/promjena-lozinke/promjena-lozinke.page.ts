@@ -4,13 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular'; 
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
+import { TranslateModule } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'app-promjena-lozinke',
   templateUrl: './promjena-lozinke.page.html',
   styleUrls: ['./promjena-lozinke.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, IonicModule, TranslateModule]
 })
 export class PromjenaLozinkePage implements OnInit {
   oldPasswordValue: string = '';

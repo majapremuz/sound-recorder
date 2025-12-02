@@ -13,14 +13,14 @@
 
   <ion-card class="notification">
     <div class="wrapper">
-      <h2>Split</h2>
+      <h2>Rijeka</h2>
     </div>
     <ion-toggle mode="ios" aria-label="Success toggle" color="success" [checked]="true"></ion-toggle>
   </ion-card>
 
   <ion-card class="notification">
     <div class="wrapper">
-      <h2>Rijeka</h2>
+      <h2>Split</h2>
     </div>
     <ion-toggle mode="ios" aria-label="Success toggle" color="success" [checked]="true"></ion-toggle>
   </ion-card>
@@ -39,21 +39,21 @@
         <ion-button class="footer-button home-button" (click)="navigateTo('home')">
           <div class="footer-btn-container">
             <img src="assets/home.png" alt="home icon" class="footer-icon">
-            <p>Početni ekran</p>
+            <p>{{ 'HOME' | translate }}</p>
           </div> 
         </ion-button>
 
         <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
           <div class="footer-btn-container">
             <img src="assets/list.png" alt="list icon" class="footer-icon">
-            <p>Popis objava</p>
+            <p>{{ 'LIST' | translate }}</p>
           </div>
         </ion-button>
 
         <ion-button class="footer-button" (click)="navigateTo('profil')">
           <div class="footer-btn-container">
             <img src="assets/profil.png" alt="profil icon" class="footer-icon">
-            <p>Korisnički profil</p>
+            <p>{{ 'PROFILE' | translate }}</p>
           </div>
         </ion-button>
 

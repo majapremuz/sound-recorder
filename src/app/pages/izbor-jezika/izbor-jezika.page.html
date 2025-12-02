@@ -3,19 +3,20 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <h1 class="izbor-title">Izbor jezika</h1>
+  <h1 class="izbor-title">{{ 'LANGUAGE_SELECTION' | translate }}</h1>
 
- <div class="title">
-    <img src="assets/croatia.png" alt="language icon" class="card-img">
-    <h1>Hrvatski</h1>
+ <div class="title" *ngFor="let lang of languages" (click)="selectedLang = lang.code" [class.selected]="selectedLang === lang.code">
+    <img [src]="lang.flag" alt="language icon" class="card-img">
+    <h1>{{ lang.name }}</h1>
   </div>
 
   <ion-button
   expand="block"
-  class="action-btn">
+  class="action-btn"
+  (click)="changeLanguage(selectedLang)">
 
   <div class="wrapper">
-    Potvrdi izbor jezika
+    {{ 'CONFIRM_LANGUAGE' | translate }}
 
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 400" preserveAspectRatio="xMidYMid meet">
       <defs>
@@ -25,7 +26,7 @@
     </linearGradient>
   </defs>
 
-<g transform="translate(0, 512) scale(0.1, -0.1)"
+<g transform="translate(0, 480) scale(0.1, -0.1)"
 fill="url(#grad1)" stroke="none">
 <path d="M2330 5109 c-724 -68 -1379 -437 -1820 -1024 -284 -378 -455 -826
 -500 -1310 -41 -446 55 -949 260 -1355 511 -1012 1635 -1580 2725 -1379 139
@@ -72,21 +73,21 @@ fill="url(#grad1)" stroke="none">
         <ion-button class="footer-button home-button" (click)="navigateTo('home')">
           <div class="footer-btn-container">
             <img src="assets/home.png" alt="home icon" class="footer-icon">
-            <p class="footer-title">Početni ekran</p>
+            <p class="footer-title">{{ 'HOME' | translate }}</p>
           </div> 
         </ion-button>
 
         <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
           <div class="footer-btn-container">
             <img src="assets/list.png" alt="list icon" class="footer-icon">
-            <p class="footer-title">Popis objava</p>
+            <p class="footer-title">{{ 'LIST' | translate }}</p>
           </div>
         </ion-button>
 
         <ion-button class="footer-button" (click)="navigateTo('profil')">
           <div class="footer-btn-container">
             <img src="assets/profil.png" alt="profil icon" class="footer-icon">
-            <p class="footer-title">Korisnički profil</p>
+            <p class="footer-title">{{ 'PROFILE' | translate }}</p>
           </div>
         </ion-button>
 

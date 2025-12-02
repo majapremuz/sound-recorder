@@ -23,6 +23,11 @@ import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions
 import { addIcons } from 'ionicons';
 import { play, pause } from 'ionicons/icons';
 
+
+export function HttpLoaderFactory(http: HttpClient) {
+  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
+}
+
 addIcons({ play, pause });
 
 export function createTranslateLoader(http: HttpClient) {

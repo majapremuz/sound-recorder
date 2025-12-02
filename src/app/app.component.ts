@@ -8,13 +8,23 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Router } from '@angular/router';
 import { App } from '@capacitor/app';
+import { HttpClient } from '@angular/common/http';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { TranslateService } from '@ngx-translate/core';
+import { LanguageService } from './services/language.service';
+
+export function HttpLoaderFactory(http: HttpClient) {
+  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
+}
+
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, TranslateModule]
 })
 export class AppComponent {
 
@@ -24,10 +34,19 @@ export class AppComponent {
     private router: Router,
     public platform: Platform,
     public translateConfigService: TranslateConfigService,
-    public dataCtrl: ControllerService
+    public dataCtrl: ControllerService,
+    private translate: TranslateService,
+    private languageService: LanguageService 
   ) {
+    const saved = localStorage.getItem('appLanguage') || 'hr';
+    this.translate.setDefaultLang(saved);
+    this.translate.use(saved);
     this.initApp();
   }
+
+  ngOnInit() {
+  this.languageService.loadSavedLanguage();
+}
 
   async initApp(){
     await this.platform.ready();
@@ -81,4 +100,5 @@ export class AppComponent {
     // pokretanje prve stranice
     this.dataCtrl.setReadyPage();
   }
+
 }

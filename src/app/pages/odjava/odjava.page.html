@@ -3,16 +3,16 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <h1 class="izbor-title">Odjava iz aplikacije</h1>
+  <h1 class="izbor-title">{{ 'LOGOUT_TITLE' | translate }}</h1>
 
-  <p>Ukoliko se želite odjaviti iz aplikacije, molimo Vas da to potvrdite.</p>
+  <p>{{ 'LOGOUT_TEXT' | translate }}</p>
 
   <ion-button
   expand="block"
   class="action-btn">
 
   <div class="wrapper">
-    Odjavi se
+    {{ 'LOGOUT_BUTTON' | translate }}
 
     <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 400" preserveAspectRatio="xMidYMid meet">
      <defs>
@@ -53,21 +53,21 @@
         <ion-button class="footer-button home-button" (click)="navigateTo('home')">
           <div class="footer-btn-container">
             <img src="assets/home.png" alt="home icon" class="footer-icon">
-            <p class="footer-title">Početni ekran</p>
+            <p class="footer-title">{{ 'HOME' | translate }}</p>
           </div> 
         </ion-button>
 
         <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
           <div class="footer-btn-container">
             <img src="assets/list.png" alt="list icon" class="footer-icon">
-            <p class="footer-title">Popis objava</p>
+            <p class="footer-title">{{ 'LIST' | translate }}</p>
           </div>
         </ion-button>
 
         <ion-button class="footer-button" (click)="navigateTo('profil')">
           <div class="footer-btn-container">
             <img src="assets/profil.png" alt="profil icon" class="footer-icon">
-            <p class="footer-title">Korisnički profil</p>
+            <p class="footer-title">{{ 'PROFILE' | translate }}</p>
           </div>
         </ion-button>
 

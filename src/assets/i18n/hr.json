@@ -1,8 +1,41 @@
 {
-    "BUTTON": {
-        "TEST": "Test"
-    },
-    "TEST": {
-        "STRING": "Test lng string"
-    }
+  "LANGUAGE_SELECTION": "Izbor jezika",
+  "CONFIRM_LANGUAGE": "Potvrdi izbor jezika",
+  "HOME": "Početni ekran",
+  "LIST": "Popis objava",
+  "PROFILE": "Korisnički profil",
+  "NOT_LOGGED": "Poštovani, za slanje prometnog izvještaja potrebno je prijaviti se u aplikaciju.",
+  "LOGIN": "Prijava i registracija",
+  "NOTIFICATIONS": "Primanje notifikacija",
+  "OFF": "isključeno",
+  "ON": "uključeno",
+  "LOCATIONS": "Određivanje lokacija",
+  "ALL": "sve lokacije",
+  "LOCATIONS_LIST": "Popis lokacija",
+  "PASSWORD_CHANGE": "Promjena lozinke",
+  "LANGUAGE_CHANGE": "Promjena jezika",
+  "DELETE_ACCOUNT": "Obriši korisnički račun",
+  "DELETE_": "Brisanje korisničkog računa",
+  "DELETE_ACCOUNT_TEXT": "Ukoliko želite obrisati korisnički račun u aplikaciji, molimo Vas da potvrdite.",
+  "LOGOUT": "Odjava",
+  "LOGOUT_TITLE": "Odjava iz aplikacije",
+  "LOGOUT_TEXT": "Ukoliko se želite odjaviti iz aplikacije, molimo Vas da to potvrdite.",
+  "LOGOUT_BUTTON": "Odjavi se",
+  "LOGIN_TITLE": "Prijava",
+  "LOGIN_": "Prijavi se",
+  "REGISTER_TITLE": "Registracija",
+  "REGISTER": "Registriraj se",
+  "EMAIL": "E-mail",
+  "VALID_EMAIL_REQUIRED": "Unesite pravilnu e-mail adresu.",
+  "PASSWORD": "Lozinka",
+  "REPEAT_PASSWORD": "Ponovi lozinku",
+  "PASSWORD_ERROR": "Lozinka je obavezna.",
+  "FORGOT_PASSWORD": "Kliknite ovdje ako ste zaboravili Vašu lozinku",
+  "CHANGE_PASSWORD": "Promjena lozinke",
+  "CHANGE_PASSWORD_BUTTON": "Promijeni lozinku",
+  "PASSWORD_RESET": "Izgubljena lozinka",
+  "SEND_RESET_LINK": "Pošalji na e-mail",
+  "ENTER_VALID_PASSWORD": "Unesite pravilnu lozinku.",
+  "OLD_PASSWORD": "Stara lozinka",
+  "NEW_PASSWORD": "Nova lozinka"
 }

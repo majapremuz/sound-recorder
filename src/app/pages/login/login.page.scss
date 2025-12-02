@@ -1,6 +1,10 @@
 ion-header {
   box-shadow: none;
   padding: 1rem 0;
+
+  img {
+    height: 30vmin;
+  }
 }
 
 ion-content {
@@ -38,12 +42,14 @@ form {
     --color: #969494;
   margin: 0 1.8rem;
   --box-shadow: none;
-  font-size: 1.2rem;
-  font-weight: 900;
+  font-size: 1.3rem;
 
   &.active {
     --color: #000000;
-    border-bottom: 3px solid #068ac0;
+
+     p {
+      border-bottom: 5px solid #068ac0;
+     }
   }
 }
 
@@ -127,7 +133,7 @@ ion-label {
 .forget-password {
   text-align: right;
   font-size: 0.9rem;
-  color: #7c7c7c;
+  color: #424242;
   margin: 1rem;
   position: absolute;
   right: 0;
