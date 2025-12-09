@@ -5,10 +5,13 @@
 <ion-content [fullscreen]="true">
   <h1 class="izbor-title">{{ 'LANGUAGE_SELECTION' | translate }}</h1>
 
- <div class="title" *ngFor="let lang of languages" (click)="selectedLang = lang.code" [class.selected]="selectedLang === lang.code">
-    <img [src]="lang.flag" alt="language icon" class="card-img">
-    <h1>{{ lang.name }}</h1>
-  </div>
+ <div class="title" *ngFor="let lang of languages" 
+     (click)="selectedLang = lang.code" 
+     [class.selected]="selectedLang === lang.code">
+  <img [src]="lang.flag" alt="language icon" class="card-img">
+  <h1>{{ lang.name }}</h1>
+</div>
+
 
   <ion-button
   expand="block"

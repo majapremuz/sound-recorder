@@ -40,8 +40,7 @@ export class AppComponent {
     public translateConfigService: TranslateConfigService,
     public contrCtrl: ControllerService,
     public dataCtrl: DataService,
-    private translate: TranslateService,
-    private languageService: LanguageService 
+    private translate: TranslateService, 
   ) {
     const saved = localStorage.getItem('appLanguage') || 'hr';
     this.translate.setDefaultLang(saved);
@@ -49,9 +48,7 @@ export class AppComponent {
     this.initApp();
   }
 
-  ngOnInit() {
-  this.languageService.loadSavedLanguage();
-}
+  ngOnInit() {}
     async initApp() {
   await this.platform.ready();
 

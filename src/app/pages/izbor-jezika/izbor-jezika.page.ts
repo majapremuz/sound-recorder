@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
-import { LanguageService } from 'src/app/services/language.service';
+import { LanguageService, Language } from 'src/app/services/language.service';
 
 @Component({
   selector: 'app-izbor-jezika',
@@ -15,11 +15,7 @@ import { LanguageService } from 'src/app/services/language.service';
 export class IzborJezikaPage implements OnInit {
   selectedLang = 'hr';
 
-  languages = [
-  { code: 'hr', name: 'Hrvatski', flag: 'assets/croatia.png' },
-  { code: 'en', name: 'English', flag: 'assets/usa.png' },
-  { code: 'de', name: 'Deutsch', flag: 'assets/germany.png' }
-];
+  languages: Language[] = [];
 
   constructor(
     private router: Router,
@@ -28,15 +24,27 @@ export class IzborJezikaPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.languageService.getLanguages().subscribe(langs => {
+      console.log('Languages from API:', langs);
+      this.languages = langs;
+    });
+
+    this.languageService.getTranslations().subscribe(translations => {
+      console.log('Translations from API:', translations);
+      Object.keys(translations).forEach(lang => {
+        this.translateService.setTranslation(lang, translations[lang], true);
+      });
+    });
   }
+
 
  navigateTo(page: string) {
     this.router.navigate([`/${page}`]);
   }
 
   changeLanguage(lang: string) {
-  this.languageService.setLanguage(lang);
-  this.selectedLang = lang;
-}
+    this.selectedLang = lang;
+    this.translateService.use(lang);
+  }
 
 }
