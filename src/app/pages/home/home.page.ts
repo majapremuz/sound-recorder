@@ -12,6 +12,7 @@ import { Geolocation } from '@capacitor/geolocation';
 import { environment } from 'src/environments/environment';
 import { AuthService } from 'src/app/services/auth.service';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { DataService } from 'src/app/services/data.service';
 
 
 
@@ -39,6 +40,9 @@ export class HomePage {
   currentTime = 0;
   duration = 0;
   progress = 0;
+  volumeLevel = 0;
+
+  @ViewChild('audioCanvas', { static: false }) audioCanvas!: ElementRef<HTMLCanvasElement>;
 
   audioContext!: AudioContext;
   analyser!: AnalyserNode;
@@ -55,7 +59,8 @@ export class HomePage {
   contents: Array<ContentObject> = [];
 
   constructor(
-    private dataCtrl: ControllerService,
+    private dataCtrl: DataService,
+    private contrCtrl: ControllerService,
     private androidPermissions: AndroidPermissions,
     private http: HttpClient,
     private toastController: ToastController,
@@ -67,13 +72,17 @@ export class HomePage {
   }
 
 
-  ionViewWillEnter(){
-    this.dataCtrl.setHomePage(true);
-    this.initPush();
-  }
+  async ionViewWillEnter() {
+  this.contrCtrl.setHomePage(true);
+  this.initPush();
+
+  this.contents = await this.dataCtrl.getRootContent();  
+  console.log("Loaded homepage content:", this.contents);
+}
+
 
   ionViewWillLeave(){
-    this.dataCtrl.setHomePage(false);
+    this.contrCtrl.setHomePage(false);
   }
 
   ngOnInit() {
@@ -107,6 +116,34 @@ export class HomePage {
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.audioContext = new AudioContext();
+const source = this.audioContext.createMediaStreamSource(stream);
+this.analyser = this.audioContext.createAnalyser();
+this.analyser.fftSize = 512;
+
+source.connect(this.analyser);
+
+const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+const updateVolume = () => {
+  if (!this.isRecording) return;
+
+  this.analyser.getByteTimeDomainData(dataArray);
+
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    const v = dataArray[i] - 128;
+    sum += v * v;
+  }
+
+  const rms = Math.sqrt(sum / dataArray.length); // volume value 0–~50
+  this.volumeLevel = Math.min(rms * 3, 100); // normalize to 0–100
+
+  requestAnimationFrame(updateVolume);
+};
+
+updateVolume();
+
     this.mediaRecorder = new MediaRecorder(stream);
     this.audioChunks = [];
     this.hasSent = false; // reset for new recording

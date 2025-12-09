@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
 import { ControllerService } from './controller.service';
-import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { ContentObject } from '../model/content';
 import { ToastController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+import { Storage } from '@ionic/storage-angular';
+import * as sha1 from 'sha1';
+import { TokenService } from './token.service';
+
 
 export enum AlertType {
   Success = 'success',
@@ -16,18 +19,48 @@ export enum AlertType {
 })
 export class DataService {
 
+  private authReadyResolve!: (value?: unknown) => void;
+
+  authReady = new Promise(resolve => this.authReadyResolve = resolve);
+
+
   url: string = '/api/content/structure?pagination=0';
   content: Array<ContentObject> = [];
   content_signature: string = '';
   loader: any;
+  pushToken: string | null = null;
+  authToken: string | null = null;
+  username: string | null = null;
+  lastLogin: string | null = null;
+
 
   constructor(
-    private apiCtrl: ControllerService,
-    private translateCtrl: TranslateService,
-    private toastController: ToastController
-  ) {
-    this.getContentLoad();
+  private apiCtrl: ControllerService,
+  private translateCtrl: TranslateService,
+  private toastController: ToastController,
+  private storage: Storage,
+  private tokenService: TokenService
+) {
+  
+}
+
+async initData() {
+    await this.storage.create(); // only called once now
+    await this.loadFirebaseToken();
+
+    this.authToken = await this.storage.get('auth_token');
+    this.username = await this.storage.get('username');
+    this.lastLogin = await this.storage.get('lastlogin');
+
+    this.authReadyResolve();
+
+    await this.getContentLoad(); // run after storage is ready
   }
+
+  waitForAuthReady() {
+    return this.authReady;
+  }
+
 
   private async checkCache(){
     let url: string = this.url;
@@ -84,6 +117,50 @@ export class DataService {
       return false;
     }
   }
+
+  async loadFirebaseToken() {
+  const token = await this.storage.get('firebase_token');
+  this.pushToken = token;
+  return token;
+}
+
+  async savePushToken(token: string) {
+  this.pushToken = token;
+  await this.storage.set('firebase_token', token);
+  console.log('Saved push token:', token);
+}
+
+  async initStorage() {
+  console.log("Initializing storage...");
+  await this.storage.create();
+  await this.loadFirebaseToken();
+
+  this.authToken = await this.storage.get('auth_token');
+  this.username = await this.storage.get('username');
+  this.lastLogin = await this.storage.get('lastlogin');
+
+  this.authReadyResolve();
+}
+
+
+
+async setAuthData(username: string, lastLogin: string) {
+  const token = sha1(username + "++traffic--call++" + lastLogin);
+
+  this.authToken = token;
+  this.username = username;
+  this.lastLogin = lastLogin;
+
+  await this.storage.set('auth_token', token);
+  await this.storage.set('username', username);
+  await this.storage.set('lastlogin', lastLogin);
+
+  console.log("AUTH TOKEN CREATED:", token);
+
+  if (this.authReadyResolve) {
+    this.authReadyResolve();
+  }
+}
 
   private async getContentLoad(){
     let server: boolean = false;
@@ -183,4 +260,5 @@ export class DataService {
     });
     return promise;
   }
+  
 }

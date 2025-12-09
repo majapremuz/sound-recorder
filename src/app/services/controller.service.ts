@@ -5,6 +5,7 @@ import { BehaviorSubject, firstValueFrom, lastValueFrom, take } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
+import { TokenService } from './token.service';
 
 export interface ApiResult {
   data: any;
@@ -60,13 +61,13 @@ export class ControllerService {
     private platform: Platform,
     private loadingCtrl: LoadingController,
     private toastController: ToastController,
-    private translateCtrl: TranslateService
+    private translateCtrl: TranslateService,
+    private tokenService: TokenService
 
   ) { }
 
   async initFunc(){
     await this.platform.ready();
-    await this.createStorage();
   }
 
   setReadyPage(){
@@ -110,60 +111,18 @@ export class ControllerService {
    * @param data to send to server
    * @returns data from server ApiResult object
    */
+  
   async postServer(url: string, data: any): Promise<ApiResult> {
-    let access_token = await this.getStorage(TOKEN_KEY);
-    let refresh_token = await this.getStorage(TOKEN_KEY_REFRESH);
-    let company_id = environment.company_id;
-
-    let promise = new Promise<ApiResult>((resolve, reject) => {
-      let apiURL = serverURL + url;
-      apiURL = this.addParameterToUrl(apiURL, 'company_id', company_id.toString());
-      let options = {};
-      if(access_token != null){
-        options = {
-          headers: new HttpHeaders().append('Authorization', "Bearer " + access_token)
-        }
-      }else{
-        options = {};
-      }
-
-      firstValueFrom(
-        this.http.post(apiURL, data, options).pipe(take(1))
-      )
-      .then((res: any) => {
-        if(res.status == true && res.data?.valid != false){
-          resolve(res.data);
-        }else{
-          reject({error: {error: 'server_error', error_description: res.message}, data: res.data});
-        }
-      })
-      .catch((err) => {
-        if(err.status == 401){
-          if(refresh_token != null){
-            //this.oauthGetFreshToken()
-          }
-          else{
-            // get offline refresh token
-            this.oauthClientAuthorize().then(() =>{
-              this.postServer(url, data).then(data_2 => {
-                resolve(data_2);
-              }).catch((err_2) => {
-                reject(err_2);
-              });
-            }).catch((err_2: any) => {
-              reject(err_2);
-            });
-          }
-        }else{
-          reject(err);
-        }
-      })
-
-
-    });
-
-    return promise;
+  if (this.tokenService.authToken) {
+    data.token = this.tokenService.authToken;
   }
+
+  const res = await firstValueFrom(
+    this.http.post<ApiResult>(url, data)
+  );
+
+  return res;
+}
 
     /**
    * 
@@ -293,95 +252,20 @@ export class ControllerService {
    * @param cache_time the cache time in seconds
    * @returns the data from server ApiResult object
    */
-  async getServer(url: string, cache: boolean = false, cache_time: number = 5): Promise<ApiResult> {
-    cache_time = cache_time * 1000; //convert to miliseconds
-    let access_token = await this.getStorage(TOKEN_KEY);
-    let refresh_token = await this.getStorage(TOKEN_KEY_REFRESH);
-    let cachedData = await this.checkCache(environment.cache_key + url, cache_time).catch(err => {return undefined;});
-    let company_id = environment.company_id;
-
-    if(cache == true){
-      if(environment.cache == false){
-        cache = false;
-      }
-    }
-
-    let promise = new Promise<ApiResult>((resolve, reject) => {
-      let apiURL = serverURL + url;
-      apiURL = this.addParameterToUrl(apiURL, 'company_id', company_id.toString());
-      let options = {};
-      if(access_token != null){
-        options = {
-          headers: new HttpHeaders().append('Authorization', "Bearer " + access_token)
-        }
-      }else{
-        options = {};
-      }
-
-      if(cache == true && cachedData != undefined){
-        if(cachedData.status == true && cachedData.data?.valid != false){
-          resolve(cachedData.data);
-        }else{
-          reject({error: {error: 'server_error', error_description: cachedData.message}, data: cachedData.data});
-        }
-      }else{
-
-        firstValueFrom(
-          this.http.get(apiURL, options).pipe(take(1))
-        )
-        .then((res: any) => {
-          if(cache == true){
-            let miliseconds = Date.now();
-
-            let cache_data = {
-              key: environment.cache_key + url,
-              miliseconds: miliseconds,
-              res: res
-            };
-
-            this.setStorage(cache_data.key, JSON.stringify(cache_data)).then(() => {
-              if(res.status == true && res.data?.valid != false){
-                resolve(res.data);
-              }else{
-                reject({error: {error: 'server_error', error_description: res.message}, data: res.data});
-              }
-            });
-          }
-          else{
-            if(res.status == true && res.data?.valid != false){
-              resolve(res.data);
-            }else{
-              reject({error: {error: 'server_error', error_description: res.message}, data: res.data});
-            }
-          }
-        })
-        .catch((err) => {
-          if(err.status == 401){
-            if(refresh_token != null){
-              //this.oauthGetFreshToken()
-            }
-            else{
-              // get offline refresh token
-              this.oauthClientAuthorize().then(() =>{
-                this.getServer(url, cache, cache_time).then(data_2 => {
-                  resolve(data_2);
-                }).catch((err_2) => {
-                  reject(err_2);
-                });
-              }).catch((err_2: any) => {
-                reject(err_2);
-              });
-            }
-          }else{
-            reject(err);
-          }
-        })
-      }
-    });
-
-    return promise;
+  
+async getServer(url: string, cache: boolean = false, cache_time: number = 5): Promise<ApiResult> {
+  const fullUrl = serverURL + url;
+  const data: any = {};
+  if (this.tokenService.authToken) {
+    data.token = this.tokenService.authToken;
   }
 
+  const res = await firstValueFrom(
+    this.http.get<ApiResult>(fullUrl, { params: data })
+  );
+
+  return res;
+}
 
   async parseErrorMessage(error: any): Promise<ErrorMessage>{
     let errorMessage: ErrorMessage = {title: '', message: '', type: AlertType.Warning};
@@ -536,10 +420,6 @@ export class ControllerService {
 
   async removeStorage($key: string){
     return await this.storage.remove($key);
-  }
-
-  async createStorage(){
-    return await this.storage.create();
   }
 }
 

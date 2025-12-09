@@ -19,6 +19,13 @@ export class OdjavaPage implements OnInit {
   ngOnInit() {
   }
 
+  logout() {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userData');
+
+    this.router.navigate(['/login']);
+  }
+
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);
   }

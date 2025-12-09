@@ -37,5 +37,9 @@
   "SEND_RESET_LINK": "Link per E-Mail senden",
   "ENTER_VALID_PASSWORD": "Bitte geben Sie ein gutes Passwort ein.",
   "OLD_PASSWORD": "Altes Passwort",
-  "NEW_PASSWORD": "Neues Passwort"
+  "NEW_PASSWORD": "Neues Passwort",
+  "CONFIRM_DELETE_ACCOUNT": "Sind Sie sicher, dass Sie Ihr Benutzerkonto löschen möchten?",
+  "CANCEL": "Abbrechen",
+  "DELETE": "Löschen",
+  "DELETE_HEADER": "Konto löschen"
 }

@@ -37,5 +37,9 @@
   "SEND_RESET_LINK": "Pošalji na e-mail",
   "ENTER_VALID_PASSWORD": "Unesite pravilnu lozinku.",
   "OLD_PASSWORD": "Stara lozinka",
-  "NEW_PASSWORD": "Nova lozinka"
+  "NEW_PASSWORD": "Nova lozinka",
+  "CONFIRM_DELETE_ACCOUNT": "Da li ste sigurni da želite obrisati Vaš korisnički račun?",
+  "CANCEL": "Otkaži",
+  "DELETE": "Obriši",
+  "DELETE_HEADER": "Brisanje računa"
 }

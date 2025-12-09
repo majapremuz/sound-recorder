@@ -37,5 +37,9 @@
   "SEND_RESET_LINK": "Send to e-mail",
   "ENTER_VALID_PASSWORD": "Please enter a valid password.",
   "OLD_PASSWORD": "Old password",
-  "NEW_PASSWORD": "New password"
+  "NEW_PASSWORD": "New password",
+  "CONFIRM_DELETE_ACCOUNT": "Are you sure you want to delete your user account?",
+  "CANCEL": "Cancel",
+  "DELETE": "Delete",
+  "DELETE_HEADER": "Account deletion"
 }

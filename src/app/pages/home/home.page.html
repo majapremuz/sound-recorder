@@ -32,8 +32,9 @@
 
   <div 
   class="img-container"
-  [ngClass]="{ 'recording': isRecording, 'idle': !isRecording }"
-  (click)="toggleRecording()">
+  (click)="toggleRecording()"
+  [ngClass]="{ 'recording': isRecording }"
+  [style.--intensity]="volumeLevel">
 
   <img *ngIf="isLoggedIn"
        src="assets/microphone.png"

@@ -28,6 +28,7 @@
     "@bluehalo/ngx-leaflet": "^20.0.0",
     "@capacitor-community/fcm": "^7.1.1",
     "@capacitor-community/media": "^8.0.1",
+    "@capacitor-firebase/messaging": "^7.4.0",
     "@capacitor-mlkit/barcode-scanning": "^6.2.0",
     "@capacitor/android": "^6.0.0",
     "@capacitor/app": "6.0.0",
@@ -56,6 +57,7 @@
     "moment": "^2.30.1",
     "multer": "^2.0.2",
     "rxjs": "~7.8",
+    "sha1": "^1.1.1",
     "tslib": "^2.3.0",
     "zone.js": "^0.15.1"
   },

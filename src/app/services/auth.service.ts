@@ -15,17 +15,12 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  login(username: string, password: string, company: number, admin: string): Observable<any> {
-  const url = `${environment.rest_server.protokol}${environment.rest_server.host}/token.php`;
+  login(username: string, password: string): Observable<any> {
+  const url = `https://traffic-call.com/api/login.php`;
 
   const body = {
-    grant_type: 'password',
-    client_id: 'testclient',
-    client_secret: 'testpass',
     username,
-    password,
-    company,
-    admin
+    password
   };
 
   const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -93,6 +88,23 @@ changePassword(oldPassword: string, newPassword: string): Promise<any> {
 
   });
 }
+
+deleteAccount(): Observable<any> {
+  const url = '/user/delete';
+
+  // If backend requires token
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${this.getToken()}`
+  });
+
+  return this.http.delete(url, { headers }).pipe(
+    tap(() => {
+      // optional: clear stored token
+      localStorage.removeItem('userToken');
+    })
+  );
+}
+
 
   getTokenData(): any {
   const token = localStorage.getItem(this.tokenKey);

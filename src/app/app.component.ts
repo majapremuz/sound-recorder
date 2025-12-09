@@ -13,6 +13,10 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslateService } from '@ngx-translate/core';
 import { LanguageService } from './services/language.service';
+import { initializeApp } from "firebase/app";
+import { environment } from 'src/environments/environment';
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { DataService } from './services/data.service';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -34,7 +38,8 @@ export class AppComponent {
     private router: Router,
     public platform: Platform,
     public translateConfigService: TranslateConfigService,
-    public dataCtrl: ControllerService,
+    public contrCtrl: ControllerService,
+    public dataCtrl: DataService,
     private translate: TranslateService,
     private languageService: LanguageService 
   ) {
@@ -47,39 +52,33 @@ export class AppComponent {
   ngOnInit() {
   this.languageService.loadSavedLanguage();
 }
+    async initApp() {
+  await this.platform.ready();
 
-  async initApp(){
-    await this.platform.ready();
+  // Firebase safely
+  try {
+    initializeApp(environment.firebase);
+  } catch {}
 
-    // define android exit app (whet user press back)
-    this.platform.backButton.subscribeWithPriority(11, () => {
+  try {
+    const perm = await FirebaseMessaging.requestPermissions();
+    console.log("Push permission:", perm);
+  } catch {}
 
-      if(this.routerOutlet != undefined){
-        // ako vise nejde undo
-        if (!this.routerOutlet.canGoBack()) {
-          // ako je otvorena home stranica
-          // onda iskljuci aplikaciju
-          if(this.dataCtrl.getHomePageStatus() == true){
-            App.exitApp();
-          }
-          else{
-            this.router.navigateByUrl('/home');
-          }
-        }
-        else{
-          this.routerOutlet.pop();
-        }
-      }
+  try {
+    const token = await FirebaseMessaging.getToken();
+    if (token?.token) await this.dataCtrl.savePushToken(token.token);
+  } catch {}
 
-    });
+  // Initialize your data
+  await this.dataCtrl.initData();   
+  await this.dataCtrl.waitForAuthReady(); 
+  // Then mark page ready
+  this.contrCtrl.setReadyPage();
 
-    this.translateConfigService.getDefaultLanguage();
-
-    // provjera login
-    // kreiranje ionic storage
-    await this.dataCtrl.initFunc();
-
-    this.setReadyPage();
+  // Splash screen and status bar
+  await SplashScreen.hide();
+  await StatusBar.show();
   }
 
   async setReadyPage(){
@@ -98,7 +97,7 @@ export class AppComponent {
     // izvrisit sve provjere i funkcije prije ove funkcije
     // jer tek kad se pokrene ova funkcija dozvoljava se 
     // pokretanje prve stranice
-    this.dataCtrl.setReadyPage();
+    this.contrCtrl.setReadyPage();
   }
 
 }

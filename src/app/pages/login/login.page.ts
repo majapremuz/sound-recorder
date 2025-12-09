@@ -9,7 +9,7 @@ import { AlertType, DataService } from 'src/app/services/data.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { navigate } from 'ionicons/icons';
 import { TranslateModule } from '@ngx-translate/core';
-
+import * as sha1 from 'sha1';
 
 @Component({
   selector: 'app-login',
@@ -20,11 +20,15 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class LoginPage implements OnInit {
   isLogin: boolean = true;
-  emailValue = '';
-  passwordValue = '';
-  repeatValue = '';
+  loginEmail = '';
+  loginPassword = '';
+  registerUsername = '';
+  registerEmail = '';
+  registerPassword = '';
+  registerRepeat = '';
   showPassword = false;
   wrongPassword: boolean = false;
+  passwordField: any = 'password';
 
   constructor(
     private router: Router, 
@@ -50,34 +54,38 @@ export class LoginPage implements OnInit {
   }
 
   onSubmit() {
-    if (!this.emailValue || !this.passwordValue) {
+  if (this.isLogin) {
+    if (!this.loginEmail || !this.loginPassword) {
       this.showToast('Unesite email i lozinku.');
       return;
     }
-
-    if (this.isLogin) {
-      this.login();
-    } else {
-      this.register();
+    this.login();
+  } else {
+    if (!this.registerEmail || !this.registerPassword) {
+      this.showToast('Unesite email i lozinku.');
+      return;
     }
+    if (this.registerPassword !== this.registerRepeat) {
+      this.showToast('Lozinke se ne poklapaju.');
+      return;
+    }
+    this.register();
   }
+}
 
-  register() {
-  const url = ``;
+  async register() {
+  const url = 'https://traffic-call.com/api/register.php';
+
+  const firebaseToken = await this.dataCtrl.loadFirebaseToken();
 
   const body = {
-    user_email: this.emailValue,
-    user_password: this.passwordValue,
-    user_phone: '1234567890',
-    user_firstname: 'Maja',
-    user_lastname: 'P',
-    user_platform: "",
-    user_company: 17,
-    user_city: "",
-    user_zip: "",
-    user_address: "",
-    user_taxi_driver: ""
+    username: sha1(this.registerUsername),
+    email: sha1(this.registerEmail),
+    password: sha1(this.registerPassword),
+    pushToken: firebaseToken || ''
   };
+
+  console.log('Registering with', body);
 
   this.http.post(url, body, { responseType: 'text' }).subscribe({
     next: (raw) => {
@@ -100,7 +108,12 @@ export class LoginPage implements OnInit {
 
       console.log('Parsed response:', res);
 
-      if (res.status && res.message !== 'no permission') {
+      if (res.status === true) {
+        const lastlogin = res.lastlogin;
+        const username = sha1(this.registerEmail);
+
+        this.dataCtrl.setAuthData(username, lastlogin);
+
         this.showToast('Registracija uspješna! Možete se prijaviti.');
         this.isLogin = true;
       } else {
@@ -115,34 +128,25 @@ export class LoginPage implements OnInit {
 }
 
 login() {
-  this.authService.login(this.emailValue, this.passwordValue, 17, 'all').subscribe({
-    next: () => {
-      this.authService.getUser().then(user => {
-        console.log("Fetched user info:", user);
-        
-        this.dataCtrl.translateWord("Uspješno ste se prijavili").then(word => {
-          this.dataCtrl.showToast(word, AlertType.Success);
-        });
+  const body = {
+    username: sha1(this.registerEmail),
+    password: sha1(this.registerPassword)
+  };
 
-        this.cancel();
-        this.dataCtrl.hideLoader();
-      }).catch(err => {
-        console.error("Get user failed:", err);
-        this.dataCtrl.showToast("Nije moguće dohvatiti korisničke podatke", AlertType.Warning);
-      });
-    },
-    error: (err: any) => {
-      this.dataCtrl.hideLoader();
-      if (err === 'Pogrešan email ili lozinka.' || err.error?.error === 'invalid_grant') {
-        this.dataCtrl.translateWord('Krivi email ili lozinka').then(word => {
-          this.dataCtrl.showToast(word, AlertType.Warning);
-        });
-        this.wrongPassword = true;
-      } else {
-        console.log(err);
+  this.http.post('https://traffic-call.com/api/login.php', body, { responseType: 'text' })
+    .subscribe({
+      next: (raw) => {
+        const res = JSON.parse(raw.slice(raw.indexOf('{')));
+        if (res.status === true) {
+          // dobivaš lastlogin od servera
+          const lastlogin = res.lastlogin;
+          this.dataCtrl.setAuthData(this.registerEmail, lastlogin); // generira token
+          this.showToast('Prijava uspješna!');
+        } else {
+          this.showToast(res.message || 'Prijava nije uspjela.');
+        }
       }
-    }
-  });
+    });
 }
 
 togglePasswordVisibility() {
