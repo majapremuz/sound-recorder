@@ -52,6 +52,9 @@ export class HomePage {
   audioUrl: string | null = null;
   recordedBlob!: Blob;
   message = '';
+  circleLength = 2 * Math.PI * 45; 
+  circleOffset = 0;
+
 
   translate: any = [];
   isLoggedIn = false;
@@ -210,10 +213,10 @@ stopRecording() {
 }
 
 toggleRecording() {
-  if (!this.isLoggedIn) {
+  /*if (!this.isLoggedIn) {
     this.router.navigate(['/login']);
     return;
-  }
+  }*/
 
   if (this.isRecording) {
     this.stopRecording();
@@ -396,17 +399,26 @@ async initPush() {
 }
 
   updateTimer() {
-    if (!this.recordingStartTime) return;
-    const elapsedMs = Date.now() - this.recordingStartTime;
-    if (elapsedMs >= 15000) {
-      this.timeStamp = '00:15';
-      clearInterval(this.timerInterval);
-    } else {
-      const seconds = Math.floor(elapsedMs / 1000);
-      const ms = Math.floor((elapsedMs % 1000) / 100);
-      this.timeStamp = `00:${seconds < 10 ? '0' + seconds : seconds}.${ms}`;
-    }
+  if (!this.recordingStartTime) return;
+  const elapsedMs = Date.now() - this.recordingStartTime;
+  const remainingMs = 15000 - elapsedMs;
+
+  if (remainingMs <= 0) {
+    this.timeStamp = '00:00';
+    this.circleOffset = this.circleLength;
+    clearInterval(this.timerInterval);
+    return;
   }
+
+  const seconds = Math.floor(remainingMs / 1000);
+  const ms = Math.floor((remainingMs % 1000) / 100);
+
+  this.timeStamp = `00:${seconds < 10 ? '0' + seconds : seconds}.${ms}`;
+
+  const progress = elapsedMs / 15000;
+  this.circleOffset = this.circleLength * progress;
+}
+
 
   togglePlay() {
   if (this.isPlaying) {

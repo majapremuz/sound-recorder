@@ -5,7 +5,7 @@
 </ion-header>
 <ion-content>
 
-  <div class="not-login" *ngIf="!isLoggedIn">
+  <!--<div class="not-login" *ngIf="!isLoggedIn">
     <h1 class="not-login-text">
       {{ 'NOT_LOGGED' | translate }}
     </h1>
@@ -28,7 +28,7 @@
 </svg>
 
     </ion-button>
-  </div>
+  </div>-->
 
   <div 
   class="img-container"
@@ -36,20 +36,43 @@
   [ngClass]="{ 'recording': isRecording }"
   [style.--intensity]="volumeLevel">
 
-  <img *ngIf="isLoggedIn"
+  <img *ngIf="!isLoggedIn"
        src="assets/microphone.png"
        alt="audio icon"
        class="mic-img"/>
 
-  <img *ngIf="!isLoggedIn"
+  <!--<img *ngIf="!isLoggedIn"
        src="assets/gray mic.png"
        alt="gray audio icon"
-       class="mic-img gray-mic"/>
+       class="mic-img gray-mic"/>-->
 
 </div>
 
+<div class="record-timer">
+  <div class="record-timer">
+  <svg>
+    <defs>
+      <linearGradient id="recordGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#00c6ff" />  
+        <stop offset="50%" stop-color="#0072ff" /> 
+        <stop offset="100%" stop-color="#017dc3" /> 
+      </linearGradient>
+    </defs>
 
-  <h2>{{timeStamp}}</h2>
+    <circle r="45" cx="50" cy="50"></circle>
+    <circle
+      r="45"
+      cx="50"
+      cy="50"
+      [attr.stroke]="'url(#recordGradient)'"
+      [style.strokeDashoffset]="circleOffset"
+    ></circle>
+  </svg>
+
+  <div class="timer-text">{{ timeStamp }}</div>
+</div>
+</div>
+
 
   <ion-footer>
 

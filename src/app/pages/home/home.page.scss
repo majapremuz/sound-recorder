@@ -59,6 +59,44 @@ ion-content {
   }
 }
 
+.record-timer {
+  position: relative;
+  width: 26vmin;
+  height: 34vmin;
+  margin: 100vmin 0 0 18vmin;
+
+  svg {
+    width: 120px;
+    height: 120px;
+    transform: rotate(-90deg);
+  }
+
+  circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+  }
+
+  circle:nth-child(1) {
+    stroke: #ccc;
+  }
+
+  circle:nth-child(2) {
+    transition: stroke-dashoffset 0.1s linear;
+  }
+
+  .timer-text {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    color:rgba(0, 150, 200, 1);
+  }
+}
 
 .img-container {
   position: absolute;
