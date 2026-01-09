@@ -5,7 +5,7 @@
 </ion-header>
 <ion-content>
 
-  <!--<div class="not-login" *ngIf="!isLoggedIn">
+  <div class="not-login" *ngIf="!isLoggedIn">
     <h1 class="not-login-text">
       {{ 'NOT_LOGGED' | translate }}
     </h1>
@@ -28,7 +28,7 @@
 </svg>
 
     </ion-button>
-  </div>-->
+  </div>
 
   <div 
   class="img-container"
@@ -36,15 +36,15 @@
   [ngClass]="{ 'recording': isRecording }"
   [style.--intensity]="volumeLevel">
 
-  <img *ngIf="!isLoggedIn"
+  <img *ngIf="isLoggedIn"
        src="assets/microphone.png"
        alt="audio icon"
        class="mic-img"/>
 
-  <!--<img *ngIf="!isLoggedIn"
+  <img *ngIf="!isLoggedIn"
        src="assets/gray mic.png"
        alt="gray audio icon"
-       class="mic-img gray-mic"/>-->
+       class="mic-img gray-mic"/>
 
 </div>
 

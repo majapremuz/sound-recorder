@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +12,9 @@ export class AuthService {
   //private tokenKey = 'userToken';
   private tokenKey = 'authData';
   private apiUrl = `${environment.rest_server.protokol}${environment.rest_server.host}${environment.rest_server.functions.token}`;
+  private loggedIn$ = new BehaviorSubject<boolean>(
+  !!localStorage.getItem('auth_token')
+);
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -34,6 +37,7 @@ export class AuthService {
           expiry: Date.now() + response.expires_in * 1000
         };
         localStorage.setItem(this.tokenKey, JSON.stringify(tokenData));
+        localStorage.setItem('auth_token', '1');
 
         this.getUser().catch(err => console.error('Failed to fetch user:', err));
       }
@@ -51,9 +55,17 @@ export class AuthService {
   localStorage.removeItem('currentUser');
 }
 
-  isLoggedIn(): boolean {
-  const tokenData = this.getTokenData();
-  return !!(tokenData && tokenData.access_token);
+  setLoggedIn(value: boolean) {
+  this.loggedIn$.next(value);
+  console.log('Login state changed:', value);
+}
+
+isLoggedIn$() {
+  return this.loggedIn$.asObservable();
+}
+
+isLoggedIn() {
+  return !!localStorage.getItem('auth_token');
 }
 
 changePassword(oldPassword: string, newPassword: string): Promise<any> {

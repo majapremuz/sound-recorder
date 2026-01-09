@@ -1,13 +1,13 @@
 <ion-content [fullscreen]="true">
 
-  <p class="email">moj.username@gmail.com</p>
+  <p class="email">{{ email }}</p>
 
   <div class="border"></div>
 
   <ion-card class="notification">
     <div class="wrapper">
       <h2>{{ 'NOTIFICATIONS' | translate }}</h2>
-      <p>{{ 'OFF' | translate }}</p>
+      <p>{{ notificationsEnabled ? 'uključeno' : 'isključeno' }}</p>
     </div>
     <ion-toggle mode="ios" aria-label="Success toggle" color="success" [checked]="true"></ion-toggle>
   </ion-card>

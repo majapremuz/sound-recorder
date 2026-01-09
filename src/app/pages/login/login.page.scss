@@ -42,7 +42,7 @@ form {
     --color: #969494;
   margin: 0 1.8rem;
   --box-shadow: none;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
 
   &.active {
     --color: #000000;
@@ -96,6 +96,7 @@ ion-item {
   padding: 1rem;
   border-radius: 10px;
   border: #92949c 1px solid;
+  --inner-border-width: 0
 }
 
 ion-item {
@@ -134,13 +135,16 @@ ion-input {
   text-align: left;
 }
 
+.change-pass {
+  margin: 1rem 1rem 2rem 0;
+  text-align: right;
+}
+
 .forget-password {
   text-align: right;
   font-size: 0.9rem;
   color: #424242;
-  margin: 1rem;
-  position: absolute;
-  right: 0;
+  margin-left: 7rem;
 }
 
 ion-footer {

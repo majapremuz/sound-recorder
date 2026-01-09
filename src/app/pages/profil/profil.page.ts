@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { HttpClient } from '@angular/common/http';
 import { TranslateModule } from '@ngx-translate/core';
+import { DataService } from 'src/app/services/data.service';
 
 @Component({
   selector: 'app-profil',
@@ -17,6 +18,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class ProfilPage implements OnInit {
   notificationsEnabled = true;
   selectedLang = 'hr';
+  email: string = '';
 
   languages = [
   { code: 'hr', name: 'Hrvatski', flag: 'assets/croatia.png' },
@@ -26,7 +28,8 @@ export class ProfilPage implements OnInit {
 
   constructor(
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private dataCtrl: DataService
   ) { }
 
   ngOnInit() {
@@ -35,6 +38,8 @@ export class ProfilPage implements OnInit {
 
   const saved = localStorage.getItem('notificationsEnabled');
   this.notificationsEnabled = saved !== null ? JSON.parse(saved) : true;
+
+  this.email = this.dataCtrl.getEmail() || 'Nepoznato';
 }
 
 
@@ -42,30 +47,34 @@ export class ProfilPage implements OnInit {
   return this.languages.find(l => l.code === this.selectedLang) || this.languages[0];
 }
 
-  async toggleNotifications() {
-  // Flip the state first
-  this.notificationsEnabled = !this.notificationsEnabled;
+  async toggleNotifications(event: any) {
+  this.notificationsEnabled = event.detail.checked;
 
-  // Save to storage
+  // Save state to storage
   localStorage.setItem('notificationsEnabled', JSON.stringify(this.notificationsEnabled));
 
-  // Make sure permissions are granted
-  const permStatus = await PushNotifications.checkPermissions();
-  if (permStatus.receive !== 'granted') {
-    await PushNotifications.requestPermissions();
-  }
-
-  // Get stored token (from registration step)
+  // Get stored token
   const token = localStorage.getItem('pushToken');
 
-  if (token) {
-    await this.http.post(
-      'https://traffic-call.com/api/pushchange.php',
-      { token, active: this.notificationsEnabled ? 1 : 0 }
-    ).toPromise();
+  if (!token) {
+    console.warn('No push token found');
+    return;
   }
 
-  console.log('Notifications ' + (this.notificationsEnabled ? 'enabled' : 'disabled'));
+  // Prepare form data (many PHP APIs require form data!)
+  const formData = new FormData();
+  formData.append('token', token);
+  formData.append('active', this.notificationsEnabled ? '1' : '0');
+
+  this.http.post('https://traffic-call.com/api/pushchange.php', formData)
+    .subscribe({
+      next: (response) => {
+        console.log('API response:', response);
+      },
+      error: (err) => {
+        console.error('API error:', err);
+      }
+    });
 }
 
   openLocations() {

@@ -3,13 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
-import { AlertType, DataService } from 'src/app/services/data.service';
-import { AuthService } from 'src/app/services/auth.service';
-import { navigate } from 'ionicons/icons';
+import { HttpClient } from '@angular/common/http';
+import { DataService } from 'src/app/services/data.service';
+import { AuthService } from 'src/app/services/auth.service'
 import { TranslateModule } from '@ngx-translate/core';
 import * as sha1 from 'sha1';
+import { eye, eyeOff } from 'ionicons/icons';
+import { addIcons } from 'ionicons';
+import { HttpParams } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-login',
@@ -21,6 +23,7 @@ import * as sha1 from 'sha1';
 export class LoginPage implements OnInit {
   isLogin: boolean = true;
   loginEmail = '';
+  loginUsername = '';
   loginPassword = '';
   registerUsername = '';
   registerEmail = '';
@@ -36,117 +39,167 @@ export class LoginPage implements OnInit {
     private http: HttpClient,
     private dataCtrl: DataService,
     private authService: AuthService
-  ) {}
+  ) {
+    addIcons({
+    eye,
+    'eye-off': eyeOff
+  });
+  }
 
   ngOnInit() {}
 
   toggleMode(mode: 'login' | 'register') {
-    this.isLogin = (mode === 'login');
-  }
+  this.isLogin = mode === 'login';
 
-  async showToast(message: string) {
+  this.loginUsername = '';
+  this.loginPassword = '';
+  this.registerUsername = '';
+  this.registerEmail = '';
+  this.registerPassword = '';
+  this.registerRepeat = '';
+}
+
+
+  async showToast(message: string,color: string = 'primary') {
     const toast = await this.toastCtrl.create({
       message,
       duration: 2000,
-      position: 'bottom'
+      position: 'bottom',
+      color
     });
     toast.present();
   }
 
   onSubmit() {
   if (this.isLogin) {
-    if (!this.loginEmail || !this.loginPassword) {
-      this.showToast('Unesite email i lozinku.');
-      return;
-    }
     this.login();
-  } else {
-    if (!this.registerEmail || !this.registerPassword) {
-      this.showToast('Unesite email i lozinku.');
-      return;
-    }
-    if (this.registerPassword !== this.registerRepeat) {
-      this.showToast('Lozinke se ne poklapaju.');
-      return;
-    }
-    this.register();
+    return;
   }
+
+  if (this.registerPassword !== this.registerRepeat) {
+    this.showToast('Lozinke se ne poklapaju.');
+    return;
+  }
+
+  this.register();
 }
 
   async register() {
   const url = 'https://traffic-call.com/api/register.php';
-
   const firebaseToken = await this.dataCtrl.loadFirebaseToken();
 
-  const body = {
-    username: sha1(this.registerUsername),
-    email: sha1(this.registerEmail),
-    password: sha1(this.registerPassword),
-    pushToken: firebaseToken || ''
-  };
+  const body = new HttpParams()
+    .set('username', sha1(this.registerUsername))
+    .set('email', sha1(this.registerEmail))
+    .set('password', sha1(this.registerPassword))
+    .set('token', firebaseToken || '');
 
-  console.log('Registering with', body);
-
-  this.http.post(url, body, { responseType: 'text' }).subscribe({
+  this.http.post(url, body.toString(), {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    responseType: 'text'
+  }).subscribe({
     next: (raw) => {
-      console.log('Raw server response:', raw);
+      console.log('RAW REGISTER RESPONSE:', raw); 
 
-      const jsonStart = raw.indexOf('{');
-      if (jsonStart === -1) {
-        this.showToast('Neispravan odgovor sa servera.');
+      if (!raw || raw.trim() === '') {
+        this.showToast('Server nije vratio odgovor.');
         return;
       }
 
       let res: any;
       try {
-        res = JSON.parse(raw.slice(jsonStart));
+        res = JSON.parse(raw);
       } catch (e) {
-        console.error('JSON parse error:', e);
-        this.showToast('Neispravan JSON odgovor sa servera.');
+        console.error('JSON parse error:', e, raw);
+        this.showToast('Greška u odgovoru servera.');
         return;
       }
 
-      console.log('Parsed response:', res);
+      if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
+  const lastlogin = res[0].lastlogin;
 
-      if (res.status === true) {
-        const lastlogin = res.lastlogin;
-        const username = sha1(this.registerEmail);
+      this.dataCtrl.setAuthData(
+        this.registerUsername,
+        this.registerEmail,
+        lastlogin
+      );
 
-        this.dataCtrl.setAuthData(username, lastlogin);
-
-        this.showToast('Registracija uspješna! Možete se prijaviti.');
-        this.isLogin = true;
-      } else {
-        this.showToast(res.message || 'Registracija nije uspjela.');
+      this.showToast('Registracija uspješna! Možete se prijaviti.', 'success');
+      this.isLogin = true;
+    } else {
+        this.showToast(res[0]?.message || 'Registracija nije uspjela.');
       }
     },
     error: (err) => {
-      console.error('Register error:', err);
-      this.showToast('Greška prilikom registracije. Pokušajte ponovno.');
+      console.error('REGISTER ERROR:', err);
+      if (err.status === 0) {
+        this.showToast('Ne može se povezati sa serverom (CORS ili mreža).', 'error');
+      } else {
+        this.showToast('Greška prilikom registracije.', 'error');
+      }
     }
   });
 }
 
 login() {
-  const body = {
-    username: sha1(this.registerEmail),
-    password: sha1(this.registerPassword)
-  };
+  const body = new HttpParams()
+    .set('username', sha1(sha1(this.loginUsername)))
+    .set('password', sha1(sha1(this.loginPassword)));
 
-  this.http.post('https://traffic-call.com/api/login.php', body, { responseType: 'text' })
-    .subscribe({
-      next: (raw) => {
-        const res = JSON.parse(raw.slice(raw.indexOf('{')));
-        if (res.status === true) {
-          // dobivaš lastlogin od servera
-          const lastlogin = res.lastlogin;
-          this.dataCtrl.setAuthData(this.registerEmail, lastlogin); // generira token
-          this.showToast('Prijava uspješna!');
-        } else {
-          this.showToast(res.message || 'Prijava nije uspjela.');
-        }
+  this.http.post('https://traffic-call.com/api/login.php', body.toString(), {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    responseType: 'text'
+  }).subscribe({
+    next: (raw) => {
+      console.log('RAW LOGIN RESPONSE:', raw); 
+
+      if (!raw || raw.trim() === '') {
+        this.showToast('Server nije vratio odgovor.', 'error');
+        return;
       }
-    });
+
+      let res: any;
+      try {
+        res = JSON.parse(raw);
+      } catch (e) {
+        console.error('JSON parse error:', e, raw);
+        this.showToast('Greška u odgovoru servera.', 'error');
+        return;
+      }
+
+      if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
+      const lastlogin = res[0].lastlogin;
+
+      this.dataCtrl.setAuthData(
+      this.loginUsername,
+      this.loginEmail,
+      lastlogin
+      );
+
+      this.showToast('Prijava uspješna!', 'success');
+
+        localStorage.setItem('auth_token', '1');
+        this.authService.setLoggedIn(true);
+
+        this.dataCtrl.setAuthData(
+        this.loginUsername,
+        this.loginEmail,
+        lastlogin
+        );
+        this.router.navigate(['/home']);
+      } else {
+        this.showToast(res[0]?.message || 'Pogrešni podaci.', 'error');
+      }
+    },
+    error: (err) => {
+      console.error('LOGIN ERROR:', err);
+      if (err.status === 0) {
+        this.showToast('Ne može se povezati sa serverom (CORS ili mreža).');
+      } else {
+        this.showToast('Greška prilikom prijave.');
+      }
+    }
+  });
 }
 
 togglePasswordVisibility() {

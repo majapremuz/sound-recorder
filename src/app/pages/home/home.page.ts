@@ -78,7 +78,6 @@ export class HomePage {
   async ionViewWillEnter() {
   this.contrCtrl.setHomePage(true);
   this.initPush();
-
   this.contents = await this.dataCtrl.getRootContent();  
   console.log("Loaded homepage content:", this.contents);
 }
@@ -89,7 +88,9 @@ export class HomePage {
   }
 
   ngOnInit() {
-  this.isLoggedIn = this.authService.isLoggedIn();
+  this.authService.isLoggedIn$().subscribe(state => {
+    this.isLoggedIn = state;
+  });
 }
 
   async requestAudioPermission(): Promise<boolean> {
@@ -162,7 +163,7 @@ updateVolume();
     };
 
     this.mediaRecorder.onstop = async () => {
-      if (this.hasSent) return; // 🔒 prevent double send
+      if (this.hasSent) return; // prevent double send
       this.hasSent = true;
 
       if (!this.audioChunks.length) return;
@@ -213,11 +214,10 @@ stopRecording() {
 }
 
 toggleRecording() {
-  /*if (!this.isLoggedIn) {
+  if (!this.isLoggedIn) {
     this.router.navigate(['/login']);
     return;
-  }*/
-
+  }
   if (this.isRecording) {
     this.stopRecording();
   } else {

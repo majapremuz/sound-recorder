@@ -25,14 +25,14 @@
 
   <!-- LOGIN FIELDS -->
 <div *ngIf="isLogin">
-  <ion-label [class.active-label]="loginEmail">{{ 'EMAIL' | translate }}</ion-label>
-  <ion-item [class.invalid]="loginEmailModel.invalid && (loginEmailModel.dirty || loginEmailModel.touched)"
-            [class.valid]="loginEmailModel.valid">
-    <ion-input type="email" name="loginEmail" [(ngModel)]="loginEmail"
-               required email #loginEmailModel="ngModel"></ion-input>
+  <ion-label [class.active-label]="loginUsername">{{ 'USERNAME' | translate }}</ion-label>
+  <ion-item [class.invalid]="loginUsernameModel.invalid && (loginUsernameModel.dirty || loginUsernameModel.touched)"
+            [class.valid]="loginUsernameModel.valid">
+    <ion-input type="text" name="loginUsername" [(ngModel)]="loginUsername"
+               required #loginUsernameModel="ngModel"  no-lines></ion-input>
   </ion-item>
-  <div class="error" *ngIf="loginEmailModel.invalid && (loginEmailModel.dirty || loginEmailModel.touched)">
-    {{ 'EMAIL_ERROR' | translate }}
+  <div class="error" *ngIf="loginUsernameModel.invalid && (loginUsernameModel.dirty || loginUsernameModel.touched)">
+    {{ 'USERNAME_ERROR' | translate }}
   </div>
 
   <ion-label [class.active-label]="loginPassword">{{ 'PASSWORD' | translate }}</ion-label>
@@ -53,7 +53,7 @@
 
 <!-- REGISTER FIELDS -->
 <div *ngIf="!isLogin">
-  <ion-label [class.active-label]="registerUsername">Username</ion-label>
+  <ion-label [class.active-label]="registerUsername">Korisničko ime</ion-label>
   <ion-item [class.invalid]="registerUsernameModel.invalid && (registerUsernameModel.dirty || registerUsernameModel.touched)"
             [class.valid]="registerUsernameModel.valid">
     <ion-input type="text" name="registerUsername" [(ngModel)]="registerUsername"
@@ -69,9 +69,9 @@
     <ion-input type="email" name="registerEmail" [(ngModel)]="registerEmail"
                required email #registerEmailModel="ngModel"></ion-input>
   </ion-item>
-  <div class="error" *ngIf="registerEmailModel.invalid && (registerEmailModel.dirty || registerEmailModel.touched)">
+  <!--<div class="error" *ngIf="registerEmailModel.invalid && (registerEmailModel.dirty || registerEmailModel.touched)">
     {{ 'EMAIL_ERROR' | translate }}
-  </div>
+  </div>-->
 
   <ion-label [class.active-label]="registerPassword">{{ 'PASSWORD' | translate }}</ion-label>
   <ion-item [class.invalid]="registerPasswordField.invalid && (registerPasswordField.dirty || registerPasswordField.touched)"
@@ -89,21 +89,48 @@
   </div>
 
   <ion-label [class.active-label]="registerRepeat">{{ 'REPEAT_PASSWORD' | translate }}</ion-label>
-  <ion-item>
-    <ion-input [type]="showPassword ? 'text' : 'password'" name="registerRepeat" [(ngModel)]="registerRepeat"
-               required minlength="9" #registerRepeatField="ngModel"></ion-input>
-    <ion-icon [name]="showPassword ? 'eye-off' : 'eye'" slot="end"
-              (click)="togglePasswordVisibility()"></ion-icon>
-  </ion-item>
-  <div class="error" *ngIf="registerRepeatField.invalid && (registerRepeatField.dirty || registerRepeatField.touched)">
-    {{ 'EMAIL_ERROR' | translate }}
-  </div>
+  <ion-item
+  [class.invalid]="
+    registerRepeatField.touched &&
+    registerRepeat !== registerPassword
+  "
+  [class.valid]="
+    registerRepeatField.touched &&
+    registerRepeat === registerPassword
+  "
+>
+  <ion-input
+    [type]="showPassword ? 'text' : 'password'"
+    name="registerRepeat"
+    [(ngModel)]="registerRepeat"
+    required
+    minlength="9"
+    #registerRepeatField="ngModel">
+  </ion-input>
+
+  <ion-icon
+    [name]="showPassword ? 'eye-off' : 'eye'"
+    slot="end"
+    (click)="togglePasswordVisibility()">
+  </ion-icon>
+</ion-item>
+
+<div class="error"
+  *ngIf="
+    registerRepeatField.touched &&
+    registerRepeat !== registerPassword
+  ">
+  {{ 'PASSWORDS_DO_NOT_MATCH' | translate }}
+</div>
 </div>
 
   <ion-button
   expand="block"
   class="action-btn"
-  [disabled]="form.invalid"
+  [disabled]="
+    form.invalid ||
+    (!isLogin && registerPassword !== registerRepeat)
+  "
   [ngClass]="{'enabled-btn': form.valid, 'disabled-btn': form.invalid}"
   (click)="onSubmit()">
 
