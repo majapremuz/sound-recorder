@@ -38,6 +38,7 @@ export class AuthService {
         };
         localStorage.setItem(this.tokenKey, JSON.stringify(tokenData));
         localStorage.setItem('auth_token', '1');
+        this.setLoggedIn(true);
 
         this.getUser().catch(err => console.error('Failed to fetch user:', err));
       }
@@ -53,19 +54,24 @@ export class AuthService {
   logout(): void {
   localStorage.removeItem(this.tokenKey);
   localStorage.removeItem('currentUser');
+  localStorage.removeItem('auth_token');
+
+  this.setLoggedIn(false);
 }
+
 
   setLoggedIn(value: boolean) {
   this.loggedIn$.next(value);
   console.log('Login state changed:', value);
 }
 
-isLoggedIn$() {
+isLoggedIn$(): Observable<boolean> {
   return this.loggedIn$.asObservable();
 }
 
-isLoggedIn() {
-  return !!localStorage.getItem('auth_token');
+restoreLoginState() {
+  const token = localStorage.getItem('auth_token');
+  this.loggedIn$.next(!!token);
 }
 
 changePassword(oldPassword: string, newPassword: string): Promise<any> {

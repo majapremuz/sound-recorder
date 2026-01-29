@@ -8,9 +8,7 @@ import { AppComponent } from './app/app.component';
 import { AppRoutingModule } from './app/app-routing.module';
 
 import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-
+import { TranslateModule } from '@ngx-translate/core';
 import { IonicStorageModule } from '@ionic/storage-angular';
 
 import { AngularFireModule } from '@angular/fire/compat';
@@ -24,15 +22,8 @@ import { addIcons } from 'ionicons';
 import { play, pause } from 'ionicons/icons';
 
 
-export function HttpLoaderFactory(http: HttpClient) {
-  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
-}
-
 addIcons({ play, pause });
 
-export function createTranslateLoader(http: HttpClient) {
-  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
-}
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -46,13 +37,7 @@ bootstrapApplication(AppComponent, {
       AngularFireModule.initializeApp(environment.firebase),
       AngularFireStorageModule,
       AngularFirestoreModule,
-      TranslateModule.forRoot({
-        loader: {
-          provide: TranslateLoader,
-          useFactory: createTranslateLoader,
-          deps: [HttpClient]
-        }
-      })
+      TranslateModule.forRoot()
     )
   ]
 }).catch(err => console.error(err));

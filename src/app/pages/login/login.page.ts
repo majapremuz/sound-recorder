@@ -89,9 +89,9 @@ export class LoginPage implements OnInit {
   const firebaseToken = await this.dataCtrl.loadFirebaseToken();
 
   const body = new HttpParams()
-    .set('username', sha1(this.registerUsername))
-    .set('email', sha1(this.registerEmail))
-    .set('password', sha1(this.registerPassword))
+    .set('username', this.registerUsername)
+    .set('email', this.registerEmail)
+    .set('password',this.registerPassword)
     .set('token', firebaseToken || '');
 
   this.http.post(url, body.toString(), {
@@ -107,13 +107,21 @@ export class LoginPage implements OnInit {
       }
 
       let res: any;
-      try {
-        res = JSON.parse(raw);
-      } catch (e) {
-        console.error('JSON parse error:', e, raw);
-        this.showToast('Greška u odgovoru servera.');
-        return;
-      }
+
+try {
+  const jsonStart = raw.indexOf('[');
+  if (jsonStart === -1) {
+    throw new Error('No JSON found');
+  }
+
+  const jsonString = raw.substring(jsonStart);
+  res = JSON.parse(jsonString);
+} catch (e) {
+  console.error('JSON parse error:', e, raw);
+  this.showToast('Greška u odgovoru servera.');
+  return;
+}
+
 
       if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
   const lastlogin = res[0].lastlogin;
@@ -169,10 +177,11 @@ login() {
 
       if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
       const lastlogin = res[0].lastlogin;
+      const storedEmail = this.dataCtrl.getEmail() || '';
 
       this.dataCtrl.setAuthData(
       this.loginUsername,
-      this.loginEmail,
+      storedEmail,
       lastlogin
       );
 

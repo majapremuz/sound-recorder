@@ -85,13 +85,12 @@ export class HomePage {
 
   ionViewWillLeave(){
     this.contrCtrl.setHomePage(false);
+    this.authService.isLoggedIn$().subscribe(state => {
+     this.isLoggedIn = state;
+});
   }
 
-  ngOnInit() {
-  this.authService.isLoggedIn$().subscribe(state => {
-    this.isLoggedIn = state;
-  });
-}
+  ngOnInit() {}
 
   async requestAudioPermission(): Promise<boolean> {
   const result = await this.androidPermissions.checkPermission(

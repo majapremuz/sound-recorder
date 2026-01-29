@@ -14,31 +14,40 @@ import { LanguageService, Language } from 'src/app/services/language.service';
 })
 export class IzborJezikaPage implements OnInit {
   selectedLang = 'hr';
-
   languages: Language[] = [];
 
   constructor(
     private router: Router,
     private translateService: TranslateService,
     private languageService: LanguageService
-  ) { }
+  ) {}
 
   ngOnInit() {
-    this.languageService.getLanguages().subscribe(langs => {
-      console.log('Languages from API:', langs);
-      this.languages = langs;
-    });
+  this.translateService.setDefaultLang('hr');
+  this.initLanguagesAndTranslations();
+}
 
-    this.languageService.getTranslations().subscribe(translations => {
-      console.log('Translations from API:', translations);
-      Object.keys(translations).forEach(lang => {
-        this.translateService.setTranslation(lang, translations[lang], true);
-      });
-    });
-  }
+private initLanguagesAndTranslations() {
+  // Fetch languages
+  this.languageService.getLanguages().subscribe(langs => {
+    console.log('Languages from API:', langs);
+    this.languages = langs;
+  });
 
+  // Fetch translations
+  this.languageService.getTranslations().subscribe(translations => {
+  console.log('Translations from API:', translations);
 
- navigateTo(page: string) {
+  Object.keys(translations).forEach(lang => {
+    this.translateService.setTranslation(lang, translations[lang], true);
+  });
+
+  this.translateService.reloadLang(this.selectedLang);
+  this.translateService.use(this.selectedLang);
+});
+}
+
+  navigateTo(page: string) {
     this.router.navigate([`/${page}`]);
   }
 
@@ -46,5 +55,4 @@ export class IzborJezikaPage implements OnInit {
     this.selectedLang = lang;
     this.translateService.use(lang);
   }
-
 }

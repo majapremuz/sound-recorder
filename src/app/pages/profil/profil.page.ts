@@ -39,7 +39,8 @@ export class ProfilPage implements OnInit {
   const saved = localStorage.getItem('notificationsEnabled');
   this.notificationsEnabled = saved !== null ? JSON.parse(saved) : true;
 
-  this.email = this.dataCtrl.getEmail() || 'Nepoznato';
+   this.email = this.dataCtrl.getEmail() || 'Nepoznato';
+   console.log("User email loaded:", this.email);
 }
 
 
@@ -54,14 +55,13 @@ export class ProfilPage implements OnInit {
   localStorage.setItem('notificationsEnabled', JSON.stringify(this.notificationsEnabled));
 
   // Get stored token
-  const token = localStorage.getItem('pushToken');
+  const token = await this.dataCtrl.getAuthToken();
 
   if (!token) {
     console.warn('No push token found');
     return;
   }
 
-  // Prepare form data (many PHP APIs require form data!)
   const formData = new FormData();
   formData.append('token', token);
   formData.append('active', this.notificationsEnabled ? '1' : '0');
@@ -75,6 +75,16 @@ export class ProfilPage implements OnInit {
         console.error('API error:', err);
       }
     });
+}
+
+onLocationModeChange(event: any) {
+  this.notificationsEnabled = event.detail.checked;
+
+  // save preference
+  localStorage.setItem(
+    'locationMode',
+    this.notificationsEnabled ? 'all' : 'selected'
+  );
 }
 
   openLocations() {
@@ -102,3 +112,23 @@ export class ProfilPage implements OnInit {
   }
 
 }
+
+
+/*
+[
+    {
+        "response": "Success"
+    },
+    {
+        "response": "Success",
+        "title": "hrvatski",
+        "shortcut": "hr"
+    },
+    {
+        "response": "Success",
+        "title": "english",
+        "shortcut": "en"
+    }
+]
+
+*/

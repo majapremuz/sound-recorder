@@ -9,7 +9,12 @@
       <h2>{{ 'NOTIFICATIONS' | translate }}</h2>
       <p>{{ notificationsEnabled ? 'uključeno' : 'isključeno' }}</p>
     </div>
-    <ion-toggle mode="ios" aria-label="Success toggle" color="success" [checked]="true"></ion-toggle>
+    <ion-toggle
+    mode="ios"
+    color="success"
+    [checked]="notificationsEnabled"
+    (ionChange)="toggleNotifications($event)">
+    </ion-toggle>
   </ion-card>
   <div class="border"></div>
 
@@ -17,12 +22,20 @@
   <ion-card class="location">
   <div class="wrapper">
     <h2>{{ 'LOCATIONS' | translate }}</h2>
-    <p>{{ 'ALL' | translate }}</p>
+    <p>
+  {{ notificationsEnabled ? ('ALL' | translate) : ('SELECTED' | translate) }}
+</p>
   </div>
 
-  <ion-toggle mode="ios" aria-label="Success toggle" color="success" [checked]="true"></ion-toggle>
+  <ion-toggle
+  mode="ios"
+  color="success"
+  [checked]="notificationsEnabled"
+  (ionChange)="onLocationModeChange($event)">
+</ion-toggle>
+
 </ion-card>
-  <ion-card class="card lokacije" (click)="openLocations()">
+  <ion-card class="card lokacije" (click)="openLocations()" *ngIf="!notificationsEnabled">
     {{ 'LOCATIONS_LIST' | translate }}
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 400" preserveAspectRatio="xMidYMid meet">
      <defs>

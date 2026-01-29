@@ -9,18 +9,14 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { Router } from '@angular/router';
 import { App } from '@capacitor/app';
 import { HttpClient } from '@angular/common/http';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { TranslateModule } from '@ngx-translate/core';
 import { TranslateService } from '@ngx-translate/core';
 import { LanguageService } from './services/language.service';
 import { initializeApp } from "firebase/app";
 import { environment } from 'src/environments/environment';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { DataService } from './services/data.service';
-
-export function HttpLoaderFactory(http: HttpClient) {
-  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
-}
+import { AuthService } from './services/auth.service';
 
 
 @Component({
@@ -41,16 +37,17 @@ export class AppComponent {
     public contrCtrl: ControllerService,
     public dataCtrl: DataService,
     private translate: TranslateService, 
+    private authService: AuthService
   ) {
     const saved = localStorage.getItem('appLanguage') || 'hr';
     this.translate.setDefaultLang(saved);
-    this.translate.use(saved);
     this.initApp();
   }
 
   ngOnInit() {}
     async initApp() {
-  await this.platform.ready();
+    await this.platform.ready();
+    this.authService.restoreLoginState();
 
   // Firebase safely
   try {
@@ -71,8 +68,9 @@ export class AppComponent {
   await this.dataCtrl.initData();   
   await this.dataCtrl.waitForAuthReady(); 
   // Then mark page ready
+  console.log('BEFORE ready page');
   this.contrCtrl.setReadyPage();
-
+  console.log('AFTER ready page');
   // Splash screen and status bar
   await SplashScreen.hide();
   await StatusBar.show();

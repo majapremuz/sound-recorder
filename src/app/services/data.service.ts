@@ -145,6 +145,7 @@ async initData() {
 
 
 async setAuthData(username: string, email: string, lastLogin: string) {
+  console.log("raw data:", username + "++traffic--call++" + lastLogin);
   const token = sha1(username + "++traffic--call++" + lastLogin);
 
   this.authToken = token;
@@ -156,6 +157,8 @@ async setAuthData(username: string, email: string, lastLogin: string) {
   await this.storage.set('email', email);
   await this.storage.set('lastlogin', lastLogin);
 
+  localStorage.setItem('email', email);
+
   console.log("AUTH TOKEN CREATED:", token);
 
   if (this.authReadyResolve) {
@@ -163,10 +166,19 @@ async setAuthData(username: string, email: string, lastLogin: string) {
   }
 }
 
-getEmail() {
+getAuthToken(): string | null {
+  return this.authToken;
+}
+
+getEmail(): string | null {
   return localStorage.getItem('email');
 }
 
+clearAuthData() {
+  this.authToken = null;
+  this.username = null;
+  this.lastLogin = null;
+}
 
   private async getContentLoad(){
     let server: boolean = false;

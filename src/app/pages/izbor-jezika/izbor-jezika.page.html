@@ -8,7 +8,6 @@
  <div class="title" *ngFor="let lang of languages" 
      (click)="selectedLang = lang.code" 
      [class.selected]="selectedLang === lang.code">
-  <img [src]="lang.flag" alt="language icon" class="card-img">
   <h1>{{ lang.name }}</h1>
 </div>
 
@@ -23,14 +22,14 @@
 
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 400" preserveAspectRatio="xMidYMid meet">
       <defs>
-    <linearGradient id="grad1" x1="0%" x2="100%" y1="0%" y2="0%">
+    <linearGradient id="jezik" x1="0%" x2="100%" y1="0%" y2="0%">
       <stop offset="0%" stop-color="#00bcd4" />
       <stop offset="100%" stop-color="#017dc3" />
     </linearGradient>
   </defs>
 
 <g transform="translate(0, 480) scale(0.1, -0.1)"
-fill="url(#grad1)" stroke="none">
+fill="url(#jezik)" stroke="none">
 <path d="M2330 5109 c-724 -68 -1379 -437 -1820 -1024 -284 -378 -455 -826
 -500 -1310 -41 -446 55 -949 260 -1355 511 -1012 1635 -1580 2725 -1379 139
 26 300 70 424 115 92 34 357 159 432 204 l36 22 614 -190 c337 -105 615 -190

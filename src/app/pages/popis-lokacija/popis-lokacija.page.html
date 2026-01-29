@@ -1,36 +1,32 @@
-<ion-content [fullscreen]="true">
-  <div class="title">
-    <img src="assets/croatia.png" alt="language icon" class="card-img">
-    <h1>Hrvatska</h1>
-  </div>
+<ion-content>
 
-  <ion-card class="notification">
-    <div class="wrapper">
-      <h2>Zagreb</h2>
-    </div>
-    <ion-toggle mode="ios" aria-label="Success toggle" color="success" [checked]="true"></ion-toggle>
-  </ion-card>
+  <ng-container *ngFor="let country of countries">
 
-  <ion-card class="notification">
-    <div class="wrapper">
-      <h2>Rijeka</h2>
-    </div>
-    <ion-toggle mode="ios" aria-label="Success toggle" color="success" [checked]="true"></ion-toggle>
-  </ion-card>
+    <ion-card class="title">
+      <ion-card-header>
+        <ion-card-title>{{ country.name }}</ion-card-title>
+      </ion-card-header>
+    </ion-card>
 
-  <ion-card class="notification">
-    <div class="wrapper">
-      <h2>Split</h2>
-    </div>
-    <ion-toggle mode="ios" aria-label="Success toggle" color="success" [checked]="true"></ion-toggle>
-  </ion-card>
+    <ion-item
+      *ngFor="let city of country.cities"
+      lines="none">
 
-  <ion-card class="notification">
-    <div class="wrapper">
-      <h2>Osijek</h2>
-    </div>
-    <ion-toggle mode="ios" aria-label="Success toggle" color="success" [checked]="true"></ion-toggle>
-  </ion-card>
+      <div class="wrapper">
+      <ion-label>{{ city.name }}</ion-label>
+      </div>
+
+      <ion-toggle
+        slot="end"
+        color="success"
+        [(ngModel)]="city.enabled">
+      </ion-toggle>
+
+    </ion-item>
+
+  </ng-container>
+
+  <div class="space"></div>
 
 </ion-content>
 
