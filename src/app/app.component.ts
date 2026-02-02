@@ -17,7 +17,7 @@ import { environment } from 'src/environments/environment';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { DataService } from './services/data.service';
 import { AuthService } from './services/auth.service';
-
+import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-root',
@@ -29,19 +29,22 @@ import { AuthService } from './services/auth.service';
 export class AppComponent {
 
   @ViewChild(IonRouterOutlet, { static: false }) routerOutlet: IonRouterOutlet | undefined;
+
   
   constructor(
     private router: Router,
     public platform: Platform,
     public translateConfigService: TranslateConfigService,
     public contrCtrl: ControllerService,
-    public dataCtrl: DataService,
+    public dataService: DataService,
     private translate: TranslateService, 
-    private authService: AuthService
+    private authService: AuthService,
+    private storage: Storage
   ) {
     const saved = localStorage.getItem('appLanguage') || 'hr';
     this.translate.setDefaultLang(saved);
     this.initApp();
+    this.initStorage();
   }
 
   ngOnInit() {}
@@ -61,12 +64,12 @@ export class AppComponent {
 
   try {
     const token = await FirebaseMessaging.getToken();
-    if (token?.token) await this.dataCtrl.savePushToken(token.token);
+    if (token?.token) await this.dataService.savePushToken(token.token);
   } catch {}
 
   // Initialize your data
-  await this.dataCtrl.initData();   
-  await this.dataCtrl.waitForAuthReady(); 
+  await this.dataService.initData();   
+  await this.dataService.waitForAuthReady(); 
   // Then mark page ready
   console.log('BEFORE ready page');
   this.contrCtrl.setReadyPage();
@@ -74,6 +77,8 @@ export class AppComponent {
   // Splash screen and status bar
   await SplashScreen.hide();
   await StatusBar.show();
+  await this.dataService.initStorage();
+  await this.authService.restoreLoginState();
   }
 
   async setReadyPage(){
@@ -93,6 +98,11 @@ export class AppComponent {
     // jer tek kad se pokrene ova funkcija dozvoljava se 
     // pokretanje prve stranice
     this.contrCtrl.setReadyPage();
+  }
+
+  async initStorage() {
+    await this.storage.create();
+    console.log('✅ Storage initialized');
   }
 
 }

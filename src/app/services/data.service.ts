@@ -45,7 +45,7 @@ export class DataService {
 }
 
 async initData() {
-    await this.storage.create(); // only called once now
+    //await this.storage.create();
     await this.loadFirebaseToken();
 
     this.authToken = await this.storage.get('auth_token');
@@ -132,7 +132,7 @@ async initData() {
 
   async initStorage() {
   console.log("Initializing storage...");
-  await this.storage.create();
+  //await this.storage.create();
   await this.loadFirebaseToken();
 
   this.authToken = await this.storage.get('auth_token');

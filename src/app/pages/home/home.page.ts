@@ -80,6 +80,9 @@ export class HomePage {
   this.initPush();
   this.contents = await this.dataCtrl.getRootContent();  
   console.log("Loaded homepage content:", this.contents);
+  this.authService.isLoggedIn$().subscribe(state => {
+     this.isLoggedIn = state;
+});
 }
 
 

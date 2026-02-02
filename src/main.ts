@@ -31,6 +31,7 @@ bootstrapApplication(AppComponent, {
     AndroidPermissions,
     importProvidersFrom(
       IonicModule.forRoot(),
+      IonicStorageModule.forRoot(),
       AppRoutingModule,
       HttpClientModule,
       IonicStorageModule.forRoot(),

@@ -3,6 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { Observable, tap, BehaviorSubject } from 'rxjs';
+import * as sha1 from 'sha1';
+import { Storage } from '@ionic/storage-angular';
 
 @Injectable({
   providedIn: 'root'
@@ -12,11 +14,16 @@ export class AuthService {
   //private tokenKey = 'userToken';
   private tokenKey = 'authData';
   private apiUrl = `${environment.rest_server.protokol}${environment.rest_server.host}${environment.rest_server.functions.token}`;
-  private loggedIn$ = new BehaviorSubject<boolean>(
+  /*private loggedIn$ = new BehaviorSubject<boolean>(
   !!localStorage.getItem('auth_token')
-);
+);*/
+private loggedIn$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private storage: Storage
+  ) {}
 
   login(username: string, password: string): Observable<any> {
   const url = `https://traffic-call.com/api/login.php`;
@@ -36,8 +43,8 @@ export class AuthService {
           refresh_token: response.refresh_token,
           expiry: Date.now() + response.expires_in * 1000
         };
-        localStorage.setItem(this.tokenKey, JSON.stringify(tokenData));
-        localStorage.setItem('auth_token', '1');
+        //localStorage.setItem(this.tokenKey, JSON.stringify(tokenData));
+        //localStorage.setItem('auth_token', '1');
         this.setLoggedIn(true);
 
         this.getUser().catch(err => console.error('Failed to fetch user:', err));
@@ -69,41 +76,40 @@ isLoggedIn$(): Observable<boolean> {
   return this.loggedIn$.asObservable();
 }
 
-restoreLoginState() {
-  const token = localStorage.getItem('auth_token');
+async restoreLoginState() {
+  const token = await this.storage.get('auth_token');
   this.loggedIn$.next(!!token);
 }
 
-changePassword(oldPassword: string, newPassword: string): Promise<any> {
-  const url = `${environment.rest_server.protokol}${environment.rest_server.host}${environment.rest_server.functions.api}user/change-password`;
+changePassword(newPassword: string): Promise<any> {
+  const url = 'https://traffic-call.com/api/changePassword.php';
+
+  const token = localStorage.getItem('auth_token'); // or from storage
+  if (!token) {
+    return Promise.reject('Nema tokena');
+  }
 
   const body = {
-    old_password: oldPassword,
-    new_password: newPassword
+    token: token,
+    password: sha1(newPassword)
   };
 
   return new Promise((resolve, reject) => {
-
-    //❗ When backend is ready, UNCOMMENT the HTTP request
-    /*
-    this.http.post<any>(url, body, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.post<any>(url, body).subscribe({
       next: (res) => {
-        if (res.status) {
+        console.log('Change password response:', res);
+
+        if (res.response === 'Success' || res.status === true) {
           resolve(res);
         } else {
-          reject(res.message || "Lozinka nije promijenjena.");
+          reject(res.message || 'Lozinka nije promijenjena');
         }
       },
       error: (err) => {
-        reject("Greška prilikom mijenjanja lozinke.");
+        console.error('Change password error:', err);
+        reject('Greška na serveru');
       }
     });
-    */
-
-    // Temporary mock behavior (so your UI works now)
-    console.log("Password change requested (MOCK):", body);
-    setTimeout(() => resolve({ status: true, message: "Mock password change OK" }), 1000);
-
   });
 }
 

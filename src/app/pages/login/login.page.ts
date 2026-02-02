@@ -187,7 +187,7 @@ login() {
 
       this.showToast('Prijava uspješna!', 'success');
 
-        localStorage.setItem('auth_token', '1');
+        //localStorage.setItem('auth_token', '1');
         this.authService.setLoggedIn(true);
 
         this.dataCtrl.setAuthData(
@@ -195,6 +195,7 @@ login() {
         this.loginEmail,
         lastlogin
         );
+        this.authService.setLoggedIn(true);
         this.router.navigate(['/home']);
       } else {
         this.showToast(res[0]?.message || 'Pogrešni podaci.', 'error');

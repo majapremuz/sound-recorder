@@ -4,6 +4,8 @@ import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { LanguageService, Language } from 'src/app/services/language.service';
+import { switchMap, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-izbor-jezika',
@@ -15,6 +17,7 @@ import { LanguageService, Language } from 'src/app/services/language.service';
 export class IzborJezikaPage implements OnInit {
   selectedLang = 'hr';
   languages: Language[] = [];
+  loading = true;
 
   constructor(
     private router: Router,
@@ -23,36 +26,56 @@ export class IzborJezikaPage implements OnInit {
   ) {}
 
   ngOnInit() {
-  this.translateService.setDefaultLang('hr');
-  this.initLanguagesAndTranslations();
-}
+    this.initLanguagesAndTranslations();
+  }
 
-private initLanguagesAndTranslations() {
-  // Fetch languages
-  this.languageService.getLanguages().subscribe(langs => {
-    console.log('Languages from API:', langs);
-    this.languages = langs;
-  });
+  private initLanguagesAndTranslations() {
+    this.languageService.getLanguages().pipe(
+      tap(langs => {
+        this.languages = langs;
 
-  // Fetch translations
-  this.languageService.getTranslations().subscribe(translations => {
-  console.log('Translations from API:', translations);
+        // Pick default language
+        this.selectedLang = langs.find(l => l.code === 'hr')?.code ?? langs[0]?.code ?? 'hr';
 
-  Object.keys(translations).forEach(lang => {
-    this.translateService.setTranslation(lang, translations[lang], true);
-  });
+        // Register languages in TranslateService
+        this.translateService.addLangs(langs.map(l => l.code));
+      }),
+      switchMap(langs => {
+        if (!langs.length) return of({});
+        return this.languageService.getTranslations(langs);
+      })
+    ).subscribe({
+      next: translations => {
+        console.log('Translations loaded from API:', translations);
 
-  this.translateService.reloadLang(this.selectedLang);
-  this.translateService.use(this.selectedLang);
-});
-}
+        // Register translations in ngx-translate
+        Object.entries(translations).forEach(([lang, values]) => {
+          if (values && Object.keys(values).length > 0) {
+            this.translateService.setTranslation(lang, values as Record<string, string>, true);
+          } else {
+            console.warn(`No translations available for ${lang}`);
+          }
+        });
 
-  navigateTo(page: string) {
-    this.router.navigate([`/${page}`]);
+        // Set default and active language
+        this.translateService.setDefaultLang(this.selectedLang);
+        this.translateService.use(this.selectedLang);
+
+        this.loading = false;
+      },
+      error: err => {
+        console.error('Error loading languages/translations:', err);
+        this.loading = false;
+      }
+    });
   }
 
   changeLanguage(lang: string) {
     this.selectedLang = lang;
     this.translateService.use(lang);
+  }
+
+  navigateTo(page: string) {
+    this.router.navigate([`/${page}`]);
   }
 }
