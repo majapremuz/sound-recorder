@@ -17,6 +17,7 @@ import { DataService } from 'src/app/services/data.service';
 })
 export class ProfilPage implements OnInit {
   notificationsEnabled = true;
+  locationModeAll = true;
   selectedLang = 'hr';
   email: string = '';
 
@@ -33,14 +34,15 @@ export class ProfilPage implements OnInit {
   ) { }
 
   ngOnInit() {
-  const savedLang = localStorage.getItem('appLanguage');
-  this.selectedLang = savedLang ? savedLang : 'hr';
-
   const saved = localStorage.getItem('notificationsEnabled');
   this.notificationsEnabled = saved !== null ? JSON.parse(saved) : true;
 
-   this.email = this.dataCtrl.getEmail() || 'Nepoznato';
-   console.log("User email loaded:", this.email);
+  const savedLocationMode = localStorage.getItem('locationMode');
+  this.locationModeAll = savedLocationMode
+    ? savedLocationMode === 'all'
+    : true;
+
+  this.email = this.dataCtrl.getEmail() || 'Nepoznato';
 }
 
 
@@ -50,42 +52,32 @@ export class ProfilPage implements OnInit {
 
   async toggleNotifications(event: any) {
   this.notificationsEnabled = event.detail.checked;
+  localStorage.setItem(
+    'notificationsEnabled',
+    JSON.stringify(this.notificationsEnabled)
+  );
 
-  // Save state to storage
-  localStorage.setItem('notificationsEnabled', JSON.stringify(this.notificationsEnabled));
-
-  // Get stored token
   const token = await this.dataCtrl.getAuthToken();
-
-  if (!token) {
-    console.warn('No push token found');
-    return;
-  }
+  if (!token) return;
 
   const formData = new FormData();
   formData.append('token', token);
   formData.append('active', this.notificationsEnabled ? '1' : '0');
 
   this.http.post('https://traffic-call.com/api/pushchange.php', formData)
-    .subscribe({
-      next: (response) => {
-        console.log('API response:', response);
-      },
-      error: (err) => {
-        console.error('API error:', err);
-      }
-    });
+    .subscribe();
 }
+
 
 onLocationModeChange(event: any) {
-  this.notificationsEnabled = event.detail.checked;
+  this.locationModeAll = event.detail.checked;
 
-  // save preference
   localStorage.setItem(
     'locationMode',
-    this.notificationsEnabled ? 'all' : 'selected'
+    this.locationModeAll ? 'all' : 'selected'
   );
 }
+
 
   openLocations() {
     this.navigateTo('popis-lokacija');

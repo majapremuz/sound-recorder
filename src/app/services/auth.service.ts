@@ -59,13 +59,12 @@ private loggedIn$ = new BehaviorSubject<boolean>(false);
 }
 
   logout(): void {
+  localStorage.removeItem('auth_token');
   localStorage.removeItem(this.tokenKey);
   localStorage.removeItem('currentUser');
-  localStorage.removeItem('auth_token');
 
   this.setLoggedIn(false);
 }
-
 
   setLoggedIn(value: boolean) {
   this.loggedIn$.next(value);
@@ -114,19 +113,17 @@ changePassword(newPassword: string): Promise<any> {
 }
 
 deleteAccount(): Observable<any> {
-  const url = '/user/delete';
+  const url = 'https://traffic-call.com/api/deleteAccount.php';
 
-  // If backend requires token
-  const headers = new HttpHeaders({
-    Authorization: `Bearer ${this.getToken()}`
-  });
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('No auth token found');
+  }
 
-  return this.http.delete(url, { headers }).pipe(
-    tap(() => {
-      // optional: clear stored token
-      localStorage.removeItem('userToken');
-    })
-  );
+  const formData = new FormData();
+  formData.append('token', token);
+
+  return this.http.post<any>(url, formData);
 }
 
 
