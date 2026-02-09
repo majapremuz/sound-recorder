@@ -8,6 +8,8 @@ export class LocationService {
 
   private countriesUrl = 'https://traffic-call.com/api/countries.php';
   private citiesUrl = 'https://traffic-call.com/api/cities.php';
+  private addUserLocationUrl = 'https://traffic-call.com/api/addUserLocation.php';
+  private removeUserLocationUrl = 'https://traffic-call.com/api/removeUserLocation.php';
 
   constructor(
     private http: HttpClient,
@@ -36,4 +38,37 @@ export class LocationService {
       })
     );
   }
+
+  addUserLocation(location: string): Observable<any> {
+  return from(this.dataService.getAuthToken()).pipe(
+    switchMap(token => {
+      if (!token) throw new Error('Auth token missing');
+
+      const payload = {
+        token,
+        location
+      };
+
+      console.log('Sending user location:', payload);
+      return this.http.post(this.addUserLocationUrl, payload);
+    })
+  );
+}
+
+removeUserLocation(location: string): Observable<any> {
+  return from(this.dataService.getAuthToken()).pipe(
+    switchMap(token => {
+      if (!token) throw new Error('Auth token missing');
+
+      const payload = {
+        token,
+        location
+      };
+
+      console.log('Removing user location:', payload);
+      return this.http.post(this.removeUserLocationUrl, payload);
+    })
+  );
+}
+
 }

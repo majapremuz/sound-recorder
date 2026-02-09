@@ -20,6 +20,8 @@ export class ProfilPage implements OnInit {
   locationModeAll = true;
   selectedLang = 'hr';
   email: string = '';
+  selectedCityCount = 0;
+
 
   languages = [
   { code: 'hr', name: 'Hrvatski', flag: 'assets/croatia.png' },
@@ -42,9 +44,11 @@ export class ProfilPage implements OnInit {
     ? savedLocationMode === 'all'
     : true;
 
+  const cities = JSON.parse(localStorage.getItem('selectedCities') || '[]');
+  this.selectedCityCount = cities.length;
+
   this.email = this.dataCtrl.getEmail() || 'Nepoznato';
 }
-
 
   get currentLang() {
   return this.languages.find(l => l.code === this.selectedLang) || this.languages[0];

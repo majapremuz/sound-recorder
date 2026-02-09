@@ -13,6 +13,7 @@ import { environment } from 'src/environments/environment';
 import { AuthService } from 'src/app/services/auth.service';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { DataService } from 'src/app/services/data.service';
+import { LocationService } from 'src/app/services/location.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -71,7 +72,8 @@ export class HomePage {
     private toastController: ToastController,
     private router: Router,
     private ngZone: NgZone,
-    private authService: AuthService
+    private authService: AuthService,
+    private locationService: LocationService
   ) {
     this.initTranslate();
   }
@@ -266,6 +268,17 @@ async sendRecording() {
 
     const address = await this.reverseGeocode(coords.latitude, coords.longitude);
     console.log('Reverse geocode result:', address);
+
+    const selectedCity = localStorage.getItem('selectedCity');
+    if (!selectedCity) {
+    console.warn('No city selected');
+    } else {
+    await this.locationService
+    .addUserLocation(selectedCity)
+    .toPromise();
+
+    console.log('User location sent:', selectedCity);
+    }
 
     // Get the current device token
     const deviceToken = localStorage.getItem('pushToken');

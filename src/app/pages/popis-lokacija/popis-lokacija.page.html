@@ -1,30 +1,37 @@
 <ion-content>
 
-  <ng-container *ngFor="let country of countries">
+  <ion-accordion-group>
 
-    <ion-card class="title">
-      <ion-card-header>
-        <ion-card-title>{{ country.name }}</ion-card-title>
-      </ion-card-header>
-    </ion-card>
+    <ion-accordion *ngFor="let country of countries" value="{{ country.name }}">
 
-    <ion-item
-      *ngFor="let city of country.cities"
-      lines="none">
+      <!-- Country header -->
+      <ion-item slot="header" color="light">
+        <ion-label>
+          <strong>{{ country.name }}</strong>
+        </ion-label>
+      </ion-item>
 
-      <div class="wrapper">
-      <ion-label>{{ city.name }}</ion-label>
+      <!-- Cities -->
+      <div slot="content">
+        <ion-item
+          *ngFor="let city of country.cities"
+          lines="none"
+        >
+          <ion-label>{{ city.name }}</ion-label>
+
+          <ion-toggle
+          slot="end"
+          color="success"
+          [(ngModel)]="city.enabled"
+          [disabled]="!!city.loading"
+          (ionChange)="onCityToggle(city)"
+        ></ion-toggle>
+        </ion-item>
       </div>
 
-      <ion-toggle
-        slot="end"
-        color="success"
-        [(ngModel)]="city.enabled">
-      </ion-toggle>
+    </ion-accordion>
 
-    </ion-item>
-
-  </ng-container>
+  </ion-accordion-group>
 
   <div class="space"></div>
 
