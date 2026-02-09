@@ -13,8 +13,7 @@ import { environment } from 'src/environments/environment';
 import { AuthService } from 'src/app/services/auth.service';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { DataService } from 'src/app/services/data.service';
-
-
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -41,6 +40,9 @@ export class HomePage {
   duration = 0;
   progress = 0;
   volumeLevel = 0;
+
+  private authSub?: Subscription;
+
 
   @ViewChild('audioCanvas', { static: false }) audioCanvas!: ElementRef<HTMLCanvasElement>;
 
@@ -78,20 +80,18 @@ export class HomePage {
   async ionViewWillEnter() {
   this.contrCtrl.setHomePage(true);
   this.initPush();
-  this.contents = await this.dataCtrl.getRootContent();  
-  console.log("Loaded homepage content:", this.contents);
-  this.authService.isLoggedIn$().subscribe(state => {
-     this.isLoggedIn = state;
-});
+  //this.contents = await this.dataCtrl.getRootContent();
+
+  this.authSub = this.authService.isLoggedIn$()
+    .subscribe(state => {
+      this.isLoggedIn = state;
+    });
 }
 
-
-  ionViewWillLeave(){
-    this.contrCtrl.setHomePage(false);
-    this.authService.isLoggedIn$().subscribe(state => {
-     this.isLoggedIn = state;
-});
-  }
+ionViewWillLeave() {
+  this.contrCtrl.setHomePage(false);
+  this.authSub?.unsubscribe();
+}
 
   ngOnInit() {}
 

@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule} from '@angular/common';  
-import { IonicModule, AlertController } from '@ionic/angular';  
+import { IonicModule, AlertController} from '@ionic/angular';  
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/services/auth.service';
+import { DataService } from 'src/app/services/data.service';
 
 
 @Component({
@@ -20,6 +21,7 @@ export class BrisanjeRacunaPage implements OnInit {
     private router: Router,
     private translateService: TranslateService,
     private authService: AuthService,
+    private dataService: DataService,
     private alertCtrl: AlertController
   ) { }
 
@@ -54,20 +56,31 @@ export class BrisanjeRacunaPage implements OnInit {
 }
 
 
-  confirmDelete() {
-    this.authService.deleteAccount().subscribe({
-      next: () => {
-        // You can also clear token here if needed
-        this.authService.logout();
+  async confirmDelete() {
+  try {
+    const regToken = await this.dataService.getStorageItem('register_token'); // USE REGISTER TOKEN
+    if (!regToken) {
+      console.error('No registration token available to delete account.');
+      return;
+    }
 
-        // Redirect to login or home
-        this.router.navigate(['/login']);
+    this.authService.deleteAccount(regToken).subscribe({
+      next: async (res) => {
+        if (res?.response === 'Success') {
+          await this.authService.fullLogout();
+          this.router.navigate(['/login'], { replaceUrl: true });
+        } else {
+          console.error('Server refused delete:', res);
+        }
       },
       error: (err) => {
         console.error('Delete failed:', err);
       }
     });
+  } catch (err) {
+    console.error('Error during delete:', err);
   }
+}
 
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);

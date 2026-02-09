@@ -5,7 +5,6 @@ import { BehaviorSubject, firstValueFrom, lastValueFrom, take } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { TokenService } from './token.service';
 
 export interface ApiResult {
   data: any;
@@ -62,7 +61,6 @@ export class ControllerService {
     private loadingCtrl: LoadingController,
     private toastController: ToastController,
     private translateCtrl: TranslateService,
-    private tokenService: TokenService
 
   ) { }
 
@@ -112,7 +110,7 @@ export class ControllerService {
    * @returns data from server ApiResult object
    */
   
-  async postServer(url: string, data: any): Promise<ApiResult> {
+  /*async postServer(url: string, data: any): Promise<ApiResult> {
   if (this.tokenService.authToken) {
     data.token = this.tokenService.authToken;
   }
@@ -122,7 +120,7 @@ export class ControllerService {
   );
 
   return res;
-}
+}*/
 
     /**
    * 
@@ -130,7 +128,7 @@ export class ControllerService {
    * @param data to send to server
    * @returns data from server ApiResult object
    */
-  async putServer(url: string, data: any): Promise<ApiResult> {
+  /*async putServer(url: string, data: any): Promise<ApiResult> {
     let access_token = await this.getStorage(TOKEN_KEY);
     let refresh_token = await this.getStorage(TOKEN_KEY_REFRESH);
     let company_id = environment.company_id;
@@ -183,14 +181,14 @@ export class ControllerService {
     });
 
     return promise;
-  }
+  }*/
 
   /**
    * 
    * @param url api link
    * @returns data from server ApiResult object
    */
-  async deleteServer(url: string): Promise<ApiResult> {
+  /*async deleteServer(url: string): Promise<ApiResult> {
     let access_token = await this.getStorage(TOKEN_KEY);
     let refresh_token = await this.getStorage(TOKEN_KEY_REFRESH);
     let company_id = environment.company_id;
@@ -243,7 +241,7 @@ export class ControllerService {
     });
 
     return promise;
-  }
+  }*/
 
   /**
    * 
@@ -253,7 +251,7 @@ export class ControllerService {
    * @returns the data from server ApiResult object
    */
   
-async getServer(url: string, cache: boolean = false, cache_time: number = 5): Promise<ApiResult> {
+/*async getServer(url: string, cache: boolean = false, cache_time: number = 5): Promise<ApiResult> {
   const fullUrl = serverURL + url;
   const data: any = {};
   if (this.tokenService.authToken) {
@@ -374,7 +372,7 @@ async getServer(url: string, cache: boolean = false, cache_time: number = 5): Pr
         });
     });
     return promise;
-  }
+  }*/
 
   translateWord(key: string): Promise<string>{
     let promise = new Promise<string>((resolve, reject) => {

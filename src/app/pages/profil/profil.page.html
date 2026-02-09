@@ -7,7 +7,7 @@
   <ion-card class="notification">
     <div class="wrapper">
       <h2>{{ 'NOTIFICATIONS' | translate }}</h2>
-      <p>{{ notificationsEnabled ? 'uključeno' : 'isključeno' }}</p>
+      <p>{{ notificationsEnabled ? ('ON' | translate) : ('OFF' | translate) }}</p>
     </div>
     <ion-toggle
     mode="ios"

@@ -104,23 +104,3 @@ onLocationModeChange(event: any) {
   }
 
 }
-
-
-/*
-[
-    {
-        "response": "Success"
-    },
-    {
-        "response": "Success",
-        "title": "hrvatski",
-        "shortcut": "hr"
-    },
-    {
-        "response": "Success",
-        "title": "english",
-        "shortcut": "en"
-    }
-]
-
-*/

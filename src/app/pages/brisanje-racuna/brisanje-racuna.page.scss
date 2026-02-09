@@ -67,7 +67,7 @@ p {
   margin: 5rem auto;
   height: 18vmin;
   font-weight: 900;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   opacity: 1;
   text-transform: none;
   
@@ -110,6 +110,7 @@ ion-footer {
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  padding: 0.5rem;
 }
 
 .footer-button {
@@ -133,4 +134,5 @@ ion-footer {
   font-size: 0.7rem;
   text-transform: none;
   margin: 0.5rem;
+  line-height: 0.9rem;
 }

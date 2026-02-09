@@ -7,17 +7,16 @@ import { ControllerService } from './services/controller.service';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Router } from '@angular/router';
-import { App } from '@capacitor/app';
-import { HttpClient } from '@angular/common/http';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslateService } from '@ngx-translate/core';
-import { LanguageService } from './services/language.service';
 import { initializeApp } from "firebase/app";
 import { environment } from 'src/environments/environment';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { DataService } from './services/data.service';
 import { AuthService } from './services/auth.service';
 import { Storage } from '@ionic/storage-angular';
+import { Device } from '@capacitor/device';
+
 
 @Component({
   selector: 'app-root',
@@ -40,45 +39,37 @@ export class AppComponent {
     private translate: TranslateService, 
     private authService: AuthService,
     private storage: Storage
-  ) {
-    const saved = localStorage.getItem('appLanguage') || 'hr';
-    this.translate.setDefaultLang(saved);
-    this.initApp();
-    this.initStorage();
-  }
+  ) {}
 
-  ngOnInit() {}
-    async initApp() {
+  async ngOnInit() { await this.bootstrap();}
+
+  private async bootstrap() {
     await this.platform.ready();
-    this.authService.restoreLoginState();
 
-  // Firebase safely
-  try {
-    initializeApp(environment.firebase);
-  } catch {}
+    // 1️⃣ Storage FIRST
+    await this.storage.create();
 
-  try {
-    const perm = await FirebaseMessaging.requestPermissions();
-    console.log("Push permission:", perm);
-  } catch {}
+    // 2️⃣ Language
+    await this.initLanguage();
 
-  try {
-    const token = await FirebaseMessaging.getToken();
-    if (token?.token) await this.dataService.savePushToken(token.token);
-  } catch {}
+    // 3️⃣ Restore auth ONCE
+    await this.authService.restoreLoginState();
 
-  // Initialize your data
-  await this.dataService.initData();   
-  await this.dataService.waitForAuthReady(); 
-  // Then mark page ready
-  console.log('BEFORE ready page');
-  this.contrCtrl.setReadyPage();
-  console.log('AFTER ready page');
-  // Splash screen and status bar
-  await SplashScreen.hide();
-  await StatusBar.show();
-  await this.dataService.initStorage();
-  await this.authService.restoreLoginState();
+    // 4️⃣ Load DataService (token/email/etc)
+    await this.dataService.initData();
+    await this.dataService.waitForAuthReady();
+
+    // 5️⃣ Firebase
+    await this.initFirebase();
+
+    // 6️⃣ Allow routing
+    this.contrCtrl.setReadyPage();
+
+    // 7️⃣ UI cleanup
+    await SplashScreen.hide();
+    await StatusBar.show();
+
+    console.log('✅ App fully bootstrapped');
   }
 
   async setReadyPage(){
@@ -104,5 +95,54 @@ export class AppComponent {
     await this.storage.create();
     console.log('✅ Storage initialized');
   }
+
+  private async initLanguage() {
+  // 1️⃣ previously selected language
+  const savedLang = localStorage.getItem('appLanguage');
+  if (savedLang) {
+    this.translate.setDefaultLang(savedLang);
+    this.translate.use(savedLang);
+    return;
+  }
+
+  // 2️⃣ device language
+  let deviceLang = 'hr';
+
+  try {
+    const info = await Device.getLanguageCode();
+    deviceLang = info.value?.toLowerCase() ?? 'en';
+  } catch {
+    const browserLang = this.translate.getBrowserLang();
+    if (browserLang) deviceLang = browserLang;
+  }
+
+  // 3️⃣ normalize
+  const finalLang = deviceLang.startsWith('hr') ? 'hr' : 'en';
+
+  this.translate.setDefaultLang(finalLang);
+  this.translate.use(finalLang);
+
+  localStorage.setItem('appLanguage', finalLang);
+
+  console.log('🌍 App language initialized:', finalLang);
+}
+
+private async initFirebase() {
+  try {
+    initializeApp(environment.firebase);
+  } catch {}
+
+  try {
+    const perm = await FirebaseMessaging.requestPermissions();
+    console.log('Push permission:', perm);
+  } catch {}
+
+  try {
+    const token = await FirebaseMessaging.getToken();
+    if (token?.token) {
+      await this.dataService.savePushToken(token.token);
+    }
+  } catch {}
+}
 
 }

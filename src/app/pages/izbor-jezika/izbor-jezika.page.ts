@@ -6,6 +6,7 @@ import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { LanguageService, Language } from 'src/app/services/language.service';
 import { switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { Device } from '@capacitor/device';
 
 @Component({
   selector: 'app-izbor-jezika',
@@ -26,8 +27,13 @@ export class IzborJezikaPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.initLanguagesAndTranslations();
-  }
+  this.selectedLang = this.translateService.currentLang 
+    || this.translateService.defaultLang 
+    || 'hr';
+
+  this.initLanguagesAndTranslations();
+}
+
 
   private initLanguagesAndTranslations() {
     this.languageService.getLanguages().pipe(
@@ -35,7 +41,15 @@ export class IzborJezikaPage implements OnInit {
         this.languages = langs;
 
         // Pick default language
-        this.selectedLang = langs.find(l => l.code === 'hr')?.code ?? langs[0]?.code ?? 'hr';
+        const activeLang =
+        this.translateService.currentLang ||
+        this.translateService.defaultLang ||
+        'hr';
+
+        this.selectedLang =
+        langs.find(l => l.code === activeLang)?.code
+        ?? langs[0]?.code
+        ?? 'hr';
 
         // Register languages in TranslateService
         this.translateService.addLangs(langs.map(l => l.code));

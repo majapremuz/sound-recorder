@@ -26,32 +26,9 @@ export class OdjavaPage {
   ) {}
 
   async logout() {
-    try {
-      // Clear Ionic Storage
-      await this.storage.remove('auth_token');
-      await this.storage.remove('username');
-      await this.storage.remove('email');
-      await this.storage.remove('lastlogin');
-
-      // Clear localStorage leftovers
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('email');
-      localStorage.removeItem('userToken');
-      localStorage.removeItem('userData');
-
-      // Reset services
-      this.authService.setLoggedIn(false);
-      this.dataCtrl.clearAuthData?.();
-
-      console.log('LOGOUT SUCCESS');
-
-      App.exitApp();
-
-    } catch (err) {
-      console.error('LOGOUT ERROR:', err);
-      App.exitApp();
-    }
-  }
+  await this.authService.fullLogout();
+  App.exitApp();
+}
 
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);

@@ -76,21 +76,21 @@
 
   <ion-footer>
 
-        <ion-button class="footer-button home-button" (click)="navigateTo('home')">
+        <ion-button class="footer-button home-button" (click)="navigateTo('home')" [disabled]="!isLoggedIn">
           <div class="footer-btn-container">
             <img src="assets/home.png" alt="home icon" class="footer-icon">
             <p>{{ 'HOME' | translate }}</p>
           </div> 
         </ion-button>
 
-        <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
+        <ion-button class="footer-button list-button" (click)="navigateTo('popis')" [disabled]="!isLoggedIn">
           <div class="footer-btn-container">
             <img src="assets/list.png" alt="list icon" class="footer-icon">
             <p>{{ 'LIST' | translate }}</p>
           </div>
         </ion-button>
 
-        <ion-button class="footer-button" (click)="navigateTo('profil')">
+        <ion-button class="footer-button" (click)="navigateTo('profil')" [disabled]="!isLoggedIn">
           <div class="footer-btn-container">
             <img src="assets/profil.png" alt="profil icon" class="footer-icon">
             <p>{{ 'PROFILE' | translate }}</p>

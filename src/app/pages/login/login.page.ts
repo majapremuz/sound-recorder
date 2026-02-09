@@ -134,6 +134,7 @@ try {
 
       this.showToast('Registracija uspješna! Možete se prijaviti.', 'success');
       this.isLogin = true;
+      console.log('SET AUTH CALLED FROM:', new Error().stack);
     } else {
         this.showToast(res[0]?.message || 'Registracija nije uspjela.');
       }
@@ -184,19 +185,10 @@ login() {
       storedEmail,
       lastlogin
       );
-
       this.showToast('Prijava uspješna!', 'success');
-
-        //localStorage.setItem('auth_token', '1');
-        this.authService.setLoggedIn(true);
-
-        this.dataCtrl.setAuthData(
-        this.loginUsername,
-        this.loginEmail,
-        lastlogin
-        );
-        this.authService.setLoggedIn(true);
-        this.router.navigate(['/home']);
+      this.authService.setLoggedIn(true);
+      this.router.navigate(['/home']);
+      console.log('SET AUTH CALLED FROM:', new Error().stack);
       } else {
         this.showToast(res[0]?.message || 'Pogrešni podaci.', 'error');
       }
@@ -229,5 +221,3 @@ togglePasswordVisibility() {
   }
 
 }
-
-

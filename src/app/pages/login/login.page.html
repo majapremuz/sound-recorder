@@ -53,7 +53,7 @@
 
 <!-- REGISTER FIELDS -->
 <div *ngIf="!isLogin">
-  <ion-label [class.active-label]="registerUsername">Korisničko ime</ion-label>
+  <ion-label [class.active-label]="registerUsername">{{ 'USERNAME' | translate }}</ion-label>
   <ion-item [class.invalid]="registerUsernameModel.invalid && (registerUsernameModel.dirty || registerUsernameModel.touched)"
             [class.valid]="registerUsernameModel.valid">
     <ion-input type="text" name="registerUsername" [(ngModel)]="registerUsername"
