@@ -129,7 +129,8 @@ try {
       this.dataCtrl.setAuthData(
         this.registerUsername,
         this.registerEmail,
-        lastlogin
+        lastlogin,
+        true
       );
 
       this.showToast('Registracija uspješna! Možete se prijaviti.', 'success');

@@ -67,7 +67,7 @@ export class PopisLokacijaPage implements OnInit {
           .map((item, index) => ({
             id: index + 1,
             name: item.title,
-            enabled: this.isCitySelected(item.title)
+            enabled: this.isAllMode() || this.isCitySelected(item.title)
           }));
       },
       error: err =>
@@ -92,8 +92,9 @@ export class PopisLokacijaPage implements OnInit {
           this.removeSelectedCity(city.name);
         }
 
-        // automatically switch to "selected" mode
+        if (this.isAllMode()) {
         localStorage.setItem('locationMode', 'selected');
+      }
       },
       error: () => {
         city.enabled = !city.enabled;
@@ -101,6 +102,11 @@ export class PopisLokacijaPage implements OnInit {
       }
     });
   }
+
+  isAllMode(): boolean {
+  return localStorage.getItem('locationMode') === 'all';
+}
+
 
   /* -----------------------
      Local storage helpers

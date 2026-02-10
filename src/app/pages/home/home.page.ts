@@ -147,6 +147,15 @@ const updateVolume = () => {
   const rms = Math.sqrt(sum / dataArray.length); // volume value 0–~50
   this.volumeLevel = Math.min(rms * 3, 100); // normalize to 0–100
 
+  // Update CSS variables for wave scale and speed
+  const container = this.waveCanvas?.nativeElement || document.querySelector('.img-container');
+  if (container) {
+    const scale = 1 + this.volumeLevel / 50; // bigger wave if louder
+    const speed = 1 - Math.min(this.volumeLevel / 200, 0.7); // faster if louder
+    container.style.setProperty('--wave-scale', scale.toString());
+    container.style.setProperty('--wave-speed', speed + 's');
+  }
+
   requestAnimationFrame(updateVolume);
 };
 
@@ -425,15 +434,12 @@ async initPush() {
     return;
   }
 
-  const seconds = Math.floor(remainingMs / 1000);
-  const ms = Math.floor((remainingMs % 1000) / 100);
-
-  this.timeStamp = `00:${seconds < 10 ? '0' + seconds : seconds}.${ms}`;
+  const seconds = Math.ceil(remainingMs / 1000);
+  this.timeStamp = `00:${seconds < 10 ? '0' + seconds : seconds}`;
 
   const progress = elapsedMs / 15000;
   this.circleOffset = this.circleLength * progress;
 }
-
 
   togglePlay() {
   if (this.isPlaying) {

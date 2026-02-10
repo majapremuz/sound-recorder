@@ -23,7 +23,7 @@
           slot="end"
           color="success"
           [(ngModel)]="city.enabled"
-          [disabled]="!!city.loading"
+          [disabled]="isAllMode()"
           (ionChange)="onCityToggle(city)"
         ></ion-toggle>
         </ion-item>

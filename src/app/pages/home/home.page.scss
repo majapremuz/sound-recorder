@@ -13,40 +13,42 @@ ion-content {
   background: radial-gradient(circle at 50% 50%, rgba(253, 253, 253, 1) 50%, rgba(230, 230, 230, 1) 100%);
 }
 
-.recording {
-  animation: none; /* disable your old animation */
-  background: radial-gradient(
-    circle,
-    rgba(0, 180, 220, calc(0.1 + var(--intensity) / 150)) 0%,
-    rgba(0, 150, 200, 1) 100%
-  );
-
-  box-shadow: 
-    0 0 calc(5px + var(--intensity) * 0.5) rgba(0, 180, 220, 0.5),
-    0 0 calc(20px + var(--intensity)) rgba(0, 180, 220, 0.3),
-    0 0 calc(40px + var(--intensity) * 1.5) rgba(0, 180, 220, 0.2);
-  transition: box-shadow 0.05s linear, background 0.1s linear;
+/* The dynamic wave */
+.recording::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 200, 255, 0.4);
+  transform: scale(1);
+  opacity: 0.5;
+  animation: wave var(--wave-speed, 1s) infinite ease-out;
+  z-index: 1;
 }
 
+/* Optional: add a second wave for continuous effect */
 .recording::after {
   content: "";
   position: absolute;
-  inset: 0;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  border: solid 2px rgba(0, 200, 255, 0.4);
-  transform: scale(calc(1 + var(--intensity) / 80));
-  opacity: calc(0.4 + var(--intensity) / 200);
-  transition: transform 0.1s linear, opacity 0.1s linear;
+  border: 2px solid rgba(0, 200, 255, 0.3);
+  transform: scale(1);
+  opacity: 0.5;
+  animation: wave calc(var(--wave-speed, 1s) + 0.3s) infinite ease-out;
+  z-index: 1;
 }
 
-
-
-@keyframes pulseGradient {
-  0%, 100% {
-    background-size: 115% 115%;
+@keyframes wave {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
   }
-  50% {
-    background-size: 100% 100%;
+  100% {
+    transform: scale(var(--wave-scale, 2.5));
+    opacity: 0;
   }
 }
 
@@ -105,7 +107,8 @@ ion-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: visible;
+  transition: background 0.1s linear;
 }
 
 .mic-img {

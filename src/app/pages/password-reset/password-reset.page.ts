@@ -28,8 +28,8 @@ export class PasswordResetPage {
   async sendResetLink() {
     if (!this.emailValue) return;
 
-    this.http.post('https://your-server/api/forgot-password', {
-      email: this.emailValue
+    this.http.post('https://traffic-call.com/api/mailPassword.php', {
+      mail: this.emailValue
     }).subscribe({
       next: async () => {
         const t = await this.toastCtrl.create({

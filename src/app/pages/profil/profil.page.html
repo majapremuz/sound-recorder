@@ -19,7 +19,7 @@
   <div class="border"></div>
 
 
-    <ion-card class="location" (click)="openLocations()">
+    <ion-card class="location">
     <div class="wrapper">
       <h2>{{ 'LOCATIONS' | translate }}</h2>
 
@@ -28,19 +28,21 @@
       </p>
 
       <p *ngIf="!locationModeAll">
-        {{ selectedCityCount }} {{ 'SELECTED' | translate }}
+      {{ selectedCitiesPreview }}
       </p>
-    </div>
-  </ion-card>
 
-  <ion-toggle
+    </div>
+
+    <ion-toggle
   mode="ios"
   color="success"
   [checked]="locationModeAll"
   (ionChange)="onLocationModeChange($event)">
 </ion-toggle>
 
-  <ion-card class="card lokacije" (click)="openLocations()" *ngIf="!locationModeAll">
+  </ion-card>
+
+  <ion-card class="card lokacije" (click)="openLocations()">
     {{ 'LOCATIONS_LIST' | translate }}
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 400" preserveAspectRatio="xMidYMid meet">
      <defs>

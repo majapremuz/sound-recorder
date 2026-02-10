@@ -21,6 +21,8 @@ export class ProfilPage implements OnInit {
   selectedLang = 'hr';
   email: string = '';
   selectedCityCount = 0;
+  selectedCities: string[] = [];
+  selectedCitiesPreview = '';
 
 
   languages = [
@@ -45,9 +47,22 @@ export class ProfilPage implements OnInit {
     : true;
 
   const cities = JSON.parse(localStorage.getItem('selectedCities') || '[]');
+  this.selectedCities = cities;
   this.selectedCityCount = cities.length;
 
+  this.buildPreview();
+
+
   this.email = this.dataCtrl.getEmail() || 'Nepoznato';
+}
+
+buildPreview() {
+  if (this.selectedCities.length <= 2) {
+    this.selectedCitiesPreview = this.selectedCities.join(', ');
+  } else {
+    const firstTwo = this.selectedCities.slice(0, 2).join(', ');
+    this.selectedCitiesPreview = `${firstTwo} + ${this.selectedCities.length - 2}`;
+  }
 }
 
   get currentLang() {
@@ -61,8 +76,10 @@ export class ProfilPage implements OnInit {
     JSON.stringify(this.notificationsEnabled)
   );
 
-  const token = await this.dataCtrl.getAuthToken();
+  const token = await this.dataCtrl.loadFirebaseToken();
   if (!token) return;
+
+  console.log('notificationsToken:', token);
 
   const formData = new FormData();
   formData.append('token', token);
@@ -76,11 +93,20 @@ export class ProfilPage implements OnInit {
 onLocationModeChange(event: any) {
   this.locationModeAll = event.detail.checked;
 
-  localStorage.setItem(
-    'locationMode',
-    this.locationModeAll ? 'all' : 'selected'
-  );
+  if (this.locationModeAll) {
+    // ALL mode
+    localStorage.setItem('locationMode', 'all');
+    localStorage.removeItem('selectedCities');
+
+    this.selectedCities = [];
+    this.selectedCityCount = 0;
+    this.selectedCitiesPreview = '';
+  } else {
+    // SELECTED mode
+    localStorage.setItem('locationMode', 'selected');
+  }
 }
+
 
 
   openLocations() {
