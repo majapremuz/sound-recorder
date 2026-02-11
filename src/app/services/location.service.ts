@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DataService } from './data.service';
-import { Observable, from, switchMap } from 'rxjs';
+import { Observable, from, switchMap, BehaviorSubject, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class LocationService {
@@ -10,6 +10,9 @@ export class LocationService {
   private citiesUrl = 'https://traffic-call.com/api/cities.php';
   private addUserLocationUrl = 'https://traffic-call.com/api/addUserLocation.php';
   private removeUserLocationUrl = 'https://traffic-call.com/api/removeUserLocation.php';
+
+  private selectedCitiesSubject = new BehaviorSubject<string[]>([]);
+  selectedCities$ = this.selectedCitiesSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -39,36 +42,32 @@ export class LocationService {
     );
   }
 
-  addUserLocation(location: string): Observable<any> {
+  updateSelectedCities(cities: string[]) {
+  this.selectedCitiesSubject.next(cities);
+  localStorage.setItem('selectedCities', JSON.stringify(cities));
+}
+
+  addUserLocation(location: string) {
   return from(this.dataService.getAuthToken()).pipe(
-    switchMap(token => {
-      if (!token) throw new Error('Auth token missing');
-
-      const payload = {
-        token,
-        location
-      };
-
-      console.log('Sending user location:', payload);
-      return this.http.post(this.addUserLocationUrl, payload);
+    switchMap(token => this.http.post(this.addUserLocationUrl, { token, location })),
+    tap(() => {
+      const current = this.selectedCitiesSubject.value;
+      if (!current.includes(location)) {
+        this.updateSelectedCities([...current, location]);
+      }
     })
   );
 }
 
-removeUserLocation(location: string): Observable<any> {
+removeUserLocation(location: string) {
   return from(this.dataService.getAuthToken()).pipe(
-    switchMap(token => {
-      if (!token) throw new Error('Auth token missing');
-
-      const payload = {
-        token,
-        location
-      };
-
-      console.log('Removing user location:', payload);
-      return this.http.post(this.removeUserLocationUrl, payload);
+    switchMap(token => this.http.post(this.removeUserLocationUrl, { token, location })),
+    tap(() => {
+      const current = this.selectedCitiesSubject.value.filter(c => c !== location);
+      this.updateSelectedCities(current);
     })
   );
 }
+
 
 }

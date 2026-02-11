@@ -98,7 +98,7 @@ export class LoginPage implements OnInit {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     responseType: 'text'
   }).subscribe({
-    next: (raw) => {
+    next: async (raw) => {
       console.log('RAW REGISTER RESPONSE:', raw); 
 
       if (!raw || raw.trim() === '') {
@@ -126,7 +126,7 @@ try {
       if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
   const lastlogin = res[0].lastlogin;
 
-      this.dataCtrl.setAuthData(
+      await this.dataCtrl.setAuthData(
         this.registerUsername,
         this.registerEmail,
         lastlogin,
@@ -160,7 +160,7 @@ login() {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     responseType: 'text'
   }).subscribe({
-    next: (raw) => {
+    next: async (raw) => {
       console.log('RAW LOGIN RESPONSE:', raw); 
 
       if (!raw || raw.trim() === '') {
@@ -179,9 +179,9 @@ login() {
 
       if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
       const lastlogin = res[0].lastlogin;
-      const storedEmail = this.dataCtrl.getEmail() || '';
+      const storedEmail = res[0].email || this.loginUsername;
 
-      this.dataCtrl.setAuthData(
+      await this.dataCtrl.setAuthData(
       this.loginUsername,
       storedEmail,
       lastlogin

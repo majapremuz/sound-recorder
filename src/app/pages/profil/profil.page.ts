@@ -7,6 +7,9 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import { HttpClient } from '@angular/common/http';
 import { TranslateModule } from '@ngx-translate/core';
 import { DataService } from 'src/app/services/data.service';
+import { LocationService } from 'src/app/services/location.service';
+import {LanguageService, Language} from 'src/app/services/language.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-profil',
@@ -18,28 +21,38 @@ import { DataService } from 'src/app/services/data.service';
 export class ProfilPage implements OnInit {
   notificationsEnabled = true;
   locationModeAll = true;
-  selectedLang = 'hr';
+  selectedLang = this.translateService.currentLang || 'hr';;
+  languages: Language[] = [];
   email: string = '';
   selectedCityCount = 0;
   selectedCities: string[] = [];
   selectedCitiesPreview = '';
 
-
-  languages = [
-  { code: 'hr', name: 'Hrvatski', flag: 'assets/croatia.png' },
-  { code: 'en', name: 'English', flag: 'assets/usa.png' },
-  { code: 'de', name: 'Deutsch', flag: 'assets/germany.png' }
-];
-
   constructor(
     private router: Router,
     private http: HttpClient,
-    private dataCtrl: DataService
+    private dataCtrl: DataService,
+    private locationService: LocationService,
+    private languageService: LanguageService,
+    private translateService: TranslateService
   ) { }
 
   ngOnInit() {
   const saved = localStorage.getItem('notificationsEnabled');
   this.notificationsEnabled = saved !== null ? JSON.parse(saved) : true;
+
+  this.dataCtrl.emailChanges$.subscribe(email => {
+    this.email = email || 'Nepoznato';
+  });
+
+  this.languageService.getLanguages().subscribe({
+  next: (langs) => {
+    this.languages = langs;
+  },
+  error: (err) => {
+    console.error('Error loading languages', err);
+  }
+  });
 
   const savedLocationMode = localStorage.getItem('locationMode');
   this.locationModeAll = savedLocationMode
@@ -47,13 +60,12 @@ export class ProfilPage implements OnInit {
     : true;
 
   const cities = JSON.parse(localStorage.getItem('selectedCities') || '[]');
+  this.locationService.selectedCities$.subscribe(cities => {
   this.selectedCities = cities;
   this.selectedCityCount = cities.length;
-
   this.buildPreview();
-
-
-  this.email = this.dataCtrl.getEmail() || 'Nepoznato';
+  });
+  ;
 }
 
 buildPreview() {

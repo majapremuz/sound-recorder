@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { from, Observable, forkJoin, of } from 'rxjs';
+import { from, Observable, forkJoin, BehaviorSubject, tap } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { DataService } from './data.service';
 
 export interface Language {
   name: string;
   code: string;
+  flag: string; 
 }
 
 @Injectable({
@@ -14,6 +15,9 @@ export interface Language {
 })
 export class LanguageService {
   private baseUrl = 'https://traffic-call.com/api';
+
+  private languagesSubject = new BehaviorSubject<Language[]>([]);
+  languages$ = this.languagesSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -24,22 +28,26 @@ export class LanguageService {
   return from(this.dataService.getAuthToken()).pipe(
     switchMap(token => {
       if (!token) throw new Error('Auth token missing');
-      return [token]; // convert to observable
+      return [token];
     })
   );
 }
 
+loadLanguages() {
+  return this.getLanguages().pipe(
+    tap(langs => this.languagesSubject.next(langs))
+  );
+}
+
   getLanguages(): Observable<Language[]> {
-  return this.getToken$().pipe(
-    switchMap(token =>
-      this.http.post<any[]>(`${this.baseUrl}/languages.php`, { token })
-    ),
+  return this.http.get<any[]>(`${this.baseUrl}/languages.php`).pipe(
     map(response =>
       response
-        .filter(item => item.title && item.shortcut)
+        .filter(item => item.title) 
         .map(item => ({
+          code: item.shortcut,
           name: item.title,
-          code: item.shortcut.toLowerCase()
+          flag: item.flag
         }))
     )
   );

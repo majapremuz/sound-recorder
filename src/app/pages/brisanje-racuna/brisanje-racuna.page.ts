@@ -57,29 +57,14 @@ export class BrisanjeRacunaPage implements OnInit {
 
 
   async confirmDelete() {
-  try {
-    const regToken = await this.dataService.getStorageItem('register_token'); // USE REGISTER TOKEN
-    if (!regToken) {
-      console.error('No registration token available to delete account.');
-      return;
+  this.authService.deleteAccount().subscribe({
+    next: () => {
+      this.router.navigate(['/login'], { replaceUrl: true });
+    },
+    error: err => {
+      console.error('Delete failed:', err);
     }
-
-    this.authService.deleteAccount(regToken).subscribe({
-      next: async (res) => {
-        if (res?.response === 'Success') {
-          await this.authService.fullLogout();
-          this.router.navigate(['/login'], { replaceUrl: true });
-        } else {
-          console.error('Server refused delete:', res);
-        }
-      },
-      error: (err) => {
-        console.error('Delete failed:', err);
-      }
-    });
-  } catch (err) {
-    console.error('Error during delete:', err);
-  }
+  });
 }
 
   navigateTo(page: string) {

@@ -44,33 +44,29 @@ export class AppComponent {
   async ngOnInit() { await this.bootstrap();}
 
   private async bootstrap() {
-    await this.platform.ready();
+  await this.platform.ready();
+  await this.storage.create();
 
-    // 1️⃣ Storage FIRST
-    await this.storage.create();
+  await this.initLanguage();
 
-    // 2️⃣ Language
-    await this.initLanguage();
+  await this.dataService.initStorage();
+  await this.dataService.waitForAuthReady();
 
-    // 3️⃣ Restore auth ONCE
-    await this.authService.restoreLoginState();
+  this.dataService.authTokenChanges$.subscribe(token => {
+    this.authService.setLoggedIn(!!token);
+  });
 
-    // 4️⃣ Load DataService (token/email/etc)
-    await this.dataService.initData();
-    await this.dataService.waitForAuthReady();
+  await this.authService.restoreLoginState();
 
-    // 5️⃣ Firebase
-    await this.initFirebase();
+  await this.initFirebase();
 
-    // 6️⃣ Allow routing
-    this.contrCtrl.setReadyPage();
+  this.contrCtrl.setReadyPage();
 
-    // 7️⃣ UI cleanup
-    await SplashScreen.hide();
-    await StatusBar.show();
+  await SplashScreen.hide();
+  await StatusBar.show();
 
-    console.log('✅ App fully bootstrapped');
-  }
+  console.log('App fully bootstrapped');
+}
 
   async setReadyPage(){
     // nakon sto se stranica pokrene ugasiti splash screen

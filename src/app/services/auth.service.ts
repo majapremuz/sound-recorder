@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
-import { Observable, tap, BehaviorSubject } from 'rxjs';
+import { Observable, tap, BehaviorSubject, from, switchMap } from 'rxjs';
 import * as sha1 from 'sha1';
 import { Storage } from '@ionic/storage-angular';
 import { DataService } from './data.service';
@@ -27,7 +27,6 @@ private loggedIn$ = new BehaviorSubject<boolean>(false);
 
 async fullLogout() {
   await this.dataService.clearAuthData();
-  this.setLoggedIn(false);
 }
 
   setLoggedIn(value: boolean) {
@@ -40,9 +39,12 @@ isLoggedIn$(): Observable<boolean> {
 }
 
 async restoreLoginState() {
-  const token = await this.storage.get('auth_token');
+  await this.dataService.waitForAuthReady();
+
+  const token = await this.dataService.getAuthToken();
   this.loggedIn$.next(!!token);
 }
+
 
 async changePassword(newPassword: string): Promise<any> {
   const token = await this.dataService.getAuthToken();
@@ -73,9 +75,21 @@ async changePassword(newPassword: string): Promise<any> {
 }
 
 
-deleteAccount(token: string): Observable<any> {
-  const url = 'https://traffic-call.com/api/deleteAccount.php';
-  return this.http.post(url, { token });
+deleteAccount(): Observable<any> {
+  return from(this.dataService.getAuthToken()).pipe(
+    switchMap(token => {
+      if (!token) throw new Error('No auth token');
+      return this.http.post(
+        'https://traffic-call.com/api/deleteAccount.php',
+        { token }
+      );
+    }),
+    tap(() => {
+      this.dataService.clearAuthData();
+      this.loggedIn$.next(false);
+    })
+  );
 }
+
 
 }

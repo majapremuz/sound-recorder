@@ -34,7 +34,6 @@ export class IzborJezikaPage implements OnInit {
   this.initLanguagesAndTranslations();
 }
 
-
   private initLanguagesAndTranslations() {
     this.languageService.getLanguages().pipe(
       tap(langs => {

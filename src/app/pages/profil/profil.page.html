@@ -76,7 +76,7 @@
 
   <ion-card class="card" (click)="changeLanguage()">
   {{ 'LANGUAGE_CHANGE' | translate }}
-  <img [src]="currentLang.flag" alt="language icon" class="card-img">
+  <img [src]="'https://traffic-call.com' + currentLang.flag" class="card-img" />
 </ion-card>
 
   <ion-card class="card" (click)="deleteAccount()">
