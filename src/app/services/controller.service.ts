@@ -304,7 +304,7 @@ export class ControllerService {
       errorMessage.type = AlertType.Warning;
       return errorMessage;
     }
-  }
+  }*/
 
 
   async oauthClientAuthorize(){
@@ -372,7 +372,7 @@ export class ControllerService {
         });
     });
     return promise;
-  }*/
+  }
 
   translateWord(key: string): Promise<string>{
     let promise = new Promise<string>((resolve, reject) => {

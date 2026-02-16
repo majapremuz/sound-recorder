@@ -45,27 +45,23 @@ export class AppComponent {
 
   private async bootstrap() {
   await this.platform.ready();
-  await this.storage.create();
-
-  await this.initLanguage();
-
-  await this.dataService.initStorage();
-  await this.dataService.waitForAuthReady();
+  await this.dataService.initStorage(); 
+  await this.authService.syncLoginStateFromStorage();
 
   this.dataService.authTokenChanges$.subscribe(token => {
     this.authService.setLoggedIn(!!token);
+    if (token) {
+      // reload content or refresh any dependent service
+      console.log("Auth token updated:", token);
+    }
   });
 
-  await this.authService.restoreLoginState();
-
+  await this.initLanguage();
   await this.initFirebase();
-
   this.contrCtrl.setReadyPage();
 
   await SplashScreen.hide();
   await StatusBar.show();
-
-  console.log('App fully bootstrapped');
 }
 
   async setReadyPage(){
@@ -94,7 +90,7 @@ export class AppComponent {
 
   private async initLanguage() {
   // 1️⃣ previously selected language
-  const savedLang = localStorage.getItem('appLanguage');
+  const savedLang = localStorage.getItem('selectedLang');
   if (savedLang) {
     this.translate.setDefaultLang(savedLang);
     this.translate.use(savedLang);
@@ -118,7 +114,7 @@ export class AppComponent {
   this.translate.setDefaultLang(finalLang);
   this.translate.use(finalLang);
 
-  localStorage.setItem('appLanguage', finalLang);
+  localStorage.setItem('selectedLang', finalLang);
 
   console.log('🌍 App language initialized:', finalLang);
 }

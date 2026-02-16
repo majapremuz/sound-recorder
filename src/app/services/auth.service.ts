@@ -27,6 +27,7 @@ private loggedIn$ = new BehaviorSubject<boolean>(false);
 
 async fullLogout() {
   await this.dataService.clearAuthData();
+  this.loggedIn$.next(false);
 }
 
   setLoggedIn(value: boolean) {
@@ -38,11 +39,9 @@ isLoggedIn$(): Observable<boolean> {
   return this.loggedIn$.asObservable();
 }
 
-async restoreLoginState() {
-  await this.dataService.waitForAuthReady();
-
-  const token = await this.dataService.getAuthToken();
-  this.loggedIn$.next(!!token);
+async syncLoginStateFromStorage() {
+  const username = await this.dataService.getStorageItem('username');
+  this.loggedIn$.next(!!username);
 }
 
 
@@ -86,10 +85,10 @@ deleteAccount(): Observable<any> {
     }),
     tap(() => {
       this.dataService.clearAuthData();
+      this.storage.remove('auth_token');
       this.loggedIn$.next(false);
     })
   );
 }
-
 
 }

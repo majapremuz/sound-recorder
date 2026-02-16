@@ -67,9 +67,9 @@ emailChanges$ = this.email$.asObservable();
     this.authReadyResolve();
   }*/
 
-  waitForAuthReady() {
+  /*waitForAuthReady() {
     return this.authReady;
-  }
+  }*/
 
   async loadFirebaseToken() {
   const token = await this.storage.get('firebase_token');
@@ -176,7 +176,6 @@ public async getStorageItem(key: string): Promise<any> {
 }
 
 async clearAuthData() {
-  this.authToken = null;
   this.username = null;
   this.email = null;
   this.lastLogin = null;
@@ -184,14 +183,11 @@ async clearAuthData() {
   this.authToken$.next(null);
   this.email$.next(null);
 
-  await this.storage.remove('auth_token');
   await this.storage.remove('username');
   await this.storage.remove('email');
   await this.storage.remove('lastlogin');
 
   localStorage.removeItem('email');
-  localStorage.removeItem('authData');
-  localStorage.removeItem('auth_token');
 }
 
   translateWord(key: string): Promise<string>{

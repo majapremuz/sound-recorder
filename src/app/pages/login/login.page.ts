@@ -11,6 +11,7 @@ import * as sha1 from 'sha1';
 import { eye, eyeOff } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { HttpParams } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -21,7 +22,7 @@ import { HttpParams } from '@angular/common/http';
   imports: [IonicModule, CommonModule, FormsModule, TranslateModule]
 })
 export class LoginPage implements OnInit {
-  isLogin: boolean = true;
+  isLoggedIn = false;
   loginEmail = '';
   loginUsername = '';
   loginPassword = '';
@@ -32,12 +33,13 @@ export class LoginPage implements OnInit {
   showPassword = false;
   wrongPassword: boolean = false;
   passwordField: any = 'password';
+  authSub?: Subscription
 
   constructor(
     private router: Router, 
     private toastCtrl: ToastController,
     private http: HttpClient,
-    private dataCtrl: DataService,
+    private dataService: DataService,
     private authService: AuthService
   ) {
     addIcons({
@@ -46,10 +48,14 @@ export class LoginPage implements OnInit {
   });
   }
 
-  ngOnInit() {}
+  async ngOnInit() {
+   this.authSub = this.authService.isLoggedIn$().subscribe(state => {
+  this.isLoggedIn = state;
+  });
+  }
 
   toggleMode(mode: 'login' | 'register') {
-  this.isLogin = mode === 'login';
+  this.isLoggedIn = mode === 'login';
 
   this.loginUsername = '';
   this.loginPassword = '';
@@ -71,7 +77,7 @@ export class LoginPage implements OnInit {
   }
 
   onSubmit() {
-  if (this.isLogin) {
+  if (this.isLoggedIn) {
     this.login();
     return;
   }
@@ -86,7 +92,7 @@ export class LoginPage implements OnInit {
 
   async register() {
   const url = 'https://traffic-call.com/api/register.php';
-  const firebaseToken = await this.dataCtrl.loadFirebaseToken();
+  const firebaseToken = await this.dataService.loadFirebaseToken();
 
   const body = new HttpParams()
     .set('username', this.registerUsername)
@@ -126,16 +132,16 @@ try {
       if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
   const lastlogin = res[0].lastlogin;
 
-      await this.dataCtrl.setAuthData(
+      await this.dataService.setAuthData(
         this.registerUsername,
         this.registerEmail,
-        lastlogin,
-        true
+        lastlogin
       );
 
       this.showToast('Registracija uspješna! Možete se prijaviti.', 'success');
-      this.isLogin = true;
+      this.isLoggedIn = true;
       console.log('SET AUTH CALLED FROM:', new Error().stack);
+      this.authService.setLoggedIn(true);
     } else {
         this.showToast(res[0]?.message || 'Registracija nije uspjela.');
       }
@@ -179,15 +185,14 @@ login() {
 
       if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
       const lastlogin = res[0].lastlogin;
-      const storedEmail = res[0].email || this.loginUsername;
+      const email = res[0].email || this.loginUsername;
 
-      await this.dataCtrl.setAuthData(
+      await this.dataService.setAuthData(
       this.loginUsername,
-      storedEmail,
+      email,
       lastlogin
       );
       this.showToast('Prijava uspješna!', 'success');
-      this.authService.setLoggedIn(true);
       this.router.navigate(['/home']);
       console.log('SET AUTH CALLED FROM:', new Error().stack);
       } else {

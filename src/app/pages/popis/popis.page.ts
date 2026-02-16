@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { TranslateModule } from '@ngx-translate/core';
 
+
 @Component({
   selector: 'app-popis',
   templateUrl: './popis.page.html',
@@ -39,7 +40,7 @@ export class PopisPage implements OnInit {
   });
 }
 
-  onViewDidEnter() {
+  IonViewDidEnter() {
     // Once the view and animations are ready
     if (this.audios.length > 0) {
       setTimeout(() => {
@@ -82,12 +83,15 @@ export class PopisPage implements OnInit {
           mapId: `map-${index}`,
           isPlaying: false,
           showMap: false,
+          country: file.country,
           city: file.city,
           street: file.street,
           date: formattedDate, 
           time: formattedTime
         };
       });
+
+      console.log('Audios loaded:', this.audios);
 
       //Initialize maps correctly (not the whole array)
       setTimeout(() => {
@@ -226,10 +230,15 @@ async initMap(audio: any) {
   const mapContainer = document.getElementById(mapId);
   if (!mapContainer) return;
 
+  console.log('Loading Google Maps for audio:', audio.name);
   await this.loadGoogleMaps();
+  console.log('Google Maps loaded!');
+
 
   const lat = parseFloat(audio.latitude);
   const lon = parseFloat(audio.longitude);
+  console.log('Coordinates for map:', audio.latitude, audio.longitude);
+
   if (isNaN(lat) || isNaN(lon)) return;
 
   const map = new google.maps.Map(mapContainer, {

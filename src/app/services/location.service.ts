@@ -18,7 +18,7 @@ export class LocationService {
     private http: HttpClient,
     private dataService: DataService
   ) {}
-
+  
   getCountries(): Observable<any[]> {
     return from(this.dataService.getAuthToken()).pipe(
       switchMap(token => {
@@ -42,13 +42,27 @@ export class LocationService {
     );
   }
 
+  getCountryIdFromName(name: string): string | null {
+  const normalize = (s: string) => (s ?? '').toLowerCase().trim();
+  const countryMap: Record<string, string> = {
+    'hrvatska': '1',
+    'united kingdom': '2'
+  };
+  return countryMap[normalize(name)] || null;
+}
+
+
   updateSelectedCities(cities: string[]) {
   this.selectedCitiesSubject.next(cities);
   localStorage.setItem('selectedCities', JSON.stringify(cities));
 }
 
   addUserLocation(location: string) {
-  return from(this.dataService.getAuthToken()).pipe(
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Adds a location to the user's selected locations.
+ * @param location - the id of the location to add
+/*******  ad2f4de9-6e90-4a41-a836-73d9dcda723c  *******/  return from(this.dataService.getAuthToken()).pipe(
     switchMap(token => this.http.post(this.addUserLocationUrl, { token, location })),
     tap(() => {
       const current = this.selectedCitiesSubject.value;

@@ -8,14 +8,14 @@
   <div class="login-toggle">
   <ion-button 
       (click)="toggleMode('login')" 
-      [class.active]="isLogin"
+      [class.active]="isLoggedIn"
       class="login-btn">
     <p class="title">{{ 'LOGIN_TITLE' | translate }}</p>
   </ion-button>
 
   <ion-button 
       (click)="toggleMode('register')" 
-      [class.active]="!isLogin"
+      [class.active]="!isLoggedIn"
       class="register-btn">
     <p class="title">{{ 'REGISTER_TITLE' | translate }}</p>
   </ion-button>
@@ -24,7 +24,7 @@
   <form #form="ngForm" (ngSubmit)="onSubmit()">
 
   <!-- LOGIN FIELDS -->
-<div *ngIf="isLogin">
+<div *ngIf="isLoggedIn">
   <ion-label [class.active-label]="loginUsername">{{ 'USERNAME' | translate }}</ion-label>
   <ion-item [class.invalid]="loginUsernameModel.invalid && (loginUsernameModel.dirty || loginUsernameModel.touched)"
             [class.valid]="loginUsernameModel.valid">
@@ -52,7 +52,7 @@
 </div>
 
 <!-- REGISTER FIELDS -->
-<div *ngIf="!isLogin">
+<div *ngIf="!isLoggedIn">
   <ion-label [class.active-label]="registerUsername">{{ 'USERNAME' | translate }}</ion-label>
   <ion-item [class.invalid]="registerUsernameModel.invalid && (registerUsernameModel.dirty || registerUsernameModel.touched)"
             [class.valid]="registerUsernameModel.valid">
@@ -129,13 +129,13 @@
   class="action-btn"
   [disabled]="
     form.invalid ||
-    (!isLogin && registerPassword !== registerRepeat)
+    (!isLoggedIn && registerPassword !== registerRepeat)
   "
   [ngClass]="{'enabled-btn': form.valid, 'disabled-btn': form.invalid}"
   (click)="onSubmit()">
 
   <div class="wrapper">
-    {{ isLogin ? ('LOGIN_' | translate) : ('REGISTER' | translate) }}
+    {{ isLoggedIn ? ('LOGIN_' | translate) : ('REGISTER' | translate) }}
 
   
       <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 400" preserveAspectRatio="xMidYMid meet">
@@ -157,7 +157,7 @@
   
 </ion-button>
 
-<div *ngIf="isLogin" class="change-pass">
+<div *ngIf="isLoggedIn" class="change-pass">
   <a (click)="openPasswordReset()" class="forget-password">
   {{ 'FORGOT_PASSWORD' | translate }}
   </a>
@@ -169,21 +169,21 @@
 
 <ion-footer>
 
-        <ion-button class="footer-button home-button" (click)="navigateTo('home')">
+        <ion-button class="footer-button home-button" (click)="navigateTo('home')" [disabled]="!isLoggedIn">
           <div class="footer-btn-container">
             <img src="assets/home.png" alt="home icon" class="footer-icon">
             <p class="footer-title">{{ 'HOME' | translate }}</p>
           </div> 
         </ion-button>
 
-        <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
+        <ion-button class="footer-button list-button" (click)="navigateTo('popis')" [disabled]="!isLoggedIn">
           <div class="footer-btn-container">
             <img src="assets/list.png" alt="list icon" class="footer-icon">
             <p class="footer-title">{{ 'LIST' | translate }}</p>
           </div>
         </ion-button>
 
-        <ion-button class="footer-button" (click)="navigateTo('profil')">
+        <ion-button class="footer-button" (click)="navigateTo('profil')" [disabled]="!isLoggedIn">
           <div class="footer-btn-container">
             <img src="assets/profil.png" alt="profil icon" class="footer-icon">
             <p class="footer-title">{{ 'PROFILE' | translate }}</p>

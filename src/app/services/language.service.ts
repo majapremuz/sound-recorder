@@ -24,13 +24,8 @@ export class LanguageService {
     private dataService: DataService
   ) {}
 
-  private getToken$(): Observable<string> {
-  return from(this.dataService.getAuthToken()).pipe(
-    switchMap(token => {
-      if (!token) throw new Error('Auth token missing');
-      return [token];
-    })
-  );
+  private getToken$(): Observable<string | null> {
+  return from(this.dataService.getAuthToken());
 }
 
 loadLanguages() {
@@ -40,10 +35,16 @@ loadLanguages() {
 }
 
   getLanguages(): Observable<Language[]> {
-  return this.http.get<any[]>(`${this.baseUrl}/languages.php`).pipe(
+  return this.getToken$().pipe(
+    switchMap(token =>
+      this.http.post<any[]>(
+        `${this.baseUrl}/languages.php`,
+        { token }
+      )
+    ),
     map(response =>
       response
-        .filter(item => item.title) 
+        .filter(item => item.title)
         .map(item => ({
           code: item.shortcut,
           name: item.title,
@@ -52,6 +53,7 @@ loadLanguages() {
     )
   );
 }
+
 
 getTranslations(langs: Language[]) {
   return this.getToken$().pipe(

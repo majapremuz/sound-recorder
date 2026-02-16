@@ -6,7 +6,7 @@ import { ControllerService } from 'src/app/services/controller.service';
 import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { HttpClient } from '@angular/common/http';
 import { PushNotifications } from '@capacitor/push-notifications';
-import { ToastController } from '@ionic/angular';
+import { ToastController, LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { environment } from 'src/environments/environment';
@@ -42,7 +42,7 @@ export class HomePage {
   progress = 0;
   volumeLevel = 0;
 
-  private authSub?: Subscription;
+  authSub?: Subscription;
 
 
   @ViewChild('audioCanvas', { static: false }) audioCanvas!: ElementRef<HTMLCanvasElement>;
@@ -65,7 +65,8 @@ export class HomePage {
   contents: Array<ContentObject> = [];
 
   constructor(
-    private dataCtrl: DataService,
+    private loadingController: LoadingController,
+    private dataService: DataService,
     private contrCtrl: ControllerService,
     private androidPermissions: AndroidPermissions,
     private http: HttpClient,
@@ -78,24 +79,26 @@ export class HomePage {
     this.initTranslate();
   }
 
-
-  async ionViewWillEnter() {
-  this.contrCtrl.setHomePage(true);
-  this.initPush();
-  //this.contents = await this.dataCtrl.getRootContent();
-
-  this.authSub = this.authService.isLoggedIn$()
-    .subscribe(state => {
-      this.isLoggedIn = state;
-    });
+ionViewWillEnter() {
+  this.authService.syncLoginStateFromStorage();
 }
 
 ionViewWillLeave() {
   this.contrCtrl.setHomePage(false);
+}
+
+ngOnDestroy() {
   this.authSub?.unsubscribe();
 }
 
-  ngOnInit() {}
+
+  ngOnInit() {
+  this.authSub = this.authService.isLoggedIn$().subscribe(async state => {
+    this.isLoggedIn = state;
+    await this.initTranslate();
+  });
+}
+
 
   async requestAudioPermission(): Promise<boolean> {
   const result = await this.androidPermissions.checkPermission(
@@ -242,11 +245,16 @@ toggleRecording() {
 async sendRecording() {
   if (!this.recordedBlob) return;
 
+  const loading = await this.loadingController.create({
+    spinner: 'crescent',
+    backdropDismiss: false
+  });
+  await loading.present();
+
   try {
     const fileName = `${Date.now()}.webm`;
-    console.log('Uploading file:', fileName);
 
-    // Convert blob to base64
+    // convert Blob → base64
     let base64Data = await this.blobToBase64(this.recordedBlob);
     if (typeof base64Data === 'string') {
       const commaIndex = base64Data.indexOf(',');
@@ -255,15 +263,15 @@ async sendRecording() {
       }
     }
 
-    // ✅ Request permission and get GPS coordinates
+    // request location permission
     const perm = await Geolocation.requestPermissions();
-      if (perm.location !== 'granted') {
-        console.warn('Location permission denied');
-        return;
-      }
+    if (perm.location !== 'granted') {
+      console.warn('Location permission denied');
+      await loading.dismiss();
+      return;
+    }
 
-    await new Promise(r => setTimeout(r, 500));
-
+    // get coordinates
     const position = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
       timeout: 10000
@@ -273,48 +281,67 @@ async sendRecording() {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude
     };
-    console.log('GPS coordinates:', coords);
 
-    const address = await this.reverseGeocode(coords.latitude, coords.longitude);
-    console.log('Reverse geocode result:', address);
+    // reverse geocode → city, street, country
+    const { city: cityName, street, country: countryName } =
+      await this.reverseGeocode(coords.latitude, coords.longitude);
 
-    const selectedCity = localStorage.getItem('selectedCity');
-    if (!selectedCity) {
-    console.warn('No city selected');
-    } else {
-    await this.locationService
-    .addUserLocation(selectedCity)
-    .toPromise();
+    const token = await this.dataService.getAuthToken();
 
-    console.log('User location sent:', selectedCity);
+    // safety normalize
+    const normalize = (s: string | undefined | null) => (s ?? '').trim();
+
+    const country = normalize(countryName);
+    const city = normalize(cityName);
+
+    if (!country) {
+      console.error('❌ No country detected from geolocation');
+      await loading.dismiss();
+      return;
     }
 
-    // Get the current device token
-    const deviceToken = localStorage.getItem('pushToken');
-    if (!deviceToken) console.warn('No device token found – push may not work');
+    console.log('🌍 Country:', country);
+    console.log('🏙️ City:', city);
 
-    // ✅ Send audio + token + location in the same request
-      const payload = {
-        filedata: base64Data,
-        filename: fileName,
-        token: deviceToken,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        city: address.city,
-        street: address.street,
-        country: address.country
-      };
+    /* -------------------------------
+       1️⃣ SEND TO cities.php
+       ------------------------------- */
+    const citiesPayload = {
+      token: token,
+      country: country   // ✅ send TEXT, not ID
+    };
 
-      // ✅ Log the payload before sending
-      console.log('Sending payload:', payload);
+    console.log('📤 Sending to cities.php:', citiesPayload);
 
-      // ✅ Send the request
-      const response: any = await this.http.post(
-        'https://traffic-call.com/api/files.php',
-        payload
-      ).toPromise();
+    await this.http.post(
+      'https://traffic-call.com/api/cities.php',
+      citiesPayload
+    ).toPromise();
 
-      console.log('Full response from server:', response);
+    /* -------------------------------
+       2️⃣ SEND TO files.php
+       ------------------------------- */
+    const filesPayload = {
+      filedata: base64Data,
+      filename: fileName,
+      token: token,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      country: country,   // ✅ TEXT
+      city: city,         // already text
+      street: street
+    };
+
+    console.log('📤 Sending to files.php:', filesPayload);
+
+    const response: any = await this.http.post(
+      'https://traffic-call.com/api/files.php',
+      filesPayload
+    ).toPromise();
+
+    console.log('✅ Server response:', response);
+
+    await loading.dismiss();
 
     const toast = await this.toastController.create({
       message: 'Audio i lokacija poslani!',
@@ -328,7 +355,9 @@ async sendRecording() {
     });
 
   } catch (err) {
-    console.error('Failed to send audio:', err);
+    await loading.dismiss();
+    console.error('❌ Failed to send audio:', err);
+
     const toast = await this.toastController.create({
       message: 'Slanje nije uspjelo',
       duration: 2000,
@@ -347,7 +376,7 @@ blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-async reverseGeocode(lat: number, lon: number): Promise<{ city: string; street: string, country: string }> {
+async reverseGeocode(lat: number, lon: number): Promise<{ city: string; street: string; country: string }> {
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${environment.google_map_api}&language=hr`;
     const response: any = await this.http.get(url).toPromise();
@@ -360,9 +389,18 @@ async reverseGeocode(lat: number, lon: number): Promise<{ city: string; street: 
       let country = '';
 
       for (const comp of address) {
-        if (comp.types.includes('locality')) city = comp.long_name;
-        if (comp.types.includes('route')) street = comp.long_name;
-        if (comp.types.includes('country')) country = comp.long_name;
+        // City can be in multiple types
+        if (comp.types.includes('locality') || comp.types.includes('postal_town') || comp.types.includes('sublocality_level_1')) {
+          city = comp.long_name;
+        }
+
+        if (comp.types.includes('route')) {
+          street = comp.long_name;
+        }
+
+        if (comp.types.includes('country')) {
+          country = comp.long_name;
+        }
       }
 
       return { city, street, country };
@@ -375,6 +413,7 @@ async reverseGeocode(lat: number, lon: number): Promise<{ city: string; street: 
     return { city: '', street: '', country: '' };
   }
 }
+
 
 async initPush() {
   let permStatus = await PushNotifications.checkPermissions();
@@ -460,7 +499,7 @@ async initPush() {
   }
 
   async initTranslate(){
-    this.translate['test_string'] = await this.dataCtrl.translateWord("TEST.STRING");
+    this.translate['test_string'] = await this.dataService.translateWord("TEST.STRING");
   }
 
 }

@@ -27,6 +27,7 @@ export class OdjavaPage {
 
   async logout() {
   await this.authService.fullLogout();
+  this.authService.setLoggedIn(false);
   App.exitApp();
 }
 

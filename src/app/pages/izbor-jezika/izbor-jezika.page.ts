@@ -6,7 +6,7 @@ import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { LanguageService, Language } from 'src/app/services/language.service';
 import { switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { Device } from '@capacitor/device';
+import { DataService } from 'src/app/services/data.service';
 
 @Component({
   selector: 'app-izbor-jezika',
@@ -23,34 +23,43 @@ export class IzborJezikaPage implements OnInit {
   constructor(
     private router: Router,
     private translateService: TranslateService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private dataService: DataService
   ) {}
 
   ngOnInit() {
-  this.selectedLang = this.translateService.currentLang 
-    || this.translateService.defaultLang 
-    || 'hr';
+  const savedLang = localStorage.getItem('selectedLang');
 
-  this.initLanguagesAndTranslations();
+  this.selectedLang =
+    savedLang ||
+    this.translateService.currentLang ||
+    'hr';
+
+  this.dataService.authReady.then(() => {
+    this.initLanguagesAndTranslations();
+  });
 }
+
+
 
   private initLanguagesAndTranslations() {
     this.languageService.getLanguages().pipe(
       tap(langs => {
         this.languages = langs;
 
-        // Pick default language
-        const activeLang =
-        this.translateService.currentLang ||
-        this.translateService.defaultLang ||
-        'hr';
+        langs.forEach(lang => {
+          console.log('Raw flag path:', lang.flag);
+          console.log('Full flag URL:', 'https://traffic-call.com' + lang.flag);
+        });
+
+        const savedLang = localStorage.getItem('selectedLang');
 
         this.selectedLang =
-        langs.find(l => l.code === activeLang)?.code
-        ?? langs[0]?.code
-        ?? 'hr';
+          langs.find(l => l.code === savedLang)?.code
+          ?? savedLang
+          ?? langs[0]?.code
+          ?? 'hr';
 
-        // Register languages in TranslateService
         this.translateService.addLangs(langs.map(l => l.code));
       }),
       switchMap(langs => {
@@ -69,9 +78,6 @@ export class IzborJezikaPage implements OnInit {
             console.warn(`No translations available for ${lang}`);
           }
         });
-
-        // Set default and active language
-        this.translateService.setDefaultLang(this.selectedLang);
         this.translateService.use(this.selectedLang);
 
         this.loading = false;
@@ -84,9 +90,11 @@ export class IzborJezikaPage implements OnInit {
   }
 
   changeLanguage(lang: string) {
-    this.selectedLang = lang;
-    this.translateService.use(lang);
-  }
+  this.selectedLang = lang;
+  this.translateService.use(lang);
+  localStorage.setItem('selectedLang', lang);
+}
+
 
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);
