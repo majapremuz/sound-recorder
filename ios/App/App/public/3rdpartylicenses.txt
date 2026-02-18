@@ -659,9 +659,6 @@ MIT
 @ngx-translate/core
 SEE LICENSE IN LICENSE
 
-@ngx-translate/http-loader
-SEE LICENSE IN LICENSE
-
 charenc
 BSD-3-Clause
 Copyright © 2011, Paul Vorbach. All rights reserved.
