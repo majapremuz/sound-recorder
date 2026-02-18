@@ -7,61 +7,62 @@ import { ControllerService } from './services/controller.service';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Router } from '@angular/router';
-import { App } from '@capacitor/app';
+import { TranslateModule } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
+import { initializeApp } from "firebase/app";
+import { environment } from 'src/environments/environment';
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { DataService } from './services/data.service';
+import { AuthService } from './services/auth.service';
+import { Storage } from '@ionic/storage-angular';
+import { Device } from '@capacitor/device';
+
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, TranslateModule]
 })
 export class AppComponent {
 
   @ViewChild(IonRouterOutlet, { static: false }) routerOutlet: IonRouterOutlet | undefined;
+
   
   constructor(
     private router: Router,
     public platform: Platform,
     public translateConfigService: TranslateConfigService,
-    public dataCtrl: ControllerService
-  ) {
-    this.initApp();
-  }
+    public contrCtrl: ControllerService,
+    public dataService: DataService,
+    private translate: TranslateService, 
+    private authService: AuthService,
+    private storage: Storage
+  ) {}
 
-  async initApp(){
-    await this.platform.ready();
+  async ngOnInit() { await this.bootstrap();}
 
-    // define android exit app (whet user press back)
-    this.platform.backButton.subscribeWithPriority(11, () => {
+  private async bootstrap() {
+  await this.platform.ready();
+  await this.dataService.initStorage(); 
+  await this.authService.syncLoginStateFromStorage();
 
-      if(this.routerOutlet != undefined){
-        // ako vise nejde undo
-        if (!this.routerOutlet.canGoBack()) {
-          // ako je otvorena home stranica
-          // onda iskljuci aplikaciju
-          if(this.dataCtrl.getHomePageStatus() == true){
-            App.exitApp();
-          }
-          else{
-            this.router.navigateByUrl('/home');
-          }
-        }
-        else{
-          this.routerOutlet.pop();
-        }
-      }
+  this.dataService.authTokenChanges$.subscribe(token => {
+    this.authService.setLoggedIn(!!token);
+    if (token) {
+      // reload content or refresh any dependent service
+      console.log("Auth token updated:", token);
+    }
+  });
 
-    });
+  await this.initLanguage();
+  await this.initFirebase();
+  this.contrCtrl.setReadyPage();
 
-    this.translateConfigService.getDefaultLanguage();
-
-    // provjera login
-    // kreiranje ionic storage
-    await this.dataCtrl.initFunc();
-
-    this.setReadyPage();
-  }
+  await SplashScreen.hide();
+  await StatusBar.show();
+}
 
   async setReadyPage(){
     // nakon sto se stranica pokrene ugasiti splash screen
@@ -79,6 +80,61 @@ export class AppComponent {
     // izvrisit sve provjere i funkcije prije ove funkcije
     // jer tek kad se pokrene ova funkcija dozvoljava se 
     // pokretanje prve stranice
-    this.dataCtrl.setReadyPage();
+    this.contrCtrl.setReadyPage();
   }
+
+  async initStorage() {
+    await this.storage.create();
+    console.log('✅ Storage initialized');
+  }
+
+  private async initLanguage() {
+  // 1️⃣ previously selected language
+  const savedLang = localStorage.getItem('selectedLang');
+  if (savedLang) {
+    this.translate.setDefaultLang(savedLang);
+    this.translate.use(savedLang);
+    return;
+  }
+
+  // 2️⃣ device language
+  let deviceLang = 'hr';
+
+  try {
+    const info = await Device.getLanguageCode();
+    deviceLang = info.value?.toLowerCase() ?? 'en';
+  } catch {
+    const browserLang = this.translate.getBrowserLang();
+    if (browserLang) deviceLang = browserLang;
+  }
+
+  // 3️⃣ normalize
+  const finalLang = deviceLang.startsWith('hr') ? 'hr' : 'en';
+
+  this.translate.setDefaultLang(finalLang);
+  this.translate.use(finalLang);
+
+  localStorage.setItem('selectedLang', finalLang);
+
+  console.log('🌍 App language initialized:', finalLang);
+}
+
+private async initFirebase() {
+  try {
+    initializeApp(environment.firebase);
+  } catch {}
+
+  try {
+    const perm = await FirebaseMessaging.requestPermissions();
+    console.log('Push permission:', perm);
+  } catch {}
+
+  try {
+    const token = await FirebaseMessaging.getToken();
+    if (token?.token) {
+      await this.dataService.savePushToken(token.token);
+    }
+  } catch {}
+}
+
 }

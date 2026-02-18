@@ -1,3 +1,7 @@
+ion-header {
+  box-shadow: none;
+}
+
 ion-content {
   padding: 0;
   margin: 0;
@@ -6,35 +10,87 @@ ion-content {
 }
 
 .idle {
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 51%, rgb(255, 4, 0) 100%);
-    transition: background 0.3s ease-in-out;
-  }
-
-.recording {
-  background: radial-gradient(circle, rgba(255, 255, 255, 1) 50%, rgb(43, 235, 0) 100%);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
-  animation: pulseGradient 2s infinite ease-in-out;
+  background: radial-gradient(circle at 50% 50%, rgba(253, 253, 253, 1) 50%, rgba(230, 230, 230, 1) 100%);
 }
 
-@keyframes pulseGradient {
-  0%, 100% {
-    background-size: 115% 115%;
-  }
-  50% {
-    background-size: 100% 100%;
-  }
-}
-
-
-.record-button,
-.send-button {
+/* The dynamic wave */
+.recording::before {
+  content: "";
+  position: absolute;
   width: 100%;
-  height: 3rem;
-  --background: #ff0479;
-  --color: #ffffff;
-  font-size: 1.2rem;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 200, 255, 0.4);
+  transform: scale(1);
+  opacity: 0.5;
+  animation: wave var(--wave-speed, 1s) infinite ease-out;
+  z-index: 1;
+}
+
+/* Optional: add a second wave for continuous effect */
+.recording::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 200, 255, 0.3);
+  transform: scale(1);
+  opacity: 0.5;
+  animation: wave calc(var(--wave-speed, 1s) + 0.3s) infinite ease-out;
+  z-index: 1;
+}
+
+@keyframes wave {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(var(--wave-scale, 2.5));
+    opacity: 0;
+  }
+}
+
+.record-timer {
+  position: relative;
+  width: 26vmin;
+  height: 34vmin;
+  margin: 100% 0 0 30%;
+
+  svg {
+    width: 120px;
+    height: 120px;
+    transform: rotate(-90deg);
+  }
+
+  circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+  }
+
+  circle:nth-child(1) {
+    stroke: #ccc;
+  }
+
+  circle:nth-child(2) {
+    transition: stroke-dashoffset 0.1s linear;
+  }
+
+  .timer-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color:rgba(0, 150, 200, 1);
+  }
 }
 
 .img-container {
@@ -42,7 +98,8 @@ ion-content {
   top: 30%;
   left: 50%;
   transform: translate(-50%, -50%);
-  border: 5px solid #9b9a9a;
+  background-size: 100% 100%;
+  border: 10px solid #e6e6e6;
   border-radius: 50%;
   height: 80vmin;
   width: 80vmin;
@@ -50,22 +107,70 @@ ion-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: visible;
+  transition: background 0.1s linear;
 }
 
 .mic-img {
-  height: 50vmin;
+  //height: 50vmin;
   width: 50vmin;
-  filter: invert(54%) sepia(11%) saturate(13%) hue-rotate(316deg) brightness(98%) contrast(81%);
+  //filter: invert(54%) sepia(11%) saturate(13%) hue-rotate(316deg) brightness(98%) contrast(81%);
   position: relative;
   z-index: 2;
 }
+
+.mic-button.locked {
+  filter: invert(99%) sepia(18%) saturate(70%) hue-rotate(275deg) brightness(119%) contrast(84%);
+}
+
 
 h2 {
   text-align: center;
   padding: 1rem 0;
   margin-top: 110vmin;
   font-size: 2rem;
+}
+
+.not-login {
+  z-index: 999;
+  position: absolute;
+  top: 56%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.912);
+  width: 80%;
+  border: 10px solid #e6e6e6;
+  border-radius: 10px;
+}
+
+.not-login-text {
+  padding: 1rem;
+  font-family: "Roboto";
+  color: rgb(110, 108, 108);
+  font-size: 1rem;
+}
+
+.login-button {
+  --background: #ebebeb;
+  width: 90%;
+  --border-radius: 8px;
+  margin: 0.8rem;
+  gap: 8px;
+  --box-shadow: none;
+
+  p {
+    font-family: "Roboto";
+    font-size: 0.8rem;
+    text-align: left;
+    vertical-align: 10px;
+    display: table-cell;
+    color: black;
+  }
+
+  svg {
+  width: 20vmin;
+  height: 7vmin;
+}
 }
 
 @media screen  and (min-width: 800px) {
@@ -76,25 +181,44 @@ h2 {
   
 }
 
-@media screen  and (min-width: 360px) {
+@media screen  and (max-width: 360px) and (max-height: 640px) {
   h2 {
-    margin-top: 120vmin;
+    margin-top: 95vmin;
     font-size: 3rem;
+  }
+
+  .record-timer {
+    margin: 80% 0 0 30%;
+  }
+
+  .record-timer .timer-text {
+    position: absolute;
+    top: 7%;
+    left: 5%;
   }
   
 }
 
+@media screen  and (max-width: 360px) and (max-height: 760px){
+  .record-timer .timer-text {
+    position: absolute;
+    top: 7%;
+    left: 3%;
+  }
+}
+
 ion-footer {
   box-shadow: none;
-  border-top: 2px solid #cacaca;
+  background-color: #f0f0f0;
+  height: 5rem;
   padding: 1rem 0;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 .footer-btn-container {
@@ -113,7 +237,7 @@ ion-footer {
 
 .home-button,
 .list-button {
-  border-right: 2px solid #cacaca;
+  border-right: 2px solid #ffffff;
 }
 
 .footer-icon {
@@ -121,7 +245,7 @@ ion-footer {
 }
 
 p {
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto";
   color: black;
   font-size: 0.7rem;
   text-transform: none;

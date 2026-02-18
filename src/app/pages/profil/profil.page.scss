@@ -1,31 +1,74 @@
+ion-content {
+  font-family: "Roboto";
+}
+
 h1 {
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto";
   text-align: center;
 }
 
 h2 {
-  color: black;
-  font-family: "Open Sans", sans-serif;
-  font-weight: 900;
+  color: #757575;
+  font-family: "Roboto";
+  text-align: left;
 }
 
-.notification-status {
-  font-family: "Open Sans", sans-serif;
-  font-size: 0.9rem;
+p {
+  margin-left: 1rem;
+}
+
+.notification,
+.location {
+  margin: 1rem;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.wrapper {
+  margin-right: 1.3rem;
+}
+
+.border {
+  border-bottom: 1px solid rgb(133, 132, 132);
+  width: 60%;
   margin: 1rem 0;
+}
+
+.card {
+  --background: #ebebeb;
+  width: 90%;
+  border-radius: 8px;
+  margin: 1rem auto 0 auto;
+  padding: 1rem;
+  box-shadow: none;
+  color: black;
+  font-size: 1rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  p {
+    font-family: "Roboto";
+    font-size: 1.2rem;
+    text-align: left;
+  }
 }
 
 ion-footer {
   box-shadow: none;
-  border-top: 2px solid #cacaca;
+  background-color: #f0f0f0;
+  height: 5rem;
   padding: 1rem 0;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 .footer-btn-container {
@@ -33,7 +76,6 @@ ion-footer {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  padding: 0.5rem;
 }
 
 .footer-button {
@@ -44,16 +86,42 @@ ion-footer {
 
 .home-button,
 .list-button {
-  border-right: 2px solid #cacaca;
+  border-right: 2px solid #ffffff;
 }
 
 .footer-icon {
   height: 10vmin;
 }
 
-p {
-  font-family: "Open Sans", sans-serif;
+.footer-title {
+  font-family: "Roboto";
   color: black;
   font-size: 0.7rem;
+  text-transform: none;
+}
+
+
+svg {
+  width: 20vmin;
+  height: 7vmin;
+}
+
+.card-img {
+  height: 8vmin;
+}
+
+.space {
+  margin: 8rem 0;
+}
+
+.footer-icon {
+  height: 10vmin;
+  margin-left: 1rem;
+}
+
+p {
+  font-family: "Roboto";
+  color: black;
+  font-size: 0.9rem;
   text-transform: none;
 }

@@ -7,12 +7,17 @@
       
       <!-- Name -->
       <div class="label-wrap">
-        <p class="title">{{ audio.name }}</p>
+        <p class="adress" *ngIf="audio.city && audio.street">{{ audio.street }}</p>
+        <br>
+        <p class="city" >{{ audio.city }}</p>
+        <br>
+        <p class="time">{{ audio.time }}</p>
+        <p class="date">{{ audio.date }}</p>
       </div>
 
       <!-- Play button -->
       <ion-button class="play-button" (click)="playAudio(audio)">
-        <img [src]="audio.isPlaying ? 'assets/pause-icon.png' : 'assets/play-icon.png'" class="play-icon" />
+        <img [src]="audio.isPlaying ? 'assets/pause-icon.png' : 'assets/microphone.png'" class="play-icon" />
       </ion-button>
 
       <!-- Map container -->
@@ -37,21 +42,21 @@
   <ion-button class="footer-button home-button" (click)="navigateTo('home')">
     <div class="footer-btn-container">
       <img src="assets/home.png" alt="home icon" class="footer-icon">
-      <p>Početni ekran</p>
+      <p>{{ 'HOME' | translate }}</p>
     </div> 
   </ion-button>
 
   <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
     <div class="footer-btn-container">
       <img src="assets/list.png" alt="list icon" class="footer-icon">
-      <p>Popis objava</p>
+      <p>{{ 'LIST' | translate }}</p>
     </div>
   </ion-button>
 
   <ion-button class="footer-button" (click)="navigateTo('profil')">
     <div class="footer-btn-container">
       <img src="assets/profil.png" alt="profil icon" class="footer-icon">
-      <p>Korisnički profil</p>
+      <p>{{ 'PROFILE' | translate }}</p>
     </div>
   </ion-button>
 </ion-footer>

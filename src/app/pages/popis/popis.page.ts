@@ -3,14 +3,16 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import * as L from 'leaflet';
+import { environment } from 'src/environments/environment';
+import { TranslateModule } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'app-popis',
   templateUrl: './popis.page.html',
   styleUrls: ['./popis.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, TranslateModule]
 })
 export class PopisPage implements OnInit {
   audios: any[] = [];
@@ -26,7 +28,7 @@ export class PopisPage implements OnInit {
   ngOnInit() {
   this.loadAudios();
 
-  // ✅ Reset play icon when the audio ends (always re-runs in Angular)
+  //Reset play icon when the audio ends (always re-runs in Angular)
   this.audioPlayer.addEventListener('ended', () => {
     if (this.currentAudio) {
       this.ngZone.run(() => {
@@ -38,7 +40,7 @@ export class PopisPage implements OnInit {
   });
 }
 
-  onViewDidEnter() {
+  IonViewDidEnter() {
     // Once the view and animations are ready
     if (this.audios.length > 0) {
       setTimeout(() => {
@@ -51,23 +53,47 @@ export class PopisPage implements OnInit {
     }
   }
 
+
   async loadAudios() {
   try {
     const response: any = await this.http.get('https://traffic-call.com/api/filelist.php').toPromise();
     console.log('Raw response from server:', response);
 
     if (Array.isArray(response)) {
-      this.audios = response.map((file, index) => ({
-        name: file.title || file.filename,
-        url: file.filename,
-        latitude: file.latitude,
-        longitude: file.longitude,
-        mapId: `map-${index}`,
-        isPlaying: false,
-        showMap: false
-      }));
+      this.audios = response.map((file, index) => {
 
-      // ✅ Initialize maps correctly (not the whole array)
+        const [datePart, timePart] = (file.title || '').split(' ');
+
+        let formattedDate = '';
+        if (datePart) {
+          const date = new Date(datePart);
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          formattedDate = `${day}.${month}.${year}`;
+        }
+
+        const formattedTime = timePart ? timePart.slice(0, 5) : '';
+
+        return {
+          name: file.title || file.filename,
+          url: file.filename,
+          latitude: file.latitude,
+          longitude: file.longitude,
+          mapId: `map-${index}`,
+          isPlaying: false,
+          showMap: false,
+          country: file.country,
+          city: file.city,
+          street: file.street,
+          date: formattedDate, 
+          time: formattedTime
+        };
+      });
+
+      console.log('Audios loaded:', this.audios);
+
+      //Initialize maps correctly (not the whole array)
       setTimeout(() => {
         this.audios.forEach(audio => {
           if (audio.showMap) {
@@ -76,7 +102,7 @@ export class PopisPage implements OnInit {
         });
       }, 300);
 
-      // ✅ Automatically play the first audio (with jingle)
+      //Automatically play the first audio (with jingle)
       if (this.audios.length > 0) {
         const firstAudio = this.audios[0];
         console.log('Auto-playing first audio:', firstAudio.name);
@@ -105,30 +131,30 @@ export class PopisPage implements OnInit {
 }
 
   playAudio(audio: any) {
-  const jingleUrl = 'assets/jingle.mp3';
+  const jingleUrl = 'assets/jingle.wav';
 
-  // 🎧 If clicking the same audio (pause/resume)
+  //If clicking the same audio (pause/resume)
   if (this.currentAudio === audio) {
     if (audio.isPlaying) {
-      // 🔴 Pause audio
+      // Pause audio
       this.audioPlayer.pause();
       audio.isPlaying = false;
 
-      // 🔒 Hide map when paused
+      //Hide map when paused
       audio.showMap = false;
     } else {
-      // ▶️ Resume audio
+      // Resume audio
       this.audioPlayer.play().catch(err => console.warn('Play blocked:', err));
       audio.isPlaying = true;
 
-      // 🗺 Show map when resumed
+      //Show map when resumed
       audio.showMap = true;
       setTimeout(() => this.initMap(audio), 420);
     }
     return;
   }
 
-  // 🛑 Stop previous audio and hide its map
+  //Stop previous audio and hide its map
   if (this.currentAudio) {
     this.currentAudio.isPlaying = false;
     this.audioPlayer.pause();
@@ -136,17 +162,17 @@ export class PopisPage implements OnInit {
     this.currentAudio.showMap = false;
   }
 
-  // 🆕 Set current audio
+  //Set current audio
   this.currentAudio = audio;
   audio.isPlaying = true;
-  audio.showMap = true; // 🗺 show map automatically
+  audio.showMap = true;
 
-  // ▶️ Play jingle
+  // Play jingle
   const jingle = new Audio(jingleUrl);
   jingle.play().catch(err => console.warn('Jingle blocked:', err));
 
   jingle.addEventListener('ended', () => {
-    // 🎵 After jingle, play main audio
+    // After jingle, play main audio
     this.audioPlayer.src = `https://traffic-call.com/files/${audio.url}`;
 
     this.audioPlayer.onended = null;
@@ -154,10 +180,10 @@ export class PopisPage implements OnInit {
       .then(() => console.log('Playing main audio:', audio.name))
       .catch(err => console.warn('Main audio play blocked:', err));
 
-    // 🗺 Initialize map
+    //Initialize map
     setTimeout(() => this.initMap(audio), 420);
 
-    // ✅ Reset after finished
+    //Reset after finished
     this.audioPlayer.addEventListener('ended', () => {
       this.ngZone.run(() => {
         console.log('✅ Main audio finished:', audio.name);
@@ -178,65 +204,78 @@ export class PopisPage implements OnInit {
   });
 }
 
-initMap(audio: any) {
-  const mapContainer = document.getElementById(audio.mapId);
+loadGoogleMaps(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).google && (window as any).google.maps) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.google_map_api}`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject('Google Maps failed to load.');
+    document.head.appendChild(script);
+  });
+}
+
+async initMap(audio: any) {
+  const mapId = audio.mapId;
+  
+  // Wait until the element actually exists
+  await this.waitForElement(`#${mapId}`);
+
+  const mapContainer = document.getElementById(mapId);
   if (!mapContainer) return;
+
+  console.log('Loading Google Maps for audio:', audio.name);
+  await this.loadGoogleMaps();
+  console.log('Google Maps loaded!');
+
 
   const lat = parseFloat(audio.latitude);
   const lon = parseFloat(audio.longitude);
+  console.log('Coordinates for map:', audio.latitude, audio.longitude);
 
-  // ❌ stop if coordinates are invalid
-  if (isNaN(lat) || isNaN(lon)) {
-    console.warn('No valid location for:', audio.name);
-    return;
-  }
+  if (isNaN(lat) || isNaN(lon)) return;
 
-  const center: [number, number] = [lat, lon];
-  console.log('Marker coordinates used:', center);
+  const map = new google.maps.Map(mapContainer, {
+    center: { lat, lng: lon },
+    zoom: 17,
+    disableDefaultUI: true,
+  });
 
-  if ((mapContainer as any)._leaflet_map) {
-    const map = (mapContainer as any)._leaflet_map;
-    setTimeout(() => {
-      map.invalidateSize();
-      map.setView(center, 20);
-    }, 400);
-    return;
-  }
+  const markerIcon = {
+    url: 'assets/google_map_marker.png',
+    scaledSize: new google.maps.Size(70, 50),
+    anchor: new google.maps.Point(20, 50),
+  };
 
-  audio.isLoading = true;
+  new google.maps.Marker({
+    position: { lat, lng: lon },
+    map,
+    icon: markerIcon,
+  });
+}
 
-  setTimeout(() => {
-    const map = L.map(audio.mapId, {
-      center,
-      zoom: 16,
-      zoomControl: false,
-      attributionControl: false,
-      dragging: true,
-      scrollWheelZoom: true
+private waitForElement(selector: string): Promise<void> {
+  return new Promise((resolve) => {
+    const el = document.querySelector(selector);
+    if (el) {
+      resolve();
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      const el2 = document.querySelector(selector);
+      if (el2) {
+        observer.disconnect();
+        resolve();
+      }
     });
-
-    (mapContainer as any)._leaflet_map = map;
-
-    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 20,
-      detectRetina: true,
-    }).addTo(map);
-
-    tileLayer.on('load', () => {
-      audio.isLoading = false;
-      map.invalidateSize();
-      map.setView(center, 20);
-    });
-
-    const customIcon = L.icon({
-      iconUrl: 'assets/map marker.png',
-      iconSize: [35, 45],
-      iconAnchor: [17, 45],
-    });
-
-    L.marker(center, { icon: customIcon }).addTo(map);
-    setTimeout(() => map.invalidateSize(), 900);
-  }, 400);
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
 }
 
   navigateTo(page: string) {

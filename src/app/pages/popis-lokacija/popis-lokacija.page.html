@@ -1,0 +1,63 @@
+<ion-content>
+
+  <ion-accordion-group>
+
+    <ion-accordion *ngFor="let country of countries" value="{{ country.name }}">
+
+      <!-- Country header -->
+      <ion-item slot="header" color="light">
+        <ion-label>
+          <strong>{{ country.name }}</strong>
+        </ion-label>
+      </ion-item>
+
+      <!-- Cities -->
+      <div slot="content">
+        <ion-item
+          *ngFor="let city of country.cities"
+          lines="none"
+        >
+          <ion-label>{{ city.name }}</ion-label>
+
+          <ion-toggle
+          slot="end"
+          color="success"
+          [(ngModel)]="city.enabled"
+          [disabled]="isAllMode()"
+          (ionChange)="onCityToggle(city)"
+        ></ion-toggle>
+        </ion-item>
+      </div>
+
+    </ion-accordion>
+
+  </ion-accordion-group>
+
+  <div class="space"></div>
+
+</ion-content>
+
+<ion-footer>
+
+        <ion-button class="footer-button home-button" (click)="navigateTo('home')">
+          <div class="footer-btn-container">
+            <img src="assets/home.png" alt="home icon" class="footer-icon">
+            <p>{{ 'HOME' | translate }}</p>
+          </div> 
+        </ion-button>
+
+        <ion-button class="footer-button list-button" (click)="navigateTo('popis')">
+          <div class="footer-btn-container">
+            <img src="assets/list.png" alt="list icon" class="footer-icon">
+            <p>{{ 'LIST' | translate }}</p>
+          </div>
+        </ion-button>
+
+        <ion-button class="footer-button" (click)="navigateTo('profil')">
+          <div class="footer-btn-container">
+            <img src="assets/profil.png" alt="profil icon" class="footer-icon">
+            <p>{{ 'PROFILE' | translate }}</p>
+          </div>
+        </ion-button>
+
+  </ion-footer>

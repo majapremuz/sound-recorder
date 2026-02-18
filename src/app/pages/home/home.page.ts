@@ -6,17 +6,22 @@ import { ControllerService } from 'src/app/services/controller.service';
 import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { HttpClient } from '@angular/common/http';
 import { PushNotifications } from '@capacitor/push-notifications';
-import { ToastController } from '@ionic/angular';
+import { ToastController, LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
-
+import { environment } from 'src/environments/environment';
+import { AuthService } from 'src/app/services/auth.service';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { DataService } from 'src/app/services/data.service';
+import { LocationService } from 'src/app/services/location.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, TranslateModule]
 })
 export class HomePage {
   @ViewChild('waveCanvas', { static: false }) waveCanvas!: ElementRef<HTMLCanvasElement>;
@@ -35,6 +40,12 @@ export class HomePage {
   currentTime = 0;
   duration = 0;
   progress = 0;
+  volumeLevel = 0;
+
+  authSub?: Subscription;
+
+
+  @ViewChild('audioCanvas', { static: false }) audioCanvas!: ElementRef<HTMLCanvasElement>;
 
   audioContext!: AudioContext;
   analyser!: AnalyserNode;
@@ -44,31 +55,50 @@ export class HomePage {
   audioUrl: string | null = null;
   recordedBlob!: Blob;
   message = '';
+  circleLength = 2 * Math.PI * 45; 
+  circleOffset = 0;
+
 
   translate: any = [];
+  isLoggedIn = false;
 
   contents: Array<ContentObject> = [];
 
   constructor(
-    private dataCtrl: ControllerService,
+    private loadingController: LoadingController,
+    private dataService: DataService,
+    private contrCtrl: ControllerService,
     private androidPermissions: AndroidPermissions,
     private http: HttpClient,
     private toastController: ToastController,
     private router: Router,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private authService: AuthService,
+    private locationService: LocationService
   ) {
     this.initTranslate();
   }
 
+ionViewWillEnter() {
+  this.authService.syncLoginStateFromStorage();
+}
 
-  ionViewWillEnter(){
-    this.dataCtrl.setHomePage(true);
-    this.initPush();
-  }
+ionViewWillLeave() {
+  this.contrCtrl.setHomePage(false);
+}
 
-  ionViewWillLeave(){
-    this.dataCtrl.setHomePage(false);
-  }
+ngOnDestroy() {
+  this.authSub?.unsubscribe();
+}
+
+
+  ngOnInit() {
+  this.authSub = this.authService.isLoggedIn$().subscribe(async state => {
+    this.isLoggedIn = state;
+    await this.initTranslate();
+  });
+}
+
 
   async requestAudioPermission(): Promise<boolean> {
   const result = await this.androidPermissions.checkPermission(
@@ -97,6 +127,43 @@ export class HomePage {
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.audioContext = new AudioContext();
+const source = this.audioContext.createMediaStreamSource(stream);
+this.analyser = this.audioContext.createAnalyser();
+this.analyser.fftSize = 512;
+
+source.connect(this.analyser);
+
+const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+const updateVolume = () => {
+  if (!this.isRecording) return;
+
+  this.analyser.getByteTimeDomainData(dataArray);
+
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    const v = dataArray[i] - 128;
+    sum += v * v;
+  }
+
+  const rms = Math.sqrt(sum / dataArray.length); // volume value 0–~50
+  this.volumeLevel = Math.min(rms * 3, 100); // normalize to 0–100
+
+  // Update CSS variables for wave scale and speed
+  const container = this.waveCanvas?.nativeElement || document.querySelector('.img-container');
+  if (container) {
+    const scale = 1 + this.volumeLevel / 50; // bigger wave if louder
+    const speed = 1 - Math.min(this.volumeLevel / 200, 0.7); // faster if louder
+    container.style.setProperty('--wave-scale', scale.toString());
+    container.style.setProperty('--wave-speed', speed + 's');
+  }
+
+  requestAnimationFrame(updateVolume);
+};
+
+updateVolume();
+
     this.mediaRecorder = new MediaRecorder(stream);
     this.audioChunks = [];
     this.hasSent = false; // reset for new recording
@@ -112,7 +179,7 @@ export class HomePage {
     };
 
     this.mediaRecorder.onstop = async () => {
-      if (this.hasSent) return; // 🔒 prevent double send
+      if (this.hasSent) return; // prevent double send
       this.hasSent = true;
 
       if (!this.audioChunks.length) return;
@@ -163,6 +230,10 @@ stopRecording() {
 }
 
 toggleRecording() {
+  if (!this.isLoggedIn) {
+    this.router.navigate(['/login']);
+    return;
+  }
   if (this.isRecording) {
     this.stopRecording();
   } else {
@@ -170,14 +241,20 @@ toggleRecording() {
   }
 }
 
+
 async sendRecording() {
   if (!this.recordedBlob) return;
 
+  const loading = await this.loadingController.create({
+    spinner: 'crescent',
+    backdropDismiss: false
+  });
+  await loading.present();
+
   try {
     const fileName = `${Date.now()}.webm`;
-    console.log('Uploading file:', fileName);
 
-    // Convert blob to base64
+    // convert Blob → base64
     let base64Data = await this.blobToBase64(this.recordedBlob);
     if (typeof base64Data === 'string') {
       const commaIndex = base64Data.indexOf(',');
@@ -186,15 +263,15 @@ async sendRecording() {
       }
     }
 
-    // ✅ Request permission and get GPS coordinates
+    // request location permission
     const perm = await Geolocation.requestPermissions();
-      if (perm.location !== 'granted') {
-        console.warn('Location permission denied');
-        return;
-      }
+    if (perm.location !== 'granted') {
+      console.warn('Location permission denied');
+      await loading.dismiss();
+      return;
+    }
 
-    await new Promise(r => setTimeout(r, 500));
-
+    // get coordinates
     const position = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
       timeout: 10000
@@ -204,31 +281,67 @@ async sendRecording() {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude
     };
-    console.log('GPS coordinates:', coords);
 
-    // Get the current device token
-    const deviceToken = localStorage.getItem('pushToken');
-    if (!deviceToken) console.warn('No device token found – push may not work');
+    // reverse geocode → city, street, country
+    const { city: cityName, street, country: countryName } =
+      await this.reverseGeocode(coords.latitude, coords.longitude);
 
-    // ✅ Send audio + token + location in the same request
-      const payload = {
-        filedata: base64Data,
-        filename: fileName,
-        token: deviceToken,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      };
+    const token = await this.dataService.getAuthToken();
 
-      // ✅ Log the payload before sending
-      console.log('Sending payload:', payload);
+    // safety normalize
+    const normalize = (s: string | undefined | null) => (s ?? '').trim();
 
-      // ✅ Send the request
-      const response: any = await this.http.post(
-        'https://traffic-call.com/api/files.php',
-        payload
-      ).toPromise();
+    const country = normalize(countryName);
+    const city = normalize(cityName);
 
-      console.log('Full response from server:', response);
+    if (!country) {
+      console.error('❌ No country detected from geolocation');
+      await loading.dismiss();
+      return;
+    }
+
+    console.log('🌍 Country:', country);
+    console.log('🏙️ City:', city);
+
+    /* -------------------------------
+       1️⃣ SEND TO cities.php
+       ------------------------------- */
+    const citiesPayload = {
+      token: token,
+      country: country   // ✅ send TEXT, not ID
+    };
+
+    console.log('📤 Sending to cities.php:', citiesPayload);
+
+    await this.http.post(
+      'https://traffic-call.com/api/cities.php',
+      citiesPayload
+    ).toPromise();
+
+    /* -------------------------------
+       2️⃣ SEND TO files.php
+       ------------------------------- */
+    const filesPayload = {
+      filedata: base64Data,
+      filename: fileName,
+      token: token,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      country: country,   // ✅ TEXT
+      city: city,         // already text
+      street: street
+    };
+
+    console.log('📤 Sending to files.php:', filesPayload);
+
+    const response: any = await this.http.post(
+      'https://traffic-call.com/api/files.php',
+      filesPayload
+    ).toPromise();
+
+    console.log('✅ Server response:', response);
+
+    await loading.dismiss();
 
     const toast = await this.toastController.create({
       message: 'Audio i lokacija poslani!',
@@ -242,7 +355,9 @@ async sendRecording() {
     });
 
   } catch (err) {
-    console.error('Failed to send audio:', err);
+    await loading.dismiss();
+    console.error('❌ Failed to send audio:', err);
+
     const toast = await this.toastController.create({
       message: 'Slanje nije uspjelo',
       duration: 2000,
@@ -260,6 +375,45 @@ blobToBase64(blob: Blob): Promise<string> {
     reader.readAsDataURL(blob);
   });
 }
+
+async reverseGeocode(lat: number, lon: number): Promise<{ city: string; street: string; country: string }> {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${environment.google_map_api}&language=hr`;
+    const response: any = await this.http.get(url).toPromise();
+
+    if (response.status === 'OK' && response.results.length > 0) {
+      const address = response.results[0].address_components;
+
+      let city = '';
+      let street = '';
+      let country = '';
+
+      for (const comp of address) {
+        // City can be in multiple types
+        if (comp.types.includes('locality') || comp.types.includes('postal_town') || comp.types.includes('sublocality_level_1')) {
+          city = comp.long_name;
+        }
+
+        if (comp.types.includes('route')) {
+          street = comp.long_name;
+        }
+
+        if (comp.types.includes('country')) {
+          country = comp.long_name;
+        }
+      }
+
+      return { city, street, country };
+    } else {
+      console.warn('Geocoding failed:', response);
+      return { city: '', street: '', country: '' };
+    }
+  } catch (err) {
+    console.error('Reverse geocoding error:', err);
+    return { city: '', street: '', country: '' };
+  }
+}
+
 
 async initPush() {
   let permStatus = await PushNotifications.checkPermissions();
@@ -308,17 +462,23 @@ async initPush() {
 }
 
   updateTimer() {
-    if (!this.recordingStartTime) return;
-    const elapsedMs = Date.now() - this.recordingStartTime;
-    if (elapsedMs >= 15000) {
-      this.timeStamp = '00:15';
-      clearInterval(this.timerInterval);
-    } else {
-      const seconds = Math.floor(elapsedMs / 1000);
-      const ms = Math.floor((elapsedMs % 1000) / 100);
-      this.timeStamp = `00:${seconds < 10 ? '0' + seconds : seconds}.${ms}`;
-    }
+  if (!this.recordingStartTime) return;
+  const elapsedMs = Date.now() - this.recordingStartTime;
+  const remainingMs = 15000 - elapsedMs;
+
+  if (remainingMs <= 0) {
+    this.timeStamp = '00:00';
+    this.circleOffset = this.circleLength;
+    clearInterval(this.timerInterval);
+    return;
   }
+
+  const seconds = Math.ceil(remainingMs / 1000);
+  this.timeStamp = `00:${seconds < 10 ? '0' + seconds : seconds}`;
+
+  const progress = elapsedMs / 15000;
+  this.circleOffset = this.circleLength * progress;
+}
 
   togglePlay() {
   if (this.isPlaying) {
@@ -339,7 +499,7 @@ async initPush() {
   }
 
   async initTranslate(){
-    this.translate['test_string'] = await this.dataCtrl.translateWord("TEST.STRING");
+    this.translate['test_string'] = await this.dataService.translateWord("TEST.STRING");
   }
 
 }

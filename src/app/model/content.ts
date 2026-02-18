@@ -21,6 +21,7 @@ export interface ContentApiInterface {
     content_show_date: string
     content_archive: string
     content_attachment_key: number
+    content_attachment_key_obj: Array<ImageApiInterface> | null
     content_description: any
     segments: any[]
     content_image_obj: ImageApiInterface
@@ -30,6 +31,7 @@ export interface ContentApiInterface {
     content_path: string
     content_parent_level: number
     content_has_child: boolean
+    content_order: string
 }
 
 interface ContentInterface {
@@ -46,6 +48,7 @@ interface ContentInterface {
     content_show_date: boolean
     content_archive: boolean
     content_attachment_key: number
+    content_attachment_key_obj: Array<ImageObject> | null
     content_description: string | null
     segments: any[]
     content_image_obj: ImageObject | null
@@ -71,12 +74,14 @@ export class ContentObject implements ContentInterface{
     content_type: ContentType
     content_user_permission: number
     content_parent: ContentObject | null
+    content_parent_id: number | null
     content_main_group: number
     content_public_date: string | null
     content_show_autor: boolean
     content_show_date: boolean
     content_archive: boolean
     content_attachment_key: number
+    content_attachment_key_obj: Array<ImageObject> | null
     content_description: string | null
     segments: any[]
     content_image_obj: ImageObject | null
@@ -87,6 +92,8 @@ export class ContentObject implements ContentInterface{
     content_path: string
     content_parent_level: number
     content_has_child: boolean
+    content_order: number
+    
 
     constructor(data: ContentApiInterface){
         this.content_id = data.content_id;
@@ -112,7 +119,10 @@ export class ContentObject implements ContentInterface{
         this.content_company_id_obj = null;
         this.content_uid_obj = null;
         this.content_has_image = false;
-
+        this.content_attachment_key_obj = null;
+        this.content_order = parseInt(data.content_order, 10);
+        this.content_parent_id = data.content_parent;
+        this.content_attachment_key_obj = [];
 
         if(data.content_type != null){
             if(data.content_type == 'content'){

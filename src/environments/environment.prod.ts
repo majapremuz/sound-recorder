@@ -12,7 +12,7 @@ export const environment = {
     },
     multimedia: '/Assets/multimedia'
   },
-  google_map_api: '',
+  google_map_api: 'AIzaSyD1xscctumKOh6K2O9D5NiB7IJdyQvGTVw',
   cache_key: 'cache-key-',
   def_image: 'assets/imgs/no-image-icon-23485.png',
   company_id: 2,
@@ -21,7 +21,7 @@ export const environment = {
   db_version: '1.2.8',
 
   firebase: {
-  apiKey: "AIzaSyCVs8zmwT8YMlg3hvGoRWCxgJmPgrmE6OM",
+  apiKey: "",
   authDomain: "sound-recorder-93263.firebaseapp.com",
   projectId: "sound-recorder-93263",
   storageBucket: "sound-recorder-93263.firebasestorage.app",

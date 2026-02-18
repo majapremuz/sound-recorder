@@ -3,9 +3,32 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Ionic App</title>
+  <title>Traffic Call</title>
 
   <base href="/" />
+
+  <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  connect-src 'self'
+    https://*.firebaseio.com
+    https://fcm.googleapis.com
+    https://*.googleapis.com
+    https://rest-api.mkovacic-dev.com
+    https://traffic-call.com;
+  img-src 'self' data:
+    https://traffic-call.com
+    https://maps.googleapis.com
+    https://maps.gstatic.com;
+  style-src 'self' 'unsafe-inline'
+    https://fonts.googleapis.com;
+  font-src 'self'
+    https://fonts.gstatic.com;
+  script-src 'self' 'unsafe-inline' 'unsafe-eval'
+    https://maps.googleapis.com
+    https://maps.gstatic.com;
+">
+
+
 
   <meta name="color-scheme" content="light dark" />
   <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
