@@ -1,4 +1,4 @@
-package com.prolink.trafficcall;
+package trafficcall.app.com;
 
 import com.getcapacitor.BridgeActivity;
 
