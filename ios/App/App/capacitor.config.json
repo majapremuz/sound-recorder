@@ -3,12 +3,7 @@
 	"appName": "Traffic call",
 	"webDir": "www",
 	"packageClassList": [
-		"FCMPlugin",
-		"FCMPlugin",
 		"MediaPlugin",
-		"MediaPlugin",
-		"FirebaseMessagingPlugin",
-		"BarcodeScannerPlugin",
 		"BarcodeScannerPlugin",
 		"AppPlugin",
 		"DevicePlugin",

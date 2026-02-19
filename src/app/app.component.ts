@@ -9,9 +9,9 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslateService } from '@ngx-translate/core';
-import { initializeApp } from "firebase/app";
+//import { initializeApp } from "firebase/app";
 import { environment } from 'src/environments/environment';
-import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+//import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { DataService } from './services/data.service';
 import { AuthService } from './services/auth.service';
 import { Storage } from '@ionic/storage-angular';
@@ -57,7 +57,7 @@ export class AppComponent {
   });
 
   await this.initLanguage();
-  await this.initFirebase();
+  //await this.initFirebase();
   this.contrCtrl.setReadyPage();
 
   await SplashScreen.hide();
@@ -119,7 +119,7 @@ export class AppComponent {
   console.log('🌍 App language initialized:', finalLang);
 }
 
-private async initFirebase() {
+/*private async initFirebase() {
   try {
     initializeApp(environment.firebase);
   } catch {}
@@ -135,6 +135,6 @@ private async initFirebase() {
       await this.dataService.savePushToken(token.token);
     }
   } catch {}
-}
+}*/
 
 }
