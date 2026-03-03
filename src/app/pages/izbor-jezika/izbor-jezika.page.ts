@@ -73,12 +73,19 @@ export class IzborJezikaPage implements OnInit {
         // Register translations in ngx-translate
         Object.entries(translations).forEach(([lang, values]) => {
           if (values && Object.keys(values).length > 0) {
-            this.translateService.setTranslation(lang, values as Record<string, string>, true);
+          this.translateService.setTranslation(lang, values as Record<string, string>, true);
           } else {
             console.warn(`No translations available for ${lang}`);
           }
         });
-        this.translateService.use(this.selectedLang);
+        const savedLang = localStorage.getItem('selectedLang');
+
+        const langToUse =
+          this.languages.find(l => l.code === savedLang)?.code
+          ?? 'hr';
+
+        this.translateService.use(langToUse);
+        this.selectedLang = langToUse;
 
         this.loading = false;
       },

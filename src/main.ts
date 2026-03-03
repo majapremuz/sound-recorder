@@ -97,12 +97,10 @@ bootstrapApplication(AppComponent, {
 translate.setTranslation('hr', defaultHrTranslations, true);
 
 
-  const savedLang = localStorage.getItem('selectedLang');
-  const defaultLang = savedLang || 'hr';
+translate.setDefaultLang('hr');
+translate.use('hr'); 
 
-  translate.setDefaultLang('hr');
-  translate.use(defaultLang);
+console.log('App started with default hr language');
 
-  console.log('App started with language:', defaultLang);
 })
 .catch(err => console.error(err));

@@ -21,7 +21,7 @@ export const environment = {
   db_version: '1.2.8',
 
   firebase: {
-  apiKey: "",
+  apiKey: "AIzaSyCVs8zmwT8YMlg3hvGoRWCxgJmPgrmE6OM",
   authDomain: "sound-recorder-93263.firebaseapp.com",
   projectId: "sound-recorder-93263",
   storageBucket: "sound-recorder-93263.firebasestorage.app",

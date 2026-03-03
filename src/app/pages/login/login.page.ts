@@ -100,12 +100,16 @@ export class LoginPage implements OnInit {
     .set('password',this.registerPassword)
     .set('token', firebaseToken || '');
 
+    console.log('Registering with:', body);
+
   this.http.post(url, body.toString(), {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     responseType: 'text'
   }).subscribe({
     next: async (raw) => {
       console.log('RAW REGISTER RESPONSE:', raw); 
+      console.log('RAW REGISTER RESPONSE LENGTH:', raw?.length);
+      console.log('RAW REGISTER RESPONSE CONTENT:', JSON.stringify(raw));
 
       if (!raw || raw.trim() === '') {
         this.showToast('Server nije vratio odgovor.');
@@ -161,6 +165,8 @@ login() {
   const body = new HttpParams()
     .set('username', sha1(sha1(this.loginUsername)))
     .set('password', sha1(sha1(this.loginPassword)));
+
+    console.log('Logging in with:', body);
 
   this.http.post('https://traffic-call.com/api/login.php', body.toString(), {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
