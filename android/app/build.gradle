@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.prolink.trafficcall"
+    namespace "trafficcall.app.com"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.prolink.trafficcall"
+        applicationId "trafficcall.app.com"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 104
+        versionName "1.0.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

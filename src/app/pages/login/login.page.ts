@@ -163,8 +163,8 @@ try {
 
 login() {
   const body = new HttpParams()
-    .set('username', sha1(sha1(this.loginUsername)))
-    .set('password', sha1(sha1(this.loginPassword)));
+    .set('username', sha1(this.loginUsername))
+    .set('password', sha1(this.loginPassword));
 
     console.log('Logging in with:', body);
 

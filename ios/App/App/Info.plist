@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Traffic call</string>
+	<string>Traffic call</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,6 +22,14 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Potrebna nam je kamera za fotografiranje i slanje dokumenata.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Koristimo vašu lokaciju kako bismo omogućili funkcije aplikacije i pružili točnije informacije o prometu i događajima u vašoj blizini, čak i kada aplikacija nije otvorena.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Lokacija se koristi dok je aplikacija otvorena radi prikaza usluga u blizini.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Potrebna nam je galerija za odabir i upload fotografija.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
