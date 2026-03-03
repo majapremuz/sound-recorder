@@ -16,6 +16,7 @@ import { DataService } from './services/data.service';
 import { AuthService } from './services/auth.service';
 import { Storage } from '@ionic/storage-angular';
 import { Device } from '@capacitor/device';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 
 @Component({
@@ -57,14 +58,11 @@ export class AppComponent {
   });
 
   await this.initLanguage();
-  //await this.initFirebase();
-  this.contrCtrl.setReadyPage();
-
-  await SplashScreen.hide();
-  await StatusBar.show();
+  await this.setReadyPage();
 }
 
   async setReadyPage(){
+    console.log('setReadyPage');
     // nakon sto se stranica pokrene ugasiti splash screen
     if(this.platform.is('cordova') || this.platform.is('capacitor')){
       await SplashScreen.hide();
@@ -74,7 +72,7 @@ export class AppComponent {
       //await StatusBar.setStyle({ style: Style.Light });
 
       // pokreni inicijalizaciju notifikacija
-      // await this.initNotifications();
+      await this.initNotifications();
     }
 
     // izvrisit sve provjere i funkcije prije ove funkcije
@@ -85,7 +83,6 @@ export class AppComponent {
 
   async initStorage() {
     await this.storage.create();
-    console.log('✅ Storage initialized');
   }
 
   private async initLanguage() {
@@ -115,8 +112,40 @@ export class AppComponent {
   this.translate.use(finalLang);
 
   localStorage.setItem('selectedLang', finalLang);
+}
 
-  console.log('🌍 App language initialized:', finalLang);
+async initNotifications()  {
+  let permStatus = await PushNotifications.checkPermissions();
+
+  if (permStatus.receive === 'prompt') {
+    permStatus = await PushNotifications.requestPermissions();
+  }
+
+  if (permStatus.receive !== 'granted') {
+    throw new Error('User denied permissions!');
+  }
+
+  await PushNotifications.register();
+  await this.addListeners();
+}
+
+async addListeners() {
+  await PushNotifications.addListener('registration', token => {
+    console.info('Registration token: ', token.value);
+    this.dataService.savePushToken(token.value);
+  });
+
+  await PushNotifications.addListener('registrationError', err => {
+    console.error('Registration error: ', err.error);
+  });
+
+  await PushNotifications.addListener('pushNotificationReceived', notification => {
+    console.log('Push notification received: ', notification);
+  });
+
+  await PushNotifications.addListener('pushNotificationActionPerformed', notification => {
+    console.log('Push notification action performed', notification.actionId, notification.inputValue);
+  });
 }
 
 /*private async initFirebase() {
