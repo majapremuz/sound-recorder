@@ -119,17 +119,86 @@ export class AppComponent {
 }
 
 private async loadApiTranslations() {
-  const langs = await firstValueFrom(
-  this.languageService.getLanguages().pipe(defaultIfEmpty([]))
-);
+  try {
+    const langs = await firstValueFrom(
+      this.languageService.getLanguages()
+    ).catch(() => []); // fallback if API fails
 
-const translations = await firstValueFrom(
-  this.languageService.getTranslations(langs).pipe(defaultIfEmpty({}))
-);
+    let translations: Record<string, any> = {};
 
-  Object.entries(translations).forEach(([lang, values]) => {
-    this.translate.setTranslation(lang, values as any, true);
-  });
+    if (langs.length) {
+      translations = await firstValueFrom(
+        this.languageService.getTranslations(langs)
+      ).catch(() => ({}))
+    }
+
+    // Merge API translations with default translations
+    const defaultHrTranslations = {
+      "LANGUAGE_SELECTION": "Izbor jezika",
+      "CONFIRM_LANGUAGE": "Potvrdi izbor jezika",
+      "HOME": "Početni ekran",
+      "LIST": "Popis objava",
+      "PROFILE": "Korisnički profil",
+      "NOT_LOGGED": "Poštovani, za slanje prometnog izvještaja potrebno je prijaviti se u aplikaciju.",
+      "LOGIN": "Prijava i registracija",
+      "NOTIFICATIONS": "Primanje notifikacija",
+      "OFF": "isključeno",
+      "ON": "uključeno",
+      "LOCATIONS": "Određivanje lokacija",
+      "ALL": "sve lokacije",
+      "LOCATIONS_LIST": "Popis lokacija",
+      "PASSWORD_CHANGE": "Promjena lozinke",
+      "LANGUAGE_CHANGE": "Promjena jezika",
+      "DELETE_ACCOUNT": "Obriši korisnički račun",
+      "DELETE_": "Brisanje korisničkog računa",
+      "DELETE_ACCOUNT_TEXT": "Ukoliko želite obrisati korisnički račun u aplikaciji, molimo Vas da potvrdite.",
+      "LOGOUT": "Odjava",
+      "LOGOUT_TITLE": "Odjava iz aplikacije",
+      "LOGOUT_TEXT": "Ukoliko se želite odjaviti iz aplikacije, molimo Vas da to potvrdite.",
+      "LOGOUT_BUTTON": "Odjavi se",
+      "LOGIN_TITLE": "Prijava",
+      "LOGIN_": "Prijavi se",
+      "REGISTER_TITLE": "Registracija",
+      "REGISTER": "Registriraj se",
+      "EMAIL": "E-mail",
+      "VALID_EMAIL_REQUIRED": "Unesite pravilnu e-mail adresu.",
+      "USERNAME": "Korisničko ime",
+      "USERNAME_ERROR": "Korisničko ime je obavezno.",
+      "PASSWORD": "Lozinka",
+      "REPEAT_PASSWORD": "Ponovi lozinku",
+      "PASSWORD_ERROR": "Lozinka je obavezna.",
+      "FORGOT_PASSWORD": "Kliknite ovdje ako ste zaboravili Vašu lozinku",
+      "CHANGE_PASSWORD": "Promjena lozinke",
+      "CHANGE_PASSWORD_BUTTON": "Promijeni lozinku",
+      "PASSWORD_RESET": "Izgubljena lozinka",
+      "SEND_RESET_LINK": "Pošalji na e-mail",
+      "ENTER_VALID_PASSWORD": "Unesite pravilnu lozinku.",
+      "OLD_PASSWORD": "Stara lozinka",
+      "NEW_PASSWORD": "Nova lozinka",
+      "REPEAT_NEW_PASSWORD": "Ponovi novu lozinku",
+      "CONFIRM_DELETE_ACCOUNT": "Da li ste sigurni da želite obrisati Vaš korisnički račun?",
+      "CANCEL": "Otkaži",
+      "DELETE": "Obriši",
+      "DELETE_HEADER": "Brisanje računa"
+    };
+
+    // Always set default translations first
+    this.translate.setTranslation('hr', defaultHrTranslations, true);
+
+    // Then merge API translations (if any)
+    Object.entries(translations).forEach(([lang, values]) => {
+      this.translate.setTranslation(lang, values as any, true);
+    });
+
+    const currentLang = localStorage.getItem('selectedLang') || 'hr';
+    this.translate.setDefaultLang(currentLang);
+    this.translate.use(currentLang);
+
+    console.log('Translations loaded for:', currentLang);
+
+  } catch (err) {
+    console.error('Translation loading error:', err);
+  }
 }
 
 async initNotifications()  {
