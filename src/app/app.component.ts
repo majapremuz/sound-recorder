@@ -17,6 +17,8 @@ import { AuthService } from './services/auth.service';
 import { Storage } from '@ionic/storage-angular';
 import { Device } from '@capacitor/device';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { LanguageService } from './services/language.service';
+import { firstValueFrom } from 'rxjs';
 
 
 @Component({
@@ -39,7 +41,8 @@ export class AppComponent {
     public dataService: DataService,
     private translate: TranslateService, 
     private authService: AuthService,
-    private storage: Storage
+    private storage: Storage,
+    private languageService: LanguageService
   ) {}
 
   async ngOnInit() { await this.bootstrap();}
@@ -58,6 +61,7 @@ export class AppComponent {
   });
 
   await this.initLanguage();
+  await this.loadApiTranslations();
   await this.setReadyPage();
 }
 
@@ -112,6 +116,20 @@ export class AppComponent {
   this.translate.use(finalLang);
 
   localStorage.setItem('selectedLang', finalLang);
+}
+
+private async loadApiTranslations() {
+  const langs = await firstValueFrom(
+    this.languageService.getLanguages()
+  );
+
+  const translations = await firstValueFrom(
+    this.languageService.getTranslations(langs)
+  );
+
+  Object.entries(translations).forEach(([lang, values]) => {
+    this.translate.setTranslation(lang, values as any, true);
+  });
 }
 
 async initNotifications()  {

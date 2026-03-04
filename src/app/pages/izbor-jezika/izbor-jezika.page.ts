@@ -62,10 +62,6 @@ export class IzborJezikaPage implements OnInit {
 
         this.translateService.addLangs(langs.map(l => l.code));
       }),
-      switchMap(langs => {
-        if (!langs.length) return of({});
-        return this.languageService.getTranslations(langs);
-      })
     ).subscribe({
       next: translations => {
         console.log('Translations loaded from API:', translations);
@@ -73,7 +69,6 @@ export class IzborJezikaPage implements OnInit {
         // Register translations in ngx-translate
         Object.entries(translations).forEach(([lang, values]) => {
           if (values && Object.keys(values).length > 0) {
-          this.translateService.setTranslation(lang, values as Record<string, string>, true);
           } else {
             console.warn(`No translations available for ${lang}`);
           }
