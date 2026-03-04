@@ -14,7 +14,9 @@ import { AuthService } from 'src/app/services/auth.service';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { DataService } from 'src/app/services/data.service';
 import { LocationService } from 'src/app/services/location.service';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom, of, from } from 'rxjs';
+import { catchError, defaultIfEmpty } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-home',
@@ -93,9 +95,12 @@ ngOnDestroy() {
 
 
   ngOnInit() {
-  this.authSub = this.authService.isLoggedIn$().subscribe(async state => {
+  this.authSub = this.authService.isLoggedIn$().subscribe(state => {
     this.isLoggedIn = state;
-    await this.initTranslate();
+
+    this.initTranslate().catch(err => {
+      console.error('initTranslate failed', err);
+    });
   });
 }
 
@@ -289,11 +294,17 @@ async sendRecording() {
     const { city: cityName, street, country: countryName } =
       await this.reverseGeocode(coords.latitude, coords.longitude);
 
-    const token = await this.dataService.getAuthToken();
+    const token = await firstValueFrom(
+      from(this.dataService.getAuthToken()).pipe(
+        defaultIfEmpty(''),
+        catchError(err => {
+          console.error('Failed to get auth token:', err);
+          return of('');
+        })
+      )
+    );
 
-    // safety normalize
     const normalize = (s: string | undefined | null) => (s ?? '').trim();
-
     const country = normalize(countryName);
     const city = normalize(cityName);
 
@@ -303,23 +314,20 @@ async sendRecording() {
       return;
     }
 
-    console.log('🌍 Country:', country);
-    console.log('🏙️ City:', city);
-
     /* -------------------------------
        1️⃣ SEND TO cities.php
        ------------------------------- */
-    const citiesPayload = {
-      token: token,
-      country: country
-    };
+    const citiesPayload = { token, country };
 
-    console.log('📤 Sending to cities.php:', citiesPayload);
-
-    await this.http.post(
-      'https://traffic-call.com/api/cities.php',
-      citiesPayload
-    ).toPromise();
+    await firstValueFrom(
+      this.http.post('https://traffic-call.com/api/cities.php', citiesPayload).pipe(
+        defaultIfEmpty({ success: false }),
+        catchError(err => {
+          console.error('Cities POST failed:', err);
+          return of({ success: false });
+        })
+      )
+    );
 
     /* -------------------------------
        2️⃣ SEND TO files.php
@@ -327,20 +335,23 @@ async sendRecording() {
     const filesPayload = {
       filedata: base64Data,
       filename: fileName,
-      token: token,
+      token,
       latitude: coords.latitude,
       longitude: coords.longitude,
-      country: country,
-      city: city, 
-      street: street
+      country,
+      city,
+      street
     };
 
-    console.log('📤 Sending to files.php:', filesPayload);
-
-    const response: any = await this.http.post(
-      'https://traffic-call.com/api/files.php',
-      filesPayload
-    ).toPromise();
+    const response: any = await firstValueFrom(
+      this.http.post('https://traffic-call.com/api/files.php', filesPayload).pipe(
+        defaultIfEmpty({ success: false }),
+        catchError(err => {
+          console.error('Files POST failed:', err);
+          return of({ success: false });
+        })
+      )
+    );
 
     console.log('✅ Server response:', response);
 

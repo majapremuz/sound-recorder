@@ -18,7 +18,7 @@ import { Storage } from '@ionic/storage-angular';
 import { Device } from '@capacitor/device';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { LanguageService } from './services/language.service';
-import { firstValueFrom } from 'rxjs';
+import { defaultIfEmpty, firstValueFrom } from 'rxjs';
 
 
 @Component({
@@ -120,12 +120,12 @@ export class AppComponent {
 
 private async loadApiTranslations() {
   const langs = await firstValueFrom(
-    this.languageService.getLanguages()
-  );
+  this.languageService.getLanguages().pipe(defaultIfEmpty([]))
+);
 
-  const translations = await firstValueFrom(
-    this.languageService.getTranslations(langs)
-  );
+const translations = await firstValueFrom(
+  this.languageService.getTranslations(langs).pipe(defaultIfEmpty({}))
+);
 
   Object.entries(translations).forEach(([lang, values]) => {
     this.translate.setTranslation(lang, values as any, true);
