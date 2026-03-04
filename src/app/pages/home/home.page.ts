@@ -183,7 +183,10 @@ updateVolume();
       this.hasSent = true;
 
       if (!this.audioChunks.length) return;
+      console.log('Audio chunks count:', this.audioChunks.length);
+      console.log('Blob size:', this.recordedBlob?.size);
       this.recordedBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
+      console.log('Recorded MIME type:', this.mediaRecorder.mimeType);
       this.ngZone.run(() => {
         this.audioUrl = URL.createObjectURL(this.recordedBlob);
       });
@@ -308,7 +311,7 @@ async sendRecording() {
        ------------------------------- */
     const citiesPayload = {
       token: token,
-      country: country   // ✅ send TEXT, not ID
+      country: country
     };
 
     console.log('📤 Sending to cities.php:', citiesPayload);
@@ -327,8 +330,8 @@ async sendRecording() {
       token: token,
       latitude: coords.latitude,
       longitude: coords.longitude,
-      country: country,   // ✅ TEXT
-      city: city,         // already text
+      country: country,
+      city: city, 
       street: street
     };
 
@@ -381,33 +384,43 @@ async reverseGeocode(lat: number, lon: number): Promise<{ city: string; street: 
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${environment.google_map_api}&language=hr`;
     const response: any = await this.http.get(url).toPromise();
 
-    if (response.status === 'OK' && response.results.length > 0) {
-      const address = response.results[0].address_components;
+    if (response.status !== 'OK' || !response.results.length) {
+      return { city: '', street: '', country: '' };
+    }
 
-      let city = '';
-      let street = '';
-      let country = '';
+    let city = '';
+    let street = '';
+    let country = '';
 
-      for (const comp of address) {
-        // City can be in multiple types
-        if (comp.types.includes('locality') || comp.types.includes('postal_town') || comp.types.includes('sublocality_level_1')) {
+    // Loop through all results and prioritize bigger areas
+    for (const result of response.results) {
+      for (const comp of result.address_components) {
+
+        if (!city && comp.types.includes('locality')) {
           city = comp.long_name;
         }
 
-        if (comp.types.includes('route')) {
+        // Fallback if no locality found
+        if (!city && comp.types.includes('administrative_area_level_2')) {
+          city = comp.long_name;
+        }
+
+        if (!city && comp.types.includes('administrative_area_level_1')) {
+          city = comp.long_name;
+        }
+
+        if (!street && comp.types.includes('route')) {
           street = comp.long_name;
         }
 
-        if (comp.types.includes('country')) {
+        if (!country && comp.types.includes('country')) {
           country = comp.long_name;
         }
       }
-
-      return { city, street, country };
-    } else {
-      console.warn('Geocoding failed:', response);
-      return { city: '', street: '', country: '' };
     }
+
+    return { city, street, country };
+
   } catch (err) {
     console.error('Reverse geocoding error:', err);
     return { city: '', street: '', country: '' };

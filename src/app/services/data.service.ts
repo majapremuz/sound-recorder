@@ -125,17 +125,10 @@ emailChanges$ = this.email$.asObservable();
   }
 }*/
 
-async setAuthData(username: string, email: string, lastLogin: string, isRegister: boolean = false) {
-  let token: string;
-
-  if (isRegister) {
-    // Token generated at registration time
-    token = sha1(username + "++traffic--call++" + lastLogin);
-    await this.storage.set('auth_token', token); 
-  } else {
-    // Use existing token from storage (login)
-    token = await this.storage.get('auth_token') || sha1(username + "++traffic--call++" + lastLogin);
-  }
+async setAuthData(username: string, email: string, lastLogin: string) {
+//format: maja++traffic--call++2026-01-12 18:30:47
+  console.log("raw data for token generation:", username + "++traffic--call++" + lastLogin);
+  const token = sha1(username + "++traffic--call++" + lastLogin);
 
   this.authToken = token;
   this.username = username;
@@ -152,13 +145,10 @@ async setAuthData(username: string, email: string, lastLogin: string, isRegister
 
   localStorage.setItem('email', email);
 
-  if (this.authReadyResolve && this.authToken !== undefined) {
+  if (this.authReadyResolve) {
     this.authReadyResolve();
   }
-
 }
-
-
 
 async getAuthToken(): Promise<string | null> {
   await this.storageReady;

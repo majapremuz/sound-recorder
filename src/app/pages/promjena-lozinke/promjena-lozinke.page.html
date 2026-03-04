@@ -7,7 +7,7 @@
 
  <ion-label [class.active-label]="newPasswordValue">{{ 'NEW_PASSWORD' | translate }}</ion-label>
   <ion-item [class.invalid]="newPasswordModel.invalid && (newPasswordModel.dirty || newPasswordModel.touched)"
-          [class.valid]="newPasswordModel.valid">
+          [class.valid]="newPasswordModel.valid" no-lines>
   <ion-input type="password" name="newPasswordValue" [(ngModel)]="newPasswordValue"
              required newPassword #newPasswordModel="ngModel" no-lines></ion-input>
 </ion-item>
@@ -18,7 +18,7 @@
 
   <ion-label [class.active-label]="repeatPasswordValue">{{ 'REPEAT_NEW_PASSWORD' | translate }}</ion-label>
   <ion-item [class.invalid]="repeatPasswordModel.invalid && (repeatPasswordModel.dirty || repeatPasswordModel.touched)"
-          [class.valid]="repeatPasswordModel.valid">
+          [class.valid]="repeatPasswordModel.valid" no-lines>
   <ion-input type="password" name="repeatPasswordValue" [(ngModel)]="repeatPasswordValue"
              required repeatPassword #repeatPasswordModel="ngModel" no-lines></ion-input>
 </ion-item>
