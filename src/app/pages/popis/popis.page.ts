@@ -130,7 +130,7 @@ export class PopisPage implements OnInit {
   }
 }
 
-  playAudio(audio: any) {
+  /*playAudio(audio: any) {
   const jingleUrl = 'assets/jingle.wav';
 
   //If clicking the same audio (pause/resume)
@@ -174,6 +174,7 @@ export class PopisPage implements OnInit {
   jingle.addEventListener('ended', () => {
     // After jingle, play main audio
     this.audioPlayer.src = `https://traffic-call.com/files/${audio.url}`;
+    console.log('Playing main audio after jingle:', audio.name, this.audioPlayer.src);
 
     this.audioPlayer.onended = null;
     this.audioPlayer.play()
@@ -197,6 +198,81 @@ export class PopisPage implements OnInit {
   jingle.addEventListener('error', () => {
     this.ngZone.run(() => {
       console.warn('Jingle playback failed');
+      audio.isPlaying = false;
+      audio.showMap = false;
+      this.currentAudio = null;
+    });
+  });
+}*/
+
+playAudio(audio: any) {
+  const jingleUrl = 'assets/jingle.wav';
+  const mainAudioUrl = `https://traffic-call.com/files/${audio.url}`;
+  console.log("Audio URL:", mainAudioUrl);
+
+  // If clicking the same audio (pause/resume)
+  if (this.currentAudio === audio) {
+    if (audio.isPlaying) {
+      // Pause audio
+      this.audioPlayer.pause();
+      audio.isPlaying = false;
+      audio.showMap = false;
+    } else {
+      // Resume audio
+      this.audioPlayer.play().catch(err => console.warn('Play blocked:', err));
+      audio.isPlaying = true;
+      audio.showMap = true;
+      setTimeout(() => this.initMap(audio), 420);
+    }
+    return;
+  }
+
+  // Stop previous audio
+  if (this.currentAudio) {
+    this.currentAudio.isPlaying = false;
+    this.audioPlayer.pause();
+    this.audioPlayer.currentTime = 0;
+    this.currentAudio.showMap = false;
+  }
+
+  // Set current audio
+  this.currentAudio = audio;
+  audio.isPlaying = true;
+  audio.showMap = true;
+
+  // === Play jingle first, then main audio ===
+  this.audioPlayer.src = jingleUrl;
+  this.audioPlayer.currentTime = 0;
+
+  this.audioPlayer.play().then(() => {
+    console.log('Playing jingle for:', audio.name);
+
+    this.audioPlayer.onended = () => {
+      // Switch to main audio
+      this.audioPlayer.src = mainAudioUrl;
+      this.audioPlayer.load();
+      this.audioPlayer.currentTime = 0;
+
+      this.audioPlayer.play()
+        .then(() => console.log('Playing main audio:', audio.name))
+        .catch(err => console.warn('Main audio play blocked:', err));
+
+      // Re-initialize map after main audio starts
+      setTimeout(() => this.initMap(audio), 420);
+
+      // Reset after finished
+      this.audioPlayer.onended = () => {
+        this.ngZone.run(() => {
+          console.log('✅ Main audio finished:', audio.name);
+          audio.isPlaying = false;
+          audio.showMap = false;
+          this.currentAudio = null;
+        });
+      };
+    };
+  }).catch(err => {
+    console.warn('Jingle play blocked:', err);
+    this.ngZone.run(() => {
       audio.isPlaying = false;
       audio.showMap = false;
       this.currentAudio = null;

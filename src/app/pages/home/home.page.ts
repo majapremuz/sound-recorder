@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ContentApiInterface, ContentObject } from 'src/app/model/content';
 import { ControllerService } from 'src/app/services/controller.service';
-import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
+//import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { HttpClient } from '@angular/common/http';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { ToastController, LoadingController } from '@ionic/angular';
@@ -16,6 +16,7 @@ import { DataService } from 'src/app/services/data.service';
 import { LocationService } from 'src/app/services/location.service';
 import { Subscription, firstValueFrom, of, from } from 'rxjs';
 import { catchError, defaultIfEmpty } from 'rxjs/operators';
+import { VoiceRecorder } from 'capacitor-voice-recorder';
 
 
 @Component({
@@ -70,7 +71,6 @@ export class HomePage {
     private loadingController: LoadingController,
     private dataService: DataService,
     private contrCtrl: ControllerService,
-    private androidPermissions: AndroidPermissions,
     private http: HttpClient,
     private toastController: ToastController,
     private router: Router,
@@ -105,18 +105,14 @@ ngOnDestroy() {
 }
 
 
-  async requestAudioPermission(): Promise<boolean> {
-  const result = await this.androidPermissions.checkPermission(
-    this.androidPermissions.PERMISSION.RECORD_AUDIO
-  );
-   console.log('Audio permission result:', result)
-  if (!result.hasPermission) {
-    const granted = await this.androidPermissions.requestPermission(
-      this.androidPermissions.PERMISSION.RECORD_AUDIO
-    );
-    console.log('Audio permission granted:', granted);
-    return granted.hasPermission;
+  async requestAudioPermission() {
+  const permission = await VoiceRecorder.requestAudioRecordingPermission();
+
+  if (!permission.value) {
+    alert('Microphone permission required');
+    return false;
   }
+
   return true;
 }
 
@@ -125,116 +121,78 @@ ngOnDestroy() {
   if (this.isRecording) return;
 
   const permissionGranted = await this.requestAudioPermission();
-  if (!permissionGranted) {
-    alert('Microphone permission is required.');
-    return;
-  }
+  if (!permissionGranted) return;
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    this.audioContext = new AudioContext();
-const source = this.audioContext.createMediaStreamSource(stream);
-this.analyser = this.audioContext.createAnalyser();
-this.analyser.fftSize = 512;
+    await VoiceRecorder.startRecording();
 
-source.connect(this.analyser);
-
-const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-
-const updateVolume = () => {
-  if (!this.isRecording) return;
-
-  this.analyser.getByteTimeDomainData(dataArray);
-
-  let sum = 0;
-  for (let i = 0; i < dataArray.length; i++) {
-    const v = dataArray[i] - 128;
-    sum += v * v;
-  }
-
-  const rms = Math.sqrt(sum / dataArray.length); // volume value 0–~50
-  this.volumeLevel = Math.min(rms * 3, 100); // normalize to 0–100
-
-  // Update CSS variables for wave scale and speed
-  const container = this.waveCanvas?.nativeElement || document.querySelector('.img-container');
-  if (container) {
-    const scale = 1 + this.volumeLevel / 50; // bigger wave if louder
-    const speed = 1 - Math.min(this.volumeLevel / 200, 0.7); // faster if louder
-    container.style.setProperty('--wave-scale', scale.toString());
-    container.style.setProperty('--wave-speed', speed + 's');
-  }
-
-  requestAnimationFrame(updateVolume);
-};
-
-updateVolume();
-
-    this.mediaRecorder = new MediaRecorder(stream);
-    this.audioChunks = [];
-    this.hasSent = false; // reset for new recording
-
-    // clear any leftover timeout
-    if (this.autoStopTimeout) {
-      clearTimeout(this.autoStopTimeout);
-      this.autoStopTimeout = null;
-    }
-
-    this.mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) this.audioChunks.push(e.data);
-    };
-
-    this.mediaRecorder.onstop = async () => {
-      if (this.hasSent) return; // prevent double send
-      this.hasSent = true;
-
-      if (!this.audioChunks.length) return;
-      console.log('Audio chunks count:', this.audioChunks.length);
-      console.log('Blob size:', this.recordedBlob?.size);
-      this.recordedBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
-      console.log('Recorded MIME type:', this.mediaRecorder.mimeType);
-      this.ngZone.run(() => {
-        this.audioUrl = URL.createObjectURL(this.recordedBlob);
-      });
-
-      await this.sendRecording();
-
-      this.audioChunks = [];
-      this.mediaRecorder = null!;
-    };
-
-    this.mediaRecorder.start();
     this.isRecording = true;
     this.recordingStartTime = Date.now();
+    this.animateWave();
+
     this.timerInterval = setInterval(() => this.updateTimer(), 100);
 
-    // Auto-stop after 15s
     this.autoStopTimeout = setTimeout(() => {
       if (this.isRecording) this.stopRecording();
     }, 15000);
 
   } catch (err) {
-    console.error('Microphone permission denied:', err);
-    alert('Microphone access is required.');
+    console.error('Recording error:', err);
   }
 }
 
-stopRecording() {
+animateWave() {
+  const container = this.waveCanvas?.nativeElement || document.querySelector('.img-container');
+
+  const animate = () => {
+    if (!this.isRecording) return;
+
+    const volume = Math.random() * 60 + 10; // simulate volume 10-70
+
+    const scale = 1 + volume / 50;
+    const speed = 1 - Math.min(volume / 200, 0.7);
+
+    if (container) {
+      container.style.setProperty('--wave-scale', scale.toString());
+      container.style.setProperty('--wave-speed', speed + 's');
+    }
+
+    requestAnimationFrame(animate);
+  };
+
+  animate();
+}
+
+async stopRecording() {
+
   if (!this.isRecording) return;
 
-  // Cancel the auto-stop timeout
   if (this.autoStopTimeout) {
     clearTimeout(this.autoStopTimeout);
-    this.autoStopTimeout = null;
   }
 
-  // Stop safely
-  if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
-    this.mediaRecorder.stop();
-  }
+  const result = await VoiceRecorder.stopRecording();
 
   this.isRecording = false;
+
   clearInterval(this.timerInterval);
   this.timeStamp = '00:00';
+
+  if (!result.value?.recordDataBase64) return;
+
+  const base64 = result.value.recordDataBase64;
+
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+
+  const byteArray = new Uint8Array(byteNumbers);
+  this.recordedBlob = new Blob([byteArray], { type: 'audio/webm' });
+  this.audioUrl = URL.createObjectURL(this.recordedBlob);
+  await this.sendRecording();
 }
 
 toggleRecording() {
