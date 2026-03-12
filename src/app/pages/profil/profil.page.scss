@@ -17,6 +17,13 @@ p {
   margin-left: 1rem;
 }
 
+.name-div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
+
 .notification,
 .location {
   margin: 1rem;
