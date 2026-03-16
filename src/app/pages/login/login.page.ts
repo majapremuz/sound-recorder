@@ -177,6 +177,7 @@ login() {
 
       if (!raw || raw.trim() === '') {
         this.showToast('Server nije vratio odgovor.', 'error');
+        console.error('Empty response from server', raw);
         return;
       }
 
