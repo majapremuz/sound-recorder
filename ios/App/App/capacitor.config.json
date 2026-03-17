@@ -13,6 +13,7 @@
 		"PushNotificationsPlugin",
 		"SplashScreenPlugin",
 		"StatusBarPlugin",
+		"VoiceRecorder",
 		"CDVPlugin"
 	]
 }

@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
 import { DataService } from 'src/app/services/data.service';
 import { LocationService } from 'src/app/services/location.service';
 import { LanguageService, Language } from 'src/app/services/language.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-profil',
@@ -26,6 +27,8 @@ export class ProfilPage implements OnInit, OnDestroy {
   selectedCityCount = 0;
   selectedCities: string[] = [];
   selectedCitiesPreview = '';
+  version = environment.version;
+
 
   private subscriptions: Subscription = new Subscription();
 

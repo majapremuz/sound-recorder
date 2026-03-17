@@ -94,47 +94,37 @@ export class LoginPage implements OnInit {
   const url = 'https://traffic-call.com/api/register.php';
   const firebaseToken = await this.dataService.loadFirebaseToken();
 
-  const body = new HttpParams()
-    .set('username', this.registerUsername)
-    .set('email', this.registerEmail)
-    .set('password',this.registerPassword)
-    .set('token', firebaseToken || '');
+const body = {
+  username: this.registerUsername,
+  email: this.registerEmail,
+  password: this.registerPassword,
+  token: firebaseToken || ''
+};
 
-    console.log('Registering with:', body);
+this.http.post(url, body, {
+  headers: { 'Content-Type': 'application/json' },
+  responseType: 'text'
+}).subscribe({
+  next: async (raw) => {
+    console.log('RAW REGISTER RESPONSE:', raw);
 
-  this.http.post(url, body.toString(), {
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    responseType: 'text'
-  }).subscribe({
-    next: async (raw) => {
-      console.log('RAW REGISTER RESPONSE:', raw); 
-      console.log('RAW REGISTER RESPONSE LENGTH:', raw?.length);
-      console.log('RAW REGISTER RESPONSE CONTENT:', JSON.stringify(raw));
+    if (!raw || raw.trim() === '') {
+      this.showToast('Server nije vratio odgovor.');
+      return;
+    }
 
-      if (!raw || raw.trim() === '') {
-        this.showToast('Server nije vratio odgovor.');
-        return;
-      }
+    let res: any;
 
-      let res: any;
+    try {
+      res = JSON.parse(raw);
+    } catch (e) {
+      console.error('JSON parse error:', e, raw);
+      this.showToast('Greška u odgovoru servera.');
+      return;
+    }
 
-try {
-  const jsonStart = raw.indexOf('[');
-  if (jsonStart === -1) {
-    throw new Error('No JSON found');
-  }
-
-  const jsonString = raw.substring(jsonStart);
-  res = JSON.parse(jsonString);
-} catch (e) {
-  console.error('JSON parse error:', e, raw);
-  this.showToast('Greška u odgovoru servera.');
-  return;
-}
-
-
-      if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
-  const lastlogin = res[0].lastlogin;
+    if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
+      const lastlogin = res[0].lastlogin;
 
       await this.dataService.setAuthData(
         this.registerUsername,
@@ -142,42 +132,36 @@ try {
         lastlogin
       );
 
-      this.showToast('Registracija uspješna! Možete se prijaviti.', 'success');
+      this.showToast('Registracija uspješna!', 'success');
       this.isLoggedIn = true;
-      console.log('SET AUTH CALLED FROM:', new Error().stack);
       this.authService.setLoggedIn(true);
     } else {
-        this.showToast(res[0]?.message || 'Registracija nije uspjela.');
-      }
-    },
-    error: (err) => {
-      console.error('REGISTER ERROR:', err);
-      if (err.status === 0) {
-        this.showToast('Ne može se povezati sa serverom (CORS ili mreža).', 'error');
-      } else {
-        this.showToast('Greška prilikom registracije.', 'error');
-      }
+      this.showToast(res[0]?.message || 'Registracija nije uspjela.');
     }
-  });
+  },
+  error: (err) => {
+    console.error('REGISTER ERROR:', err);
+    this.showToast('Greška prilikom registracije.', 'error');
+  }
+});
 }
 
 login() {
-  const body = new HttpParams()
-    .set('username', sha1(this.loginUsername))
-    .set('password', sha1(this.loginPassword));
+  const body =
+    `username=${encodeURIComponent(sha1(this.loginUsername))}` +
+    `&password=${encodeURIComponent(sha1(this.loginPassword))}`;
 
-    console.log('Logging in with:', body);
+  console.log('Logging in with:', body);
 
-  this.http.post('https://traffic-call.com/api/login.php', body.toString(), {
+  this.http.post('https://traffic-call.com/api/login.php', body, {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     responseType: 'text'
   }).subscribe({
     next: async (raw) => {
-      console.log('RAW LOGIN RESPONSE:', raw); 
+      console.log('RAW LOGIN RESPONSE:', raw);
 
       if (!raw || raw.trim() === '') {
         this.showToast('Server nije vratio odgovor.', 'error');
-        console.error('Empty response from server', raw);
         return;
       }
 
@@ -191,28 +175,24 @@ login() {
       }
 
       if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
-      const lastlogin = res[0].lastlogin;
-      const email = res[0].email || this.loginUsername;
+        const lastlogin = res[0].lastlogin;
+        const email = res[0].email || this.loginUsername;
 
-      await this.dataService.setAuthData(
-      this.loginUsername,
-      email,
-      lastlogin
-      );
-      this.showToast('Prijava uspješna!', 'success');
-      this.router.navigate(['/home']);
-      console.log('SET AUTH CALLED FROM:', new Error().stack);
+        await this.dataService.setAuthData(
+          this.loginUsername,
+          email,
+          lastlogin
+        );
+
+        this.showToast('Prijava uspješna!', 'success');
+        this.router.navigate(['/home']);
       } else {
         this.showToast(res[0]?.message || 'Pogrešni podaci.', 'error');
       }
     },
     error: (err) => {
       console.error('LOGIN ERROR:', err);
-      if (err.status === 0) {
-        this.showToast('Ne može se povezati sa serverom (CORS ili mreža).');
-      } else {
-        this.showToast('Greška prilikom prijave.');
-      }
+      this.showToast('Greška prilikom prijave.');
     }
   });
 }

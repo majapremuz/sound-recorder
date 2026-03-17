@@ -60,8 +60,11 @@ export class AppComponent {
     }
   });
 
-  await this.initLanguage();
+  //await this.initLanguage();
+  const lang = await this.initLanguage();
   await this.loadApiTranslations();
+
+  this.translate.use(lang); 
   await this.setReadyPage();
 }
 
@@ -90,15 +93,12 @@ export class AppComponent {
   }
 
   private async initLanguage() {
-  // 1️⃣ previously selected language
   const savedLang = localStorage.getItem('selectedLang');
   if (savedLang) {
     this.translate.setDefaultLang(savedLang);
-    this.translate.use(savedLang);
-    return;
+    return savedLang;
   }
 
-  // 2️⃣ device language
   let deviceLang = 'hr';
 
   try {
@@ -109,13 +109,12 @@ export class AppComponent {
     if (browserLang) deviceLang = browserLang;
   }
 
-  // 3️⃣ normalize
   const finalLang = deviceLang.startsWith('hr') ? 'hr' : 'en';
 
   this.translate.setDefaultLang(finalLang);
-  this.translate.use(finalLang);
-
   localStorage.setItem('selectedLang', finalLang);
+
+  return finalLang;
 }
 
 private async loadApiTranslations() {

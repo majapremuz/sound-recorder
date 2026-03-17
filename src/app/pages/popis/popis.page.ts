@@ -60,7 +60,9 @@ export class PopisPage implements OnInit {
     console.log('Raw response from server:', response);
 
     if (Array.isArray(response)) {
-      this.audios = response.map((file, index) => {
+      this.audios = response
+       .filter(file => file.filename)
+       .map((file, index) => {
 
         const [datePart, timePart] = (file.title || '').split(' ');
 
@@ -129,81 +131,6 @@ export class PopisPage implements OnInit {
     this.audios = [];
   }
 }
-
-  /*playAudio(audio: any) {
-  const jingleUrl = 'assets/jingle.wav';
-
-  //If clicking the same audio (pause/resume)
-  if (this.currentAudio === audio) {
-    if (audio.isPlaying) {
-      // Pause audio
-      this.audioPlayer.pause();
-      audio.isPlaying = false;
-
-      //Hide map when paused
-      audio.showMap = false;
-    } else {
-      // Resume audio
-      this.audioPlayer.play().catch(err => console.warn('Play blocked:', err));
-      audio.isPlaying = true;
-
-      //Show map when resumed
-      audio.showMap = true;
-      setTimeout(() => this.initMap(audio), 420);
-    }
-    return;
-  }
-
-  //Stop previous audio and hide its map
-  if (this.currentAudio) {
-    this.currentAudio.isPlaying = false;
-    this.audioPlayer.pause();
-    this.audioPlayer.currentTime = 0;
-    this.currentAudio.showMap = false;
-  }
-
-  //Set current audio
-  this.currentAudio = audio;
-  audio.isPlaying = true;
-  audio.showMap = true;
-
-  // Play jingle
-  const jingle = new Audio(jingleUrl);
-  jingle.play().catch(err => console.warn('Jingle blocked:', err));
-
-  jingle.addEventListener('ended', () => {
-    // After jingle, play main audio
-    this.audioPlayer.src = `https://traffic-call.com/files/${audio.url}`;
-    console.log('Playing main audio after jingle:', audio.name, this.audioPlayer.src);
-
-    this.audioPlayer.onended = null;
-    this.audioPlayer.play()
-      .then(() => console.log('Playing main audio:', audio.name))
-      .catch(err => console.warn('Main audio play blocked:', err));
-
-    //Initialize map
-    setTimeout(() => this.initMap(audio), 420);
-
-    //Reset after finished
-    this.audioPlayer.addEventListener('ended', () => {
-      this.ngZone.run(() => {
-        console.log('✅ Main audio finished:', audio.name);
-        audio.isPlaying = false;
-        audio.showMap = false; // Hide map when done
-        this.currentAudio = null;
-      });
-    }, { once: true });
-  });
-
-  jingle.addEventListener('error', () => {
-    this.ngZone.run(() => {
-      console.warn('Jingle playback failed');
-      audio.isPlaying = false;
-      audio.showMap = false;
-      this.currentAudio = null;
-    });
-  });
-}*/
 
 playAudio(audio: any) {
   const jingleUrl = 'assets/jingle.wav';

@@ -1,3 +1,4 @@
+import { version } from "moment";
 
 export const environment = {
   production: false,
@@ -18,7 +19,7 @@ export const environment = {
   def_image: 'assets/imgs/no-image-icon-23485.png', 
   company_id: 2,
   show_id: true,
-  version: '02122023',
+  version: '1.0.6',
   db_version: '1.0.3',
 
   firebase: {
