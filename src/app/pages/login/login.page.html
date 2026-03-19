@@ -38,12 +38,12 @@
   <ion-label [class.active-label]="loginPassword">{{ 'PASSWORD' | translate }}</ion-label>
   <ion-item [class.invalid]="loginPasswordField.invalid && (loginPasswordField.dirty || loginPasswordField.touched)"
             [class.valid]="loginPasswordField.valid">
-    <ion-input [type]="showPassword ? 'text' : 'password'" name="loginPassword" [(ngModel)]="loginPassword"
+    <ion-input [type]="showLoginPassword ? 'text' : 'password'" name="loginPassword" [(ngModel)]="loginPassword"
                required minlength="9" #loginPasswordField="ngModel"></ion-input>
     <ion-icon
-      [name]="showPassword ? 'eye-off' : 'eye'"
-      slot="end"
-      (click)="togglePasswordVisibility()">
+      [name]="showLoginPassword ? 'eye-off' : 'eye'"
+      (click)="showLoginPassword = !showLoginPassword"
+      slot="end">
     </ion-icon>
   </ion-item>
   <div class="error" *ngIf="loginPasswordField.invalid && (loginPasswordField.dirty || loginPasswordField.touched)">
@@ -76,12 +76,12 @@
   <ion-label [class.active-label]="registerPassword">{{ 'PASSWORD' | translate }}</ion-label>
   <ion-item [class.invalid]="registerPasswordField.invalid && (registerPasswordField.dirty || registerPasswordField.touched)"
             [class.valid]="registerPasswordField.valid">
-    <ion-input [type]="showPassword ? 'text' : 'password'" name="registerPassword" [(ngModel)]="registerPassword"
+    <ion-input [type]="showRegisterPassword ? 'text' : 'password'" name="registerPassword" [(ngModel)]="registerPassword"
                required minlength="9" #registerPasswordField="ngModel"></ion-input>
     <ion-icon
-      [name]="showPassword ? 'eye-off' : 'eye'"
-      slot="end"
-      (click)="togglePasswordVisibility()">
+      [name]="showRegisterPassword ? 'eye-off' : 'eye'"
+      (click)="showRegisterPassword = !showRegisterPassword"
+      slot="end">
     </ion-icon>
   </ion-item>
   <div class="error" *ngIf="registerPasswordField.invalid && (registerPasswordField.dirty || registerPasswordField.touched)">
@@ -91,16 +91,16 @@
   <ion-label [class.active-label]="registerRepeat">{{ 'REPEAT_PASSWORD' | translate }}</ion-label>
   <ion-item
   [class.invalid]="
-    registerRepeatField.touched &&
+    registerRepeatField.dirty &&
     registerRepeat !== registerPassword
   "
   [class.valid]="
-    registerRepeatField.touched &&
+    registerRepeatField.dirty &&
     registerRepeat === registerPassword
   "
 >
   <ion-input
-    [type]="showPassword ? 'text' : 'password'"
+    [type]="showRepeatPassword ? 'text' : 'password'"
     name="registerRepeat"
     [(ngModel)]="registerRepeat"
     required
@@ -109,15 +109,15 @@
   </ion-input>
 
   <ion-icon
-    [name]="showPassword ? 'eye-off' : 'eye'"
-    slot="end"
-    (click)="togglePasswordVisibility()">
+    [name]="showRepeatPassword ? 'eye-off' : 'eye'"
+    (click)="showRepeatPassword = !showRepeatPassword"
+    slot="end">
   </ion-icon>
 </ion-item>
 
 <div class="error"
   *ngIf="
-    registerRepeatField.touched &&
+    registerRepeatField.dirty &&
     registerRepeat !== registerPassword
   ">
   {{ 'PASSWORDS_DO_NOT_MATCH' | translate }}

@@ -23,7 +23,8 @@ export class DataService {
   authReady = new Promise(resolve => this.authReadyResolve = resolve);
   private storageReady!: Promise<void>;
   private storageReadyResolve!: () => void;
-
+  private pushToken$ = new BehaviorSubject<string | null>(null);
+  pushTokenChanges$ = this.pushToken$.asObservable();
 
   url: string = '/api/content/structure?pagination=0';
   content: Array<ContentObject> = [];
@@ -52,25 +53,6 @@ export class DataService {
 authTokenChanges$ = this.authToken$.asObservable();
 emailChanges$ = this.email$.asObservable();
 
-
-/*async initData() {
-    await this.loadFirebaseToken();
-
-    this.authToken = await this.storage.get('auth_token');
-    this.username = await this.storage.get('username');
-    this.email = await this.storage.get('email');
-    this.lastLogin = await this.storage.get('lastlogin');
-
-    this.authToken$.next(this.authToken);
-    this.email$.next(this.email);
-
-    this.authReadyResolve();
-  }*/
-
-  /*waitForAuthReady() {
-    return this.authReady;
-  }*/
-
   async loadFirebaseToken() {
   const token = await this.storage.get('firebase_token');
   this.pushToken = token;
@@ -80,6 +62,7 @@ emailChanges$ = this.email$.asObservable();
   async savePushToken(token: string) {
   this.pushToken = token;
   await this.storage.set('firebase_token', token);
+  this.pushToken$.next(token);
   console.log('Saved push token:', token);
 }
 
@@ -89,7 +72,10 @@ emailChanges$ = this.email$.asObservable();
 
   this.storageReadyResolve();
 
-  await this.loadFirebaseToken();
+  const token = await this.loadFirebaseToken();
+  if (token) {
+    this.pushToken$.next(token);
+  }
 
   this.authToken = await this.storage.get('auth_token');
   this.username = await this.storage.get('username');
@@ -101,29 +87,6 @@ emailChanges$ = this.email$.asObservable();
 
   this.authReadyResolve();
 }
-
-/*async setAuthData(username: string, email: string, lastLogin: string) {
-  console.log("raw data:", username + "++traffic--call++" + lastLogin);
-  const token = sha1(username + "++traffic--call++" + lastLogin);
-
-  this.authToken = token;
-  this.username = username;
-  this.email = email;
-  this.lastLogin = lastLogin;
-
-  await this.storage.set('auth_token', token);
-  await this.storage.set('username', username);
-  await this.storage.set('email', email);
-  await this.storage.set('lastlogin', lastLogin);
-
-  localStorage.setItem('email', email);
-
-  console.log("AUTH TOKEN CREATED:", token);
-
-  if (this.authReadyResolve) {
-    this.authReadyResolve();
-  }
-}*/
 
 async setAuthData(username: string, email: string, lastLogin: string) {
 //format: maja++traffic--call++2026-01-12 18:30:47

@@ -10,8 +10,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import * as sha1 from 'sha1';
 import { eye, eyeOff } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
-import { HttpParams } from '@angular/common/http';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom, filter } from 'rxjs';
 
 
 @Component({
@@ -30,7 +29,9 @@ export class LoginPage implements OnInit {
   registerEmail = '';
   registerPassword = '';
   registerRepeat = '';
-  showPassword = false;
+  showLoginPassword = false;
+  showRegisterPassword = false;
+  showRepeatPassword = false;
   wrongPassword: boolean = false;
   passwordField: any = 'password';
   authSub?: Subscription
@@ -92,8 +93,9 @@ export class LoginPage implements OnInit {
 
   async register() {
   const url = 'https://traffic-call.com/api/register.php';
-  const firebaseToken = await this.dataService.loadFirebaseToken();
+  let firebaseToken = this.dataService.pushToken || '';
 
+console.log('Using token:', firebaseToken);
 const body = {
   username: this.registerUsername,
   email: this.registerEmail,
@@ -197,10 +199,6 @@ login() {
       this.showToast('Greška prilikom prijave.');
     }
   });
-}
-
-togglePasswordVisibility() {
-  this.showPassword = !this.showPassword;
 }
 
   cancel() {
