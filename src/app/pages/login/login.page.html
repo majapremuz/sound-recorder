@@ -27,9 +27,9 @@
 <div *ngIf="isLoggedIn">
   <ion-label [class.active-label]="loginUsername">{{ 'USERNAME' | translate }}</ion-label>
   <ion-item [class.invalid]="loginUsernameModel.invalid && (loginUsernameModel.dirty || loginUsernameModel.touched)"
-            [class.valid]="loginUsernameModel.valid">
+            [class.valid]="loginUsernameModel.valid" lines="none">
     <ion-input type="text" name="loginUsername" [(ngModel)]="loginUsername"
-               required #loginUsernameModel="ngModel"  no-lines></ion-input>
+               required #loginUsernameModel="ngModel" ></ion-input>
   </ion-item>
   <div class="error" *ngIf="loginUsernameModel.invalid && (loginUsernameModel.dirty || loginUsernameModel.touched)">
     {{ 'USERNAME_ERROR' | translate }}

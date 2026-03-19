@@ -101,6 +101,8 @@ const body = {
   token: firebaseToken || ''
 };
 
+console.log('Registering with:', body);
+
 this.http.post(url, body, {
   headers: { 'Content-Type': 'application/json' },
   responseType: 'text'

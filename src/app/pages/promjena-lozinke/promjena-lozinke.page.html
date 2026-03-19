@@ -7,9 +7,9 @@
 
  <ion-label [class.active-label]="newPasswordValue">{{ 'NEW_PASSWORD' | translate }}</ion-label>
   <ion-item [class.invalid]="newPasswordModel.invalid && (newPasswordModel.dirty || newPasswordModel.touched)"
-          [class.valid]="newPasswordModel.valid" no-lines>
+          [class.valid]="newPasswordModel.valid" lines="none">
   <ion-input type="password" name="newPasswordValue" [(ngModel)]="newPasswordValue"
-             required newPassword #newPasswordModel="ngModel" no-lines></ion-input>
+             required newPassword #newPasswordModel="ngModel"></ion-input>
 </ion-item>
 
   <div class="error" *ngIf="newPasswordModel.invalid && (newPasswordModel.dirty || newPasswordModel.touched)">
@@ -18,9 +18,9 @@
 
   <ion-label [class.active-label]="repeatPasswordValue">{{ 'REPEAT_NEW_PASSWORD' | translate }}</ion-label>
   <ion-item [class.invalid]="repeatPasswordModel.invalid && (repeatPasswordModel.dirty || repeatPasswordModel.touched)"
-          [class.valid]="repeatPasswordModel.valid" no-lines>
+          [class.valid]="repeatPasswordModel.valid" lines="none">
   <ion-input type="password" name="repeatPasswordValue" [(ngModel)]="repeatPasswordValue"
-             required repeatPassword #repeatPasswordModel="ngModel" no-lines></ion-input>
+             required repeatPassword #repeatPasswordModel="ngModel"></ion-input>
 </ion-item>
 
   <div class="error" *ngIf="repeatPasswordModel.invalid && (repeatPasswordModel.dirty || repeatPasswordModel.touched)">
