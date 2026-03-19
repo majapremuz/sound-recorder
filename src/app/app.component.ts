@@ -93,7 +93,7 @@ export class AppComponent {
   }
 
   private async initLanguage() {
-  const savedLang = localStorage.getItem('selectedLang');
+  const savedLang = await this.storage.get('selectedLang');
   if (savedLang) {
     this.translate.setDefaultLang(savedLang);
     return savedLang;
@@ -112,7 +112,7 @@ export class AppComponent {
   const finalLang = deviceLang.startsWith('hr') ? 'hr' : 'en';
 
   this.translate.setDefaultLang(finalLang);
-  localStorage.setItem('selectedLang', finalLang);
+  await this.storage.set('selectedLang', finalLang);
 
   return finalLang;
 }
@@ -189,7 +189,7 @@ private async loadApiTranslations() {
       this.translate.setTranslation(lang, values as any, true);
     });
 
-    const currentLang = localStorage.getItem('selectedLang') || 'hr';
+    const currentLang = await this.storage.get('selectedLang') || 'hr';
     this.translate.setDefaultLang(currentLang);
     this.translate.use(currentLang);
 
