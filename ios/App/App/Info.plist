@@ -28,6 +28,8 @@
 	<string>Koristimo vašu lokaciju kako bismo omogućili funkcije aplikacije i pružili točnije informacije o prometu i događajima u vašoj blizini, čak i kada aplikacija nije otvorena.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Lokacija se koristi dok je aplikacija otvorena radi prikaza usluga u blizini.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ova aplikacija koristi mikrofon za snimanje zvuka.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Potrebna nam je galerija za odabir i upload fotografija.</string>
 	<key>UILaunchStoryboardName</key>
