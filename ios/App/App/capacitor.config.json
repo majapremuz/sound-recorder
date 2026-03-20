@@ -4,9 +4,11 @@
 	"webDir": "www",
 	"packageClassList": [
 		"MediaPlugin",
+		"FirebaseMessagingPlugin",
 		"BarcodeScannerPlugin",
 		"AppPlugin",
 		"DevicePlugin",
+		"FilesystemPlugin",
 		"GeolocationPlugin",
 		"HapticsPlugin",
 		"KeyboardPlugin",
