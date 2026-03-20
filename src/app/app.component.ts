@@ -19,6 +19,7 @@ import { Device } from '@capacitor/device';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { LanguageService } from './services/language.service';
 import { defaultIfEmpty, firstValueFrom } from 'rxjs';
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 
 
 @Component({
@@ -200,27 +201,33 @@ private async loadApiTranslations() {
   }
 }
 
-async initNotifications()  {
-  let permStatus = await PushNotifications.checkPermissions();
+async initNotifications() {
+  try {
+    const perm = await FirebaseMessaging.requestPermissions();
+    console.log('Push permission:', perm);
 
-  if (permStatus.receive === 'prompt') {
-    permStatus = await PushNotifications.requestPermissions();
+    if (perm.receive !== 'granted') {
+      console.warn('Push permission not granted');
+      return;
+    }
+
+    const { token } = await FirebaseMessaging.getToken();
+    console.log('FCM Token:', token);
+
+    if (token) {
+      await this.dataService.savePushToken(token);
+    } else {
+      console.warn('No FCM token received');
+    }
+
+    await this.addListeners();
+
+  } catch (err) {
+    console.error('initNotifications error:', err);
   }
-
-  if (permStatus.receive !== 'granted') {
-    throw new Error('User denied permissions!');
-  }
-
-  await PushNotifications.register();
-  await this.addListeners();
 }
 
 async addListeners() {
-  await PushNotifications.addListener('registration', token => {
-    console.info('Registration token: ', token.value);
-    this.dataService.savePushToken(token.value);
-  });
-
   await PushNotifications.addListener('registrationError', err => {
     console.error('Registration error: ', err.error);
   });
@@ -233,23 +240,5 @@ async addListeners() {
     console.log('Push notification action performed', notification.actionId, notification.inputValue);
   });
 }
-
-/*private async initFirebase() {
-  try {
-    initializeApp(environment.firebase);
-  } catch {}
-
-  try {
-    const perm = await FirebaseMessaging.requestPermissions();
-    console.log('Push permission:', perm);
-  } catch {}
-
-  try {
-    const token = await FirebaseMessaging.getToken();
-    if (token?.token) {
-      await this.dataService.savePushToken(token.token);
-    }
-  } catch {}
-}*/
 
 }
