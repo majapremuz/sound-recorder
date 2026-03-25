@@ -173,7 +173,7 @@ export class AppComponent {
       });
 
       const currentLang = await this.storage.get('selectedLang') || 'hr';
-      this.translate.setDefaultLang('hr');
+      //this.translate.setDefaultLang('hr');
       this.translate.use(currentLang || 'hr');
 
       console.log('Translations loaded for:', currentLang);

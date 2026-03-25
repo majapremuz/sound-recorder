@@ -1,9 +1,8 @@
 import { Component, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { ContentApiInterface, ContentObject } from 'src/app/model/content';
+import { ContentObject } from 'src/app/model/content';
 import { ControllerService } from 'src/app/services/controller.service';
-//import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { HttpClient } from '@angular/common/http';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { ToastController, LoadingController } from '@ionic/angular';
@@ -11,12 +10,11 @@ import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { environment } from 'src/environments/environment';
 import { AuthService } from 'src/app/services/auth.service';
-import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { DataService } from 'src/app/services/data.service';
 import { LocationService } from 'src/app/services/location.service';
 import { Subscription, firstValueFrom, of, from } from 'rxjs';
 import { catchError, defaultIfEmpty } from 'rxjs/operators';
-import { VoiceRecorder } from 'capacitor-voice-recorder';
 
 
 @Component({
@@ -29,7 +27,7 @@ import { VoiceRecorder } from 'capacitor-voice-recorder';
 export class HomePage {
   @ViewChild('waveCanvas', { static: false }) waveCanvas!: ElementRef<HTMLCanvasElement>;
 
-  mediaRecorder!: MediaRecorder;
+  mediaRecorder!: any;
   audioChunks: Blob[] = [];
   isRecording = false;
   timeStamp = '00:00';
@@ -104,27 +102,51 @@ ngOnDestroy() {
   });
 }
 
+getSupportedMimeType() {
+  const types = [
+    'audio/mp4',
+    'audio/aac',
+    'audio/webm',
+    'audio/ogg'
+  ];
 
-  async requestAudioPermission() {
-  const permission = await VoiceRecorder.requestAudioRecordingPermission();
-
-  if (!permission.value) {
-    alert('Microphone permission required');
-    return false;
+  for (const type of types) {
+    if ((window as any).MediaRecorder?.isTypeSupported(type)) {
+      return type;
+    }
   }
 
-  return true;
+  return '';
+}
+
+getExtension(mimeType: string) {
+  if (mimeType.includes('mp4') || mimeType.includes('aac')) return 'm4a';
+  if (mimeType.includes('webm')) return 'webm';
+  if (mimeType.includes('ogg')) return 'ogg';
+  return 'dat';
 }
 
   async startRecording() {
   await Geolocation.requestPermissions();
   if (this.isRecording) return;
 
-  const permissionGranted = await this.requestAudioPermission();
-  if (!permissionGranted) return;
-
   try {
-    await VoiceRecorder.startRecording();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const mimeType = this.getSupportedMimeType();
+    console.log('Using mimeType:', mimeType);
+
+    this.mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+    this.audioChunks = [];
+
+    this.mediaRecorder.ondataavailable = (event: any) => {
+      if (event.data.size > 0) {
+        this.audioChunks.push(event.data);
+      }
+    };
+
+    this.mediaRecorder.start();
 
     this.isRecording = true;
     this.recordingStartTime = Date.now();
@@ -164,35 +186,32 @@ animateWave() {
 }
 
 async stopRecording() {
-
   if (!this.isRecording) return;
 
   if (this.autoStopTimeout) {
     clearTimeout(this.autoStopTimeout);
   }
 
-  const result = await VoiceRecorder.stopRecording();
-
   this.isRecording = false;
 
   clearInterval(this.timerInterval);
   this.timeStamp = '00:00';
 
-  if (!result.value?.recordDataBase64) return;
+  this.mediaRecorder.onstop = async () => {
+    const mimeType = this.mediaRecorder.mimeType;
 
-  const base64 = result.value.recordDataBase64;
+    this.recordedBlob = new Blob(this.audioChunks, {
+      type: mimeType
+    });
 
-  const byteCharacters = atob(base64);
-  const byteNumbers = new Array(byteCharacters.length);
+    console.log('Recorded type:', mimeType);
 
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
+    this.audioUrl = URL.createObjectURL(this.recordedBlob);
 
-  const byteArray = new Uint8Array(byteNumbers);
-  this.recordedBlob = new Blob([byteArray], { type: 'audio/webm' });
-  this.audioUrl = URL.createObjectURL(this.recordedBlob);
-  await this.sendRecording();
+    await this.sendRecording();
+  };
+
+  this.mediaRecorder.stop();
 }
 
 toggleRecording() {
@@ -218,7 +237,8 @@ async sendRecording() {
   await loading.present();
 
   try {
-    const fileName = `${Date.now()}.webm`;
+    const ext = this.getExtension(this.recordedBlob.type);
+    const fileName = `${Date.now()}.${ext}`;;
 
     // convert Blob → base64
     let base64Data = await this.blobToBase64(this.recordedBlob);

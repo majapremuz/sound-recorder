@@ -15,8 +15,6 @@ import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { environment } from './environments/environment';
 
-import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
-
 import { addIcons } from 'ionicons';
 import { play, pause } from 'ionicons/icons';
 addIcons({ play, pause });
@@ -24,7 +22,6 @@ addIcons({ play, pause });
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    AndroidPermissions,
     importProvidersFrom(
       IonicModule.forRoot(),
       IonicStorageModule.forRoot(),

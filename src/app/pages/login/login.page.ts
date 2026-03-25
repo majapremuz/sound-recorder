@@ -21,7 +21,8 @@ import { Subscription, firstValueFrom, filter } from 'rxjs';
   imports: [IonicModule, CommonModule, FormsModule, TranslateModule]
 })
 export class LoginPage implements OnInit {
-  isLoggedIn = false;
+  isLoginMode = true;   
+  isAuthenticated = false;
   loginEmail = '';
   loginUsername = '';
   loginPassword = '';
@@ -51,12 +52,12 @@ export class LoginPage implements OnInit {
 
   async ngOnInit() {
    this.authSub = this.authService.isLoggedIn$().subscribe(state => {
-  this.isLoggedIn = state;
+    this.isAuthenticated = state;
   });
   }
 
   toggleMode(mode: 'login' | 'register') {
-  this.isLoggedIn = mode === 'login';
+  this.isLoginMode = mode === 'login';
 
   this.loginUsername = '';
   this.loginPassword = '';
@@ -78,7 +79,7 @@ export class LoginPage implements OnInit {
   }
 
   onSubmit() {
-  if (this.isLoggedIn) {
+  if (this.isLoginMode) {
     this.login();
     return;
   }
@@ -137,7 +138,8 @@ this.http.post(url, body, {
       );
 
       this.showToast('Registracija uspješna!', 'success');
-      this.isLoggedIn = true;
+      this.isLoginMode = true;
+      this.isAuthenticated = true;
       this.authService.setLoggedIn(true);
     } else {
       this.showToast(res[0]?.message || 'Registracija nije uspjela.');
