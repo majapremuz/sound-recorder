@@ -19,7 +19,6 @@ interface City {
   loading?: boolean;
 }
 
-
 @Component({
   selector: 'app-popis-lokacija',
   templateUrl: './popis-lokacija.page.html',
@@ -30,29 +29,38 @@ interface City {
 export class PopisLokacijaPage implements OnInit {
 
   countries: Country[] = [];
+  locationModeAll = false;
 
-  constructor(
-    private router: Router,
-    private locationService: LocationService
-  ) {}
+  constructor(private router: Router, private locationService: LocationService) {}
 
   ngOnInit() {
     this.loadCountries();
+    this.locationModeAll = localStorage.getItem('locationMode') === 'all';
+
+    window.addEventListener('locationModeChanged', () => {
+      this.locationModeAll = localStorage.getItem('locationMode') === 'all';
+    });
   }
 
-  loadCountries() {
+  async loadCountries() {
     this.locationService.getCountries().subscribe({
-      next: data => {
-        const countryItems = data.filter(item => item.title);
-
+      next: countriesData => {
+        const countryItems = countriesData.filter(item => item.title);
         this.countries = countryItems.map((item, index) => ({
           id: String(index + 1),
           name: item.title,
           cities: []
         }));
 
-        this.countries.forEach(country => {
-          this.loadCitiesForCountry(country);
+        this.countries.forEach(country => this.loadCitiesForCountry(country));
+
+        // Fetch user selected cities after countries loaded
+        this.locationService.getUserSelectedCities().subscribe(selectedCities => {
+          this.countries.forEach(country => {
+            country.cities.forEach(city => {
+              city.enabled = selectedCities.includes(city.name);
+            });
+          });
         });
       },
       error: err => console.error('Countries error:', err)
@@ -67,75 +75,28 @@ export class PopisLokacijaPage implements OnInit {
           .map((item, index) => ({
             id: index + 1,
             name: item.title,
-            enabled: this.isAllMode() || this.isCitySelected(item.title)
+            enabled: false // will be updated from server after getUserSelectedCities()
           }));
       },
-      error: err =>
-        console.error(`Cities error for ${country.name}:`, err)
+      error: err => console.error(`Cities error for ${country.name}:`, err)
     });
   }
 
-  onCityToggle(city: City) {
-    city.loading = true;
+  onCityToggle(city: any, event: any) {
+  const checked = event.detail.checked;
 
-    const request$ = city.enabled
-      ? this.locationService.addUserLocation(city.name)
-      : this.locationService.removeUserLocation(city.name);
+  city.enabled = checked;
 
-    request$.subscribe({
-      next: () => {
-        city.loading = false;
-
-        if (city.enabled) {
-          this.saveSelectedCity(city.name);
-        } else {
-          this.removeSelectedCity(city.name);
-        }
-
-        if (this.isAllMode()) {
-        localStorage.setItem('locationMode', 'selected');
-      }
-      },
-      error: () => {
-        city.enabled = !city.enabled;
-        city.loading = false;
-      }
-    });
+  if (checked) {
+    this.locationService.addUserLocation(city.name).subscribe();
+  } else {
+    this.locationService.removeUserLocation(city.name).subscribe();
   }
+}
 
   isAllMode(): boolean {
   return localStorage.getItem('locationMode') === 'all';
 }
-
-
-  /* -----------------------
-     Local storage helpers
-     ----------------------- */
-
-  private saveSelectedCity(cityName: string) {
-    const saved = JSON.parse(localStorage.getItem('selectedCities') || '[]');
-
-    if (!saved.includes(cityName)) {
-      saved.push(cityName);
-      localStorage.setItem('selectedCities', JSON.stringify(saved));
-    }
-  }
-
-  private removeSelectedCity(cityName: string) {
-    const saved = JSON.parse(localStorage.getItem('selectedCities') || '[]');
-    const updated = saved.filter((c: string) => c !== cityName);
-
-    localStorage.setItem('selectedCities', JSON.stringify(updated));
-
-    if (updated.length === 0) {
-      localStorage.setItem('locationMode', 'all');
-    }
-  }
-
-  private isCitySelected(cityName: string): boolean {
-    const saved = JSON.parse(localStorage.getItem('selectedCities') || '[]');
-    return saved.includes(cityName);
-  }
 
   navigateTo(page: string) {
     this.router.navigate([`/${page}`]);

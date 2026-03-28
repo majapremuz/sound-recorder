@@ -5,6 +5,8 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { eye, eyeOff } from 'ionicons/icons';
+import { addIcons } from 'ionicons';
 
 @Component({
   selector: 'app-promjena-lozinke',
@@ -17,17 +19,25 @@ export class PromjenaLozinkePage implements OnInit {
 
   newPasswordValue: string = '';
   repeatPasswordValue: string = '';
+  showNewPassword: boolean = false;
+  showRepeatNewPassword: boolean = false;
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private toastCtrl: ToastController
-  ) {}
+  ) {
+      addIcons({
+      eye,
+      'eye-off': eyeOff
+    });
+    }
 
   ngOnInit() {}
 
   async changePassword() {
     if (!this.newPasswordValue || !this.repeatPasswordValue) {
+      console.log( this.newPasswordValue, this.repeatPasswordValue);
       this.showToast('Molimo unesite obje lozinke', 'danger');
       return;
     }
@@ -40,6 +50,8 @@ export class PromjenaLozinkePage implements OnInit {
     try {
       await this.authService.changePassword(this.newPasswordValue);
       this.showToast('Lozinka uspješno promijenjena', 'success');
+      this.newPasswordValue = '';
+      this.repeatPasswordValue = '';
       this.router.navigate(['/profil']);
     } catch (err) {
       this.showToast(String(err), 'danger');

@@ -59,11 +59,14 @@ async changePassword(newPassword: string): Promise<any> {
     password: sha1(newPassword)
   };
 
+  console.log('Changing password with:', body);
+
   return new Promise((resolve, reject) => {
     this.http.post<any>(url, body).subscribe({
       next: (res) => {
-        if (res.response === 'Success' || res.status === true) {
+        if (res.response === 'Success') {
           resolve(res);
+          console.log("Password changed:", res);
         } else {
           reject(res.message || 'Lozinka nije promijenjena');
         }

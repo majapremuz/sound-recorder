@@ -17,12 +17,20 @@ export enum AlertType {
   providedIn: 'root'
 })
 export class DataService {
-
-  private authReadyResolve!: (value?: unknown) => void;
-
-  authReady = new Promise(resolve => this.authReadyResolve = resolve);
-  private storageReady!: Promise<void>;
   private storageReadyResolve!: () => void;
+  storageReady = new Promise<void>(resolve => this.storageReadyResolve = resolve);
+
+  private authToken$ = new BehaviorSubject<string | null>(null);
+  authTokenChanges$ = this.authToken$.asObservable();
+
+  private email$ = new BehaviorSubject<string | null>(null);
+  emailChanges$ = this.email$.asObservable();
+
+  authToken: string | null = null;
+  email: string | null = null;
+  username: string | null = null;
+  lastLogin: string | null = null;
+
   private pushToken$ = new BehaviorSubject<string | null>(null);
   pushTokenChanges$ = this.pushToken$.asObservable();
 
@@ -31,28 +39,13 @@ export class DataService {
   content_signature: string = '';
   loader: any;
   pushToken: string | null = null;
-  private authToken$ = new BehaviorSubject<string | null>(null);
-  private email$ = new BehaviorSubject<string | null>(null);
-  private authToken: string | null = null;
-  private email: string | null = null;
-  username: string | null = null;
-  lastLogin: string | null = null;
-
 
   constructor(
   private apiCtrl: ControllerService,
   private translateCtrl: TranslateService,
   private toastController: ToastController,
   private storage: Storage
-) {
-  this.storageReady = new Promise(resolve => {
-    this.storageReadyResolve = resolve;
-  });
-}
-
-authTokenChanges$ = this.authToken$.asObservable();
-emailChanges$ = this.email$.asObservable();
-
+) {}
   async loadFirebaseToken() {
   const token = await this.storage.get('firebase_token');
   this.pushToken = token;
@@ -68,15 +61,13 @@ emailChanges$ = this.email$.asObservable();
 
   async initStorage() {
   console.log("Initializing storage...");
-  await this.storage.create();
+  await this.storage.create(); // make sure storage is ready
 
-  this.storageReadyResolve();
-
+  // load push token first
   const token = await this.loadFirebaseToken();
-  if (token) {
-    this.pushToken$.next(token);
-  }
+  if (token) this.pushToken$.next(token);
 
+  // load auth info
   this.authToken = await this.storage.get('auth_token');
   this.username = await this.storage.get('username');
   this.email = await this.storage.get('email');
@@ -85,10 +76,13 @@ emailChanges$ = this.email$.asObservable();
   this.authToken$.next(this.authToken);
   this.email$.next(this.email);
 
-  this.authReadyResolve();
+  // mark storage as ready
+    this.storageReadyResolve();
 }
 
 async setAuthData(username: string, email: string, lastLogin: string) {
+  await this.ensureStorageReady(); 
+
 //format: maja++traffic--call++2026-01-12 18:30:47
   console.log("raw data for token generation:", username + "++traffic--call++" + lastLogin);
   const token = sha1(username + "++traffic--call++" + lastLogin);
@@ -105,42 +99,49 @@ async setAuthData(username: string, email: string, lastLogin: string) {
   await this.storage.set('username', username);
   await this.storage.set('email', email);
   await this.storage.set('lastlogin', lastLogin);
-
-  localStorage.setItem('email', email);
-
-  if (this.authReadyResolve) {
-    this.authReadyResolve();
-  }
 }
 
 async getAuthToken(): Promise<string | null> {
-  await this.storageReady;
+    await this.ensureStorageReady();
+    return this.authToken;
+  }
 
-  if (this.authToken) return this.authToken;
+async getStorageItem(key: string): Promise<any> {
+    await this.ensureStorageReady();
+    return this.storage.get(key);
+  }
 
-  this.authToken = await this.storage.get('auth_token');
-  console.log("Retrieved auth token from storage:", this.authToken);
+async setStorageItem(key: string, value: any): Promise<void> {
+    await this.ensureStorageReady();
+    return this.storage.set(key, value);
+  }
 
-  return this.authToken;
-}
-
-public async getStorageItem(key: string): Promise<any> {
-  return this.storage.get(key);
-}
-
-async clearAuthData() {
-  this.username = null;
-  this.email = null;
-  this.lastLogin = null;
-
-  this.authToken$.next(null);
-  this.email$.next(null);
-
+  async clearAuthData() {
+  await this.ensureStorageReady(); 
+  await this.storage.remove('auth_token');
   await this.storage.remove('username');
   await this.storage.remove('email');
   await this.storage.remove('lastlogin');
 
-  localStorage.removeItem('email');
+  this.authToken = null;
+  this.username = null;
+  this.email = null;
+
+  this.authToken$.next(null);
+  this.email$.next(null);
+}
+
+async getLanguageKey(): Promise<string> {
+    await this.ensureStorageReady();
+    return this.email ? `selectedLang_${this.email}` : 'selectedLang_guest';
+  }
+
+  async ensureStorageReady() {
+  if (!this.storageReadyResolve) {
+    console.warn("Storage not initialized yet, initializing now...");
+    await this.initStorage();
+  }
+  await this.storageReady;
 }
 
   translateWord(key: string): Promise<string>{

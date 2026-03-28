@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DataService } from './data.service';
-import { Observable, from, switchMap, BehaviorSubject, tap } from 'rxjs';
+import { Observable, from, BehaviorSubject, switchMap, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class LocationService {
@@ -10,78 +10,56 @@ export class LocationService {
   private citiesUrl = 'https://traffic-call.com/api/cities.php';
   private addUserLocationUrl = 'https://traffic-call.com/api/addUserLocation.php';
   private removeUserLocationUrl = 'https://traffic-call.com/api/removeUserLocation.php';
+  private getUserLocationsUrl = 'https://traffic-call.com/api/getUserLocations.php';
 
   private selectedCitiesSubject = new BehaviorSubject<string[]>([]);
   selectedCities$ = this.selectedCitiesSubject.asObservable();
 
-  constructor(
-    private http: HttpClient,
-    private dataService: DataService
-  ) {}
-  
+  constructor(private http: HttpClient, private dataService: DataService) {}
+
   getCountries(): Observable<any[]> {
     return from(this.dataService.getAuthToken()).pipe(
-      switchMap(token => {
-        if (!token) throw new Error('Auth token missing');
-        console.log('Fetching countries with token:', token);
-        return this.http.post<any[]>(this.countriesUrl, { token });
-      })
+      switchMap(token => this.http.post<any[]>(this.countriesUrl, { token }))
     );
   }
 
   getCities(countryId: string): Observable<any[]> {
     return from(this.dataService.getAuthToken()).pipe(
-      switchMap(token => {
-        if (!token) throw new Error('Auth token missing');
-        console.log('Fetching cities with token:', token);
-        return this.http.post<any[]>(this.citiesUrl, {
-          token,
-          country: countryId
-        });
+      switchMap(token => this.http.post<any[]>(this.citiesUrl, { token, country: countryId }))
+    );
+  }
+
+  /** Fetch user’s selected cities from server */
+  getUserSelectedCities(): Observable<string[]> {
+    return from(this.dataService.getAuthToken()).pipe(
+      switchMap(token => this.http.post<string[]>(this.getUserLocationsUrl, { token })),
+      tap(cities => this.selectedCitiesSubject.next(cities))
+    );
+  }
+
+  addUserLocation(cityName: string): Observable<any> {
+    return from(this.dataService.getAuthToken()).pipe(
+      switchMap(token => this.http.post(this.addUserLocationUrl, { token, location: cityName })),
+      tap(() => {
+        const current = this.selectedCitiesSubject.value;
+        if (!current.includes(cityName)) {
+          this.selectedCitiesSubject.next([...current, cityName]);
+        }
       })
     );
   }
 
-  getCountryIdFromName(name: string): string | null {
-  const normalize = (s: string) => (s ?? '').toLowerCase().trim();
-  const countryMap: Record<string, string> = {
-    'hrvatska': '1',
-    'united kingdom': '2'
-  };
-  return countryMap[normalize(name)] || null;
+  removeUserLocation(cityName: string): Observable<any> {
+    return from(this.dataService.getAuthToken()).pipe(
+      switchMap(token => this.http.post(this.removeUserLocationUrl, { token, location: cityName })),
+      tap(() => {
+        const updated = this.selectedCitiesSubject.value.filter(c => c !== cityName);
+        this.selectedCitiesSubject.next(updated);
+      })
+    );
+  }
+
+resetSelectedCities() {
+  this.selectedCitiesSubject.next([]);
 }
-
-
-  updateSelectedCities(cities: string[]) {
-  this.selectedCitiesSubject.next(cities);
-  localStorage.setItem('selectedCities', JSON.stringify(cities));
-}
-
-  addUserLocation(location: string) {
-/*************  ✨ Windsurf Command ⭐  *************/
-/**
- * Adds a location to the user's selected locations.
- * @param location - the id of the location to add
-/*******  ad2f4de9-6e90-4a41-a836-73d9dcda723c  *******/  return from(this.dataService.getAuthToken()).pipe(
-    switchMap(token => this.http.post(this.addUserLocationUrl, { token, location })),
-    tap(() => {
-      const current = this.selectedCitiesSubject.value;
-      if (!current.includes(location)) {
-        this.updateSelectedCities([...current, location]);
-      }
-    })
-  );
-}
-
-removeUserLocation(location: string) {
-  return from(this.dataService.getAuthToken()).pipe(
-    switchMap(token => this.http.post(this.removeUserLocationUrl, { token, location })),
-    tap(() => {
-      const current = this.selectedCitiesSubject.value.filter(c => c !== location);
-      this.updateSelectedCities(current);
-    })
-  );
-}
-
-
 }

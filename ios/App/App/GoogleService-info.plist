@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>trafficcall.app.com</string>
+	<string>com.prolink.trafficcall</string>
 	<key>PROJECT_ID</key>
 	<string>sound-recorder-93263</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:499813238505:ios:1059c2d5450c1c65465278</string>
+	<string>1:499813238505:ios:9e2fd8001a30c092465278</string>
 </dict>
-</plist>
+</plist> 

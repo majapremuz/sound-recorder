@@ -5,7 +5,7 @@ ion-header {
 ion-content {
   padding: 0;
   margin: 0;
-  overflow: hidden;
+  overflow: visible;
 
 }
 
@@ -13,31 +13,15 @@ ion-content {
   background: radial-gradient(circle at 50% 50%, rgba(253, 253, 253, 1) 50%, rgba(230, 230, 230, 1) 100%);
 }
 
-/* The dynamic wave */
-.recording::before {
-  content: "";
-  position: absolute;
+.recording::before,
+.recording::after {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   border: 2px solid rgba(0, 200, 255, 0.4);
-  transform: scale(1);
+  transform: scale(var(--wave-scale, 1)); /* dynamic scale */
   opacity: 0.5;
   animation: wave var(--wave-speed, 1s) infinite ease-out;
-  z-index: 1;
-}
-
-/* Optional: add a second wave for continuous effect */
-.recording::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 5px solid rgba(0, 200, 255, 0.3);
-  transform: scale(1);
-  opacity: 0.5;
-  animation: wave calc(var(--wave-speed, 1s) + 0.3s) infinite ease-out;
   z-index: 1;
 }
 
@@ -53,15 +37,10 @@ ion-content {
 }
 
 .record-timer {
-  position: relative;
-  width: 26vmin;
-  height: 34vmin;
-  margin: 100% 0 0 30%;
-
   svg {
-    width: 120px;
-    height: 120px;
-    transform: rotate(-90deg);
+    width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
   }
 
   circle {
@@ -79,18 +58,32 @@ ion-content {
   }
 
   .timer-text {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%; 
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color:rgba(0, 150, 200, 1);
+font-size: 1.5rem;
+  color: rgba(0, 150, 200, 1);
+  text-align: center;   
   }
+}
+
+.record-timer {
+  position: absolute; /* inside img-container */
+  bottom: 30vmin; /* place below mic */
+  left: 55%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.record-timer .timer-text {
+  position: absolute; /* absolute inside relative parent */
+  top: 28vmin;
+  left: 17vmin;
+  transform: translate(-50%, -50%); /* perfectly center */
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: rgba(0, 150, 200, 1);
+  z-index: 10; /* above the waves */
+  text-align: center;
 }
 
 .img-container {
@@ -98,17 +91,15 @@ ion-content {
   top: 30%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-size: 100% 100%;
+  background-size: cover;
   border: 10px solid #e6e6e6;
   border-radius: 50%;
   height: 80vmin;
   width: 80vmin;
-  padding: 1rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: visible;
-  transition: background 0.1s linear;
+  overflow: visible; /* waves can go outside */
 }
 
 .mic-img {
@@ -141,6 +132,7 @@ h2 {
   width: 80%;
   border: 10px solid #e6e6e6;
   border-radius: 10px;
+  pointer-events: none;
 }
 
 .not-login-text {
@@ -157,6 +149,7 @@ h2 {
   margin: 0.8rem;
   gap: 8px;
   --box-shadow: none;
+  pointer-events: auto;
 
   p {
     font-family: "Roboto";
@@ -173,7 +166,7 @@ h2 {
 }
 }
 
-@media screen  and (min-width: 800px) {
+/*@media screen  and (min-width: 800px) {
   h2 {
     margin-top: 10vmin;
     font-size: 3rem;
@@ -188,10 +181,10 @@ h2 {
   }
 
   .record-timer {
-    margin: 80% 0 0 30%;
+    margin: 100% 0 0 20%;
   }
 
-  .record-timer .timer-text {
+  /*.record-timer .timer-text {
     position: absolute;
     top: 7%;
     left: 5%;
@@ -200,12 +193,25 @@ h2 {
 }
 
 @media screen  and (max-width: 360px) and (max-height: 760px){
-  .record-timer .timer-text {
+  .timer-text {
+    position: relative;
+    top: -10%;
+    left: 2%;
+  }
+}
+
+@media screen  and (max-width: 375px) and (max-height: 667px){
+  .record-timer {
+    //margin: 80% 0 0 30%;
+    background-color: red;
+  }
+  
+  /*.record-timer .timer-text {
     position: absolute;
     top: 7%;
     left: 3%;
   }
-}
+}*/
 
 ion-footer {
   box-shadow: none;

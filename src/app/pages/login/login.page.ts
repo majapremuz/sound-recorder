@@ -10,7 +10,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import * as sha1 from 'sha1';
 import { eye, eyeOff } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
-import { Subscription, firstValueFrom, filter } from 'rxjs';
+import { Subscription, firstValueFrom, filter, of, timeout, catchError } from 'rxjs';
 
 
 @Component({
@@ -94,14 +94,14 @@ export class LoginPage implements OnInit {
 
   async register() {
   const url = 'https://traffic-call.com/api/register.php';
-  let firebaseToken = this.dataService.pushToken || '';
+  let firebaseToken = this.dataService.pushToken;
 
-console.log('Using token:', firebaseToken);
+  console.log('Using token:', firebaseToken);
 const body = {
   username: this.registerUsername,
   email: this.registerEmail,
   password: this.registerPassword,
-  token: firebaseToken || ''
+  token: firebaseToken
 };
 
 console.log('Registering with:', body);

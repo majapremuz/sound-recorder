@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { TranslateModule, TranslateService, LangChangeEvent } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { DataService } from 'src/app/services/data.service';
 import { LocationService } from 'src/app/services/location.service';
 import { LanguageService, Language } from 'src/app/services/language.service';
@@ -23,7 +23,7 @@ export class ProfilPage implements OnInit, OnDestroy {
   locationModeAll = true;
   selectedLang: string = 'hr';
   languages: Language[] = [];
-  email: string = '';
+  email: string | null = null;
   selectedCityCount = 0;
   selectedCities: string[] = [];
   selectedCitiesPreview = '';
@@ -35,38 +35,40 @@ export class ProfilPage implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private http: HttpClient,
-    private dataCtrl: DataService,
+    private dataService: DataService,
     private locationService: LocationService,
     private languageService: LanguageService,
     private translateService: TranslateService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.dataService.initStorage(); 
     // Load saved notifications setting
     const saved = localStorage.getItem('notificationsEnabled');
     this.notificationsEnabled = saved !== null ? JSON.parse(saved) : true;
 
     // Subscribe to email changes
     this.subscriptions.add(
-      this.dataCtrl.emailChanges$.subscribe(email => {
-        this.email = email || 'Nepoznato';
-      })
+      this.dataService.emailChanges$.subscribe(email => {
+      this.email = email;
+    })
     );
 
     // Load languages
     this.subscriptions.add(
       this.languageService.getLanguages().subscribe({
-        next: langs => {
+        next: async langs => {
           this.languages = langs;
 
-          // Set initial language
+          const key = await this.dataService.getLanguageKey();
+          const savedLang = await this.dataService.getStorageItem(key);
+
           this.selectedLang =
-            localStorage.getItem('selectedLang') ||
+            savedLang ||
             this.translateService.currentLang ||
             langs[0]?.code ||
             'hr';
-          
-          // Make sure TranslateService is in sync
+
           this.translateService.use(this.selectedLang);
         },
         error: err => console.error('Error loading languages', err)
@@ -115,7 +117,7 @@ export class ProfilPage implements OnInit, OnDestroy {
     this.notificationsEnabled = event.detail.checked;
     localStorage.setItem('notificationsEnabled', JSON.stringify(this.notificationsEnabled));
 
-    const token = await this.dataCtrl.loadFirebaseToken();
+    const token = await this.dataService.loadFirebaseToken();
     if (!token) return;
 
     const formData = new FormData();
@@ -126,17 +128,40 @@ export class ProfilPage implements OnInit, OnDestroy {
   }
 
   onLocationModeChange(event: any) {
-    this.locationModeAll = event.detail.checked;
-    if (this.locationModeAll) {
-      localStorage.setItem('locationMode', 'all');
-      localStorage.removeItem('selectedCities');
+  this.locationModeAll = event.detail.checked;
+
+  if (this.locationModeAll) {
+    localStorage.setItem('locationMode', 'all');
+    this.locationService.resetSelectedCities();
+
+    // Remove all selected cities on the server
+    const removeAll$ = this.selectedCities.map(city =>
+      this.locationService.removeUserLocation(city)
+    );
+
+    if (removeAll$.length) {
+      // Execute all removals in parallel
+      Promise.all(removeAll$.map(obs => firstValueFrom(obs)))
+        .then(() => {
+          this.selectedCities = [];
+          this.selectedCityCount = 0;
+          this.selectedCitiesPreview = '';
+          window.dispatchEvent(new Event('locationModeChanged')); 
+        })
+        .catch(err => console.error('Error removing cities', err));
+    } else {
+      // No cities selected, just reset
       this.selectedCities = [];
       this.selectedCityCount = 0;
       this.selectedCitiesPreview = '';
-    } else {
-      localStorage.setItem('locationMode', 'selected');
+      this.locationService.resetSelectedCities();
+      window.dispatchEvent(new Event('locationModeChanged'));
     }
+
+  } else {
+    localStorage.setItem('locationMode', 'selected');
   }
+}
 
   openLocations() {
     this.navigateTo('popis-lokacija');

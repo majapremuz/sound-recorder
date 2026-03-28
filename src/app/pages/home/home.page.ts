@@ -4,7 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { ContentObject } from 'src/app/model/content';
 import { ControllerService } from 'src/app/services/controller.service';
 import { HttpClient } from '@angular/common/http';
-import { PushNotifications } from '@capacitor/push-notifications';
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
@@ -416,51 +416,31 @@ async reverseGeocode(lat: number, lon: number): Promise<{ city: string; street: 
   }
 }
 
+  async initPush() {
+  try {
+    const perm = await FirebaseMessaging.requestPermissions();
+    console.log('Push permission:', perm);
 
-async initPush() {
-  let permStatus = await PushNotifications.checkPermissions();
-  if (permStatus.receive !== 'granted') {
-    permStatus = await PushNotifications.requestPermissions();
-  }
+    if (perm.receive !== 'granted') return;
 
-  if (permStatus.receive === 'granted') {
-    await PushNotifications.register();
-  }
+    const { token } = await FirebaseMessaging.getToken();
+    console.log('FCM Token:', token);
 
-  // ✅ Reattach listeners every time
-  PushNotifications.addListener('registration', async (token) => {
-    console.log('Device FCM token:', token.value);
-
-    // Save token locally
-    localStorage.setItem('pushToken', token.value);
-    console.log('Push token saved locally:', token.value);
-
-    // Send token to your backend
-    try {
-      await this.http.post('https://traffic-call.com/api/token.php', { token: token.value }).toPromise();
-    } catch (err) {
-      console.error('Failed to send token to backend:', err);
+    if (token) {
+      await this.dataService.savePushToken(token);
     }
-  });
 
-  // ✅ If already registered before, restore token if possible
-  const existingToken = localStorage.getItem('pushToken');
-  if (!existingToken) {
-    console.warn('No push token found, trying to re-register...');
-    await PushNotifications.register();
+    await FirebaseMessaging.addListener('notificationReceived', (notification) => {
+      console.log('Push received:', notification);
+    });
+
+    await FirebaseMessaging.addListener('notificationActionPerformed', (notification) => {
+      console.log('Notification action:', notification);
+    });
+
+  } catch (err) {
+    console.error('Push init error:', err);
   }
-
-  PushNotifications.addListener('pushNotificationReceived', (notification) => {
-    console.log('Push received in foreground:', notification);
-  });
-
-  PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-    console.log('Notification action:', notification);
-    const audioUrl = notification.notification.data?.audioUrl;
-    if (audioUrl) {
-      this.router.navigate(['/popis'], { queryParams: { url: audioUrl } });
-    }
-  });
 }
 
   updateTimer() {

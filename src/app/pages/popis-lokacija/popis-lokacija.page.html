@@ -20,12 +20,12 @@
           <ion-label>{{ city.name }}</ion-label>
 
           <ion-toggle
-          slot="end"
-          color="success"
-          [(ngModel)]="city.enabled"
-          [disabled]="isAllMode()"
-          (ionChange)="onCityToggle(city)"
-        ></ion-toggle>
+            slot="end"
+            color="success"
+            [checked]="locationModeAll || city.enabled"
+            [disabled]="locationModeAll"
+            (ionChange)="onCityToggle(city, $event)">
+          </ion-toggle>
         </ion-item>
       </div>
 

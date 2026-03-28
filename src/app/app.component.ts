@@ -41,26 +41,31 @@ export class AppComponent {
   ) {}
 
   async ngOnInit() { 
+    await this.platform.ready();
+    await this.dataService.initStorage();
     await this.bootstrap();
+    await this.loadApiTranslations();
   }
 
   private async bootstrap() {
-    await this.platform.ready();
-    await this.dataService.initStorage(); 
-    await this.authService.syncLoginStateFromStorage();
+  await this.platform.ready();
+  
+  this.dataService.authTokenChanges$.subscribe(token => {
+    this.authService.setLoggedIn(!!token);
+    if (token) console.log("Auth token updated:", token);
+  });
 
-    this.dataService.authTokenChanges$.subscribe(token => {
-      this.authService.setLoggedIn(!!token);
-      if (token) {
-        console.log("Auth token updated:", token);
-      }
-    });
+  const lang = await this.initLanguage();
 
-    const lang = await this.initLanguage();
-    await this.loadApiTranslations();
+  this.translate.setDefaultLang(lang);
+  this.translate.use(lang);
 
-    await this.setReadyPage();
-  }
+  console.log("Selected language:", lang);
+  this.translate.setDefaultLang(lang);
+  this.translate.use(lang);
+
+  await this.setReadyPage();
+}
 
   private async setReadyPage() {
     console.log('setReadyPage');
@@ -79,31 +84,20 @@ export class AppComponent {
   }
 
   private async initLanguage(): Promise<string> {
-    const savedLang = await this.storage.get('selectedLang');
-    if (savedLang) {
-      this.translate.setDefaultLang(savedLang);
-      return savedLang;
-    }
+  //await this.dataService.authReady; // ✅ ensure token is ready
 
-    let deviceLang = 'hr';
+  const token = await this.dataService.getAuthToken();
 
-    try {
-      if (this.platform.is('hybrid')) {
-        const info = await Device.getLanguageCode();
-        deviceLang = info.value?.toLowerCase() ?? 'en';
-      } else {
-        const browserLang = this.translate.getBrowserLang();
-        if (browserLang) deviceLang = browserLang;
-      }
-    } catch (e) {
-      console.warn('Error getting device language', e);
-    }
-
-    const finalLang = deviceLang.startsWith('hr') ? 'hr' : 'en';
-    this.translate.setDefaultLang(finalLang);
-    await this.storage.set('selectedLang', finalLang);
-    return finalLang;
+  if (!token) {
+    this.translate.setDefaultLang('hr');
+    return 'hr';
   }
+
+  const key = await this.dataService.getLanguageKey();
+  const savedLang = await this.storage.get(key);
+
+  return savedLang || 'hr';
+}
 
   private async loadApiTranslations() {
     try {
@@ -173,8 +167,6 @@ export class AppComponent {
       });
 
       const currentLang = await this.storage.get('selectedLang') || 'hr';
-      //this.translate.setDefaultLang('hr');
-      this.translate.use(currentLang || 'hr');
 
       console.log('Translations loaded for:', currentLang);
 
