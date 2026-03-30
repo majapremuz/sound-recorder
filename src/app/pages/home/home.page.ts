@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { environment } from 'src/environments/environment';
 import { AuthService } from 'src/app/services/auth.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DataService } from 'src/app/services/data.service';
 import { LocationService } from 'src/app/services/location.service';
 import { Subscription, firstValueFrom, of, from } from 'rxjs';
@@ -59,8 +59,6 @@ export class HomePage {
   circleLength = 2 * Math.PI * 45; 
   circleOffset = 0;
 
-
-  translate: any = [];
   isLoggedIn = false;
 
   contents: Array<ContentObject> = [];
@@ -74,7 +72,7 @@ export class HomePage {
     private router: Router,
     private ngZone: NgZone,
     private authService: AuthService,
-    private locationService: LocationService
+    private translate: TranslateService
   ) {
     this.initTranslate();
   }
@@ -336,7 +334,7 @@ async sendRecording() {
     await loading.dismiss();
 
     const toast = await this.toastController.create({
-      message: 'Audio i lokacija poslani!',
+      message: await firstValueFrom(this.translate.get('AUDIO_SEND')),
       duration: 2000,
       color: 'success'
     });
@@ -351,7 +349,7 @@ async sendRecording() {
     console.error('❌ Failed to send audio:', err);
 
     const toast = await this.toastController.create({
-      message: 'Slanje nije uspjelo',
+      message: await firstValueFrom(this.translate.get('AUDIO_ERROR')),
       duration: 2000,
       color: 'danger'
     });

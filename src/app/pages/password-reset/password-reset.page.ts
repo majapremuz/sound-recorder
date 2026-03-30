@@ -5,8 +5,9 @@ import { IonicModule } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { AuthService } from 'src/app/services/auth.service';
+import { Subscription, firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-password-reset',
@@ -18,11 +19,21 @@ import { TranslateModule } from '@ngx-translate/core';
 export class PasswordResetPage {
 
   emailValue: string = '';
+  isAuthenticated = false;
+  authSub?: Subscription
+
+  async ngOnInit() {
+   this.authSub = this.authService.isLoggedIn$().subscribe(state => {
+    this.isAuthenticated = state;
+  });
+  }
 
   constructor(
     private http: HttpClient,
     private toastCtrl: ToastController,
-    private router: Router
+    private router: Router,
+    private translate: TranslateService,
+    private authService: AuthService
   ) {}
 
   async sendResetLink() {
@@ -33,7 +44,7 @@ export class PasswordResetPage {
     }).subscribe({
       next: async () => {
         const t = await this.toastCtrl.create({
-          message: 'Link za reset lozinke poslan!',
+          message: await firstValueFrom(this.translate.get('RESET_LINK_SEND')),
           duration: 3000,
           color: 'success'
         });
@@ -41,7 +52,7 @@ export class PasswordResetPage {
       },
       error: async () => {
         const t = await this.toastCtrl.create({
-          message: 'Greška — provjerite e-mail.',
+          message: await firstValueFrom(this.translate.get('RESET_LINK_ERROR')),
           duration: 3000,
           color: 'danger'
         });

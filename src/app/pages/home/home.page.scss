@@ -58,9 +58,18 @@ ion-content {
   }
 
   .timer-text {
-font-size: 1.5rem;
+  font-size: 1.5rem;
   color: rgba(0, 150, 200, 1);
-  text-align: center;   
+  text-align: center; 
+  position: absolute;
+  margin-top: 70%;
+  margin-left: 1rem;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: rgba(0, 150, 200, 1);
+  z-index: 10;
+  text-align: center;  
   }
 }
 
@@ -72,18 +81,6 @@ font-size: 1.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.record-timer .timer-text {
-  position: absolute; /* absolute inside relative parent */
-  top: 28vmin;
-  left: 17vmin;
-  transform: translate(-50%, -50%); /* perfectly center */
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: rgba(0, 150, 200, 1);
-  z-index: 10; /* above the waves */
-  text-align: center;
 }
 
 .img-container {
@@ -166,52 +163,17 @@ h2 {
 }
 }
 
-/*@media screen  and (min-width: 800px) {
-  h2 {
-    margin-top: 10vmin;
-    font-size: 3rem;
-  }
-  
-}
-
-@media screen  and (max-width: 360px) and (max-height: 640px) {
-  h2 {
-    margin-top: 95vmin;
-    font-size: 3rem;
-  }
-
-  .record-timer {
-    margin: 100% 0 0 20%;
-  }
-
-  /*.record-timer .timer-text {
-    position: absolute;
-    top: 7%;
-    left: 5%;
-  }
-  
-}
-
 @media screen  and (max-width: 360px) and (max-height: 760px){
   .timer-text {
-    position: relative;
-    top: -10%;
-    left: 2%;
+    margin-bottom: 1rem;
   }
 }
 
-@media screen  and (max-width: 375px) and (max-height: 667px){
-  .record-timer {
-    //margin: 80% 0 0 30%;
-    background-color: red;
+@media screen  and (max-width: 712px) and (max-height: 1138px){
+  .timer-text {
+    margin-bottom: 1rem;
   }
-  
-  /*.record-timer .timer-text {
-    position: absolute;
-    top: 7%;
-    left: 3%;
-  }
-}*/
+}
 
 ion-footer {
   box-shadow: none;

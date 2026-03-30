@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { eye, eyeOff } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 
@@ -25,7 +25,8 @@ export class PromjenaLozinkePage implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private translate: TranslateService
   ) {
       addIcons({
       eye,
@@ -38,18 +39,20 @@ export class PromjenaLozinkePage implements OnInit {
   async changePassword() {
     if (!this.newPasswordValue || !this.repeatPasswordValue) {
       console.log( this.newPasswordValue, this.repeatPasswordValue);
-      this.showToast('Molimo unesite obje lozinke', 'danger');
+      const message = await this.translate.get('PASSWORD_EMPTY').toPromise();
+      this.showToast(message, 'danger');
       return;
     }
 
     if (this.newPasswordValue !== this.repeatPasswordValue) {
-      this.showToast('Lozinke se ne podudaraju', 'danger');
+      const message = await this.translate.get('PASSWORD_MISSMATCH').toPromise();
+      this.showToast(message, 'danger');
       return;
     }
 
     try {
       await this.authService.changePassword(this.newPasswordValue);
-      this.showToast('Lozinka uspješno promijenjena', 'success');
+      this.showToast('{{PASSWORD_CHANGED | translate}}', 'success');
       this.newPasswordValue = '';
       this.repeatPasswordValue = '';
       this.router.navigate(['/profil']);

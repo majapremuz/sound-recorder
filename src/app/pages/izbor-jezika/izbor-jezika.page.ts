@@ -30,26 +30,14 @@ export class IzborJezikaPage implements OnInit {
   ) {}
 
   async ngOnInit() {
-  const key = await this.dataService.getLanguageKey();
-  const savedLang = await this.dataService.getStorageItem(key);
+  this.selectedLang = (await this.dataService.getSavedLanguage()) || 'hr';
+  await this.translateService.use(this.selectedLang);
 
-  this.selectedLang =
-    savedLang ||
-    this.translateService.currentLang ||
-    'hr';
-
-    this.initLanguagesAndTranslations();
+  await this.initLanguagesAndTranslations();
 }
 
   private async initLanguagesAndTranslations() {
-  const key = await this.dataService.getLanguageKey();
-  let savedLang = await this.dataService.getStorageItem(key);
-
-  // ✅ enforce default for guest
-  const email = await this.dataService.getStorageItem('email');
-  if (!email) {
-    savedLang = 'hr';
-  }
+  let savedLang = await this.dataService.getSavedLanguage();
 
   this.languageService.getLanguages().pipe(
     switchMap(langs => {
@@ -57,7 +45,7 @@ export class IzborJezikaPage implements OnInit {
 
       this.translateService.addLangs(langs.map(l => l.code));
 
-      return this.languageService.getTranslations(langs); // ✅ THIS WAS MISSING
+      return this.languageService.getTranslations(langs);
     })
   ).subscribe({
     next: translations => {
@@ -68,7 +56,7 @@ export class IzborJezikaPage implements OnInit {
 
       const langToUse = savedLang || 'hr';
 
-      this.translateService.use(langToUse);
+      //this.translateService.use(langToUse);
       this.selectedLang = langToUse;
 
       this.loading = false;
@@ -76,7 +64,7 @@ export class IzborJezikaPage implements OnInit {
     error: err => {
       console.error('Error loading languages/translations:', err);
 
-      this.translateService.use('hr');
+      //this.translateService.use('hr');
       this.loading = false;
     }
   });
@@ -85,8 +73,7 @@ export class IzborJezikaPage implements OnInit {
   async changeLanguage(lang: string) {
   this.selectedLang = lang;
   this.translateService.use(lang);
-  const key = await this.dataService.getLanguageKey();
-  await this.dataService.setStorageItem(key, lang);
+  await this.dataService.setSavedLanguage(lang);
 }
 
 

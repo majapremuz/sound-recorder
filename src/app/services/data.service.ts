@@ -46,6 +46,7 @@ export class DataService {
   private toastController: ToastController,
   private storage: Storage
 ) {}
+
   async loadFirebaseToken() {
   const token = await this.storage.get('firebase_token');
   this.pushToken = token;
@@ -61,7 +62,7 @@ export class DataService {
 
   async initStorage() {
   console.log("Initializing storage...");
-  await this.storage.create(); // make sure storage is ready
+  await this.storage.create();
 
   // load push token first
   const token = await this.loadFirebaseToken();
@@ -80,7 +81,7 @@ export class DataService {
     this.storageReadyResolve();
 }
 
-async setAuthData(username: string, email: string, lastLogin: string) {
+async setAuthData(username: string, email: string, lastLogin: string, lang?: string) {
   await this.ensureStorageReady(); 
 
 //format: maja++traffic--call++2026-01-12 18:30:47
@@ -99,6 +100,10 @@ async setAuthData(username: string, email: string, lastLogin: string) {
   await this.storage.set('username', username);
   await this.storage.set('email', email);
   await this.storage.set('lastlogin', lastLogin);
+  if (lang) {
+    const key = `selectedLang_${token}`;
+    await this.storage.set(key, lang);
+  }
 }
 
 async getAuthToken(): Promise<string | null> {
@@ -117,7 +122,7 @@ async setStorageItem(key: string, value: any): Promise<void> {
   }
 
   async clearAuthData() {
-  await this.ensureStorageReady(); 
+  await this.ensureStorageReady();
   await this.storage.remove('auth_token');
   await this.storage.remove('username');
   await this.storage.remove('email');
@@ -132,9 +137,20 @@ async setStorageItem(key: string, value: any): Promise<void> {
 }
 
 async getLanguageKey(): Promise<string> {
-    await this.ensureStorageReady();
-    return this.email ? `selectedLang_${this.email}` : 'selectedLang_guest';
-  }
+  await this.ensureStorageReady();
+  const email = await this.storage.get('email');
+  return email ? `selectedLang_${email}` : 'selectedLang_guest';
+}
+
+  async getSavedLanguage(): Promise<string | null> {
+  const key = await this.getLanguageKey();
+  return this.storage.get(key);
+}
+
+  async setSavedLanguage(lang: string) {
+  const key = await this.getLanguageKey();
+  await this.storage.set(key, lang);
+}
 
   async ensureStorageReady() {
   if (!this.storageReadyResolve) {

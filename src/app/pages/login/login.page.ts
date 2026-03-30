@@ -6,11 +6,11 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DataService } from 'src/app/services/data.service';
 import { AuthService } from 'src/app/services/auth.service'
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import * as sha1 from 'sha1';
 import { eye, eyeOff } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
-import { Subscription, firstValueFrom, filter, of, timeout, catchError } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 
 
 @Component({
@@ -35,14 +35,15 @@ export class LoginPage implements OnInit {
   showRepeatPassword = false;
   wrongPassword: boolean = false;
   passwordField: any = 'password';
-  authSub?: Subscription
+  authSub?: Subscription;
 
   constructor(
     private router: Router, 
     private toastCtrl: ToastController,
     private http: HttpClient,
     private dataService: DataService,
-    private authService: AuthService
+    private authService: AuthService,
+    private translate: TranslateService
   ) {
     addIcons({
     eye,
@@ -54,6 +55,9 @@ export class LoginPage implements OnInit {
    this.authSub = this.authService.isLoggedIn$().subscribe(state => {
     this.isAuthenticated = state;
   });
+  const lang = await this.dataService.getSavedLanguage() || 'hr';
+  this.translate.use(lang);
+  console.log('Language applied:', lang);
   }
 
   toggleMode(mode: 'login' | 'register') {
@@ -78,14 +82,15 @@ export class LoginPage implements OnInit {
     toast.present();
   }
 
-  onSubmit() {
+  async onSubmit() {
   if (this.isLoginMode) {
     this.login();
     return;
   }
 
   if (this.registerPassword !== this.registerRepeat) {
-    this.showToast('Lozinke se ne poklapaju.');
+    const message = await firstValueFrom(this.translate.get('PASSWORD_MISSMATCH'));
+    this.showToast(message, 'danger');
     return;
   }
 
@@ -114,7 +119,8 @@ this.http.post(url, body, {
     console.log('RAW REGISTER RESPONSE:', raw);
 
     if (!raw || raw.trim() === '') {
-      this.showToast('Server nije vratio odgovor.');
+      const message = await firstValueFrom(this.translate.get('NO_RESPONSE'));
+      this.showToast(message, 'error');
       return;
     }
 
@@ -124,7 +130,8 @@ this.http.post(url, body, {
       res = JSON.parse(raw);
     } catch (e) {
       console.error('JSON parse error:', e, raw);
-      this.showToast('Greška u odgovoru servera.');
+      const message = await firstValueFrom(this.translate.get('NO_RESPONSE'));
+      this.showToast(message, 'error');
       return;
     }
 
@@ -137,17 +144,28 @@ this.http.post(url, body, {
         lastlogin
       );
 
-      this.showToast('Registracija uspješna!', 'success');
+      const savedLang = await this.dataService.getSavedLanguage();
+      const langToUse = savedLang || 'hr';
+
+      await firstValueFrom(this.translate.use(langToUse));
+      this.translate.setDefaultLang(langToUse);
+ 
+      const message = await firstValueFrom(this.translate.get('REGISTER_SUCCESS'));
+      this.showToast(message, 'success');
       this.isLoginMode = true;
       this.isAuthenticated = true;
       this.authService.setLoggedIn(true);
     } else {
-      this.showToast(res[0]?.message || 'Registracija nije uspjela.');
+      const message = await firstValueFrom(this.translate.get('REGISTER_ERROR'));
+      this.showToast(res[0]?.message || message, 'error');
     }
   },
   error: (err) => {
+    (async () => {
     console.error('REGISTER ERROR:', err);
-    this.showToast('Greška prilikom registracije.', 'error');
+    const message = await firstValueFrom(this.translate.get('REGISTER_ERROR'));
+    this.showToast(message, 'error');
+    })();
   }
 });
 }
@@ -167,7 +185,8 @@ login() {
       console.log('RAW LOGIN RESPONSE:', raw);
 
       if (!raw || raw.trim() === '') {
-        this.showToast('Server nije vratio odgovor.', 'error');
+        const message = await firstValueFrom(this.translate.get('NO_RESPONSE'));
+        this.showToast(message, 'error');
         return;
       }
 
@@ -176,7 +195,8 @@ login() {
         res = JSON.parse(raw);
       } catch (e) {
         console.error('JSON parse error:', e, raw);
-        this.showToast('Greška u odgovoru servera.', 'error');
+        const message = await firstValueFrom(this.translate.get('NO_RESPONSE'));
+        this.showToast(message, 'error');
         return;
       }
 
@@ -190,15 +210,26 @@ login() {
           lastlogin
         );
 
-        this.showToast('Prijava uspješna!', 'success');
+        const savedLang = await this.dataService.getSavedLanguage();
+        const langToUse = savedLang || 'hr';
+
+        await firstValueFrom(this.translate.use(langToUse));
+        this.translate.setDefaultLang(langToUse);
+
+        const message = await firstValueFrom(this.translate.get('LOGIN_SUCCESS'));
+        this.showToast(message, 'success');
         this.router.navigate(['/home']);
       } else {
-        this.showToast(res[0]?.message || 'Pogrešni podaci.', 'error');
+        const message = await firstValueFrom(this.translate.get('LOGIN_ERROR'));
+        this.showToast(res[0]?.message || message, 'error');
       }
     },
     error: (err) => {
+      (async () => {
       console.error('LOGIN ERROR:', err);
-      this.showToast('Greška prilikom prijave.');
+      const message = await firstValueFrom(this.translate.get('LOGIN_ERROR'));
+      this.showToast(message, 'error');
+      })();
     }
   });
 }

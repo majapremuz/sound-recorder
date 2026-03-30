@@ -26,8 +26,24 @@ private loggedIn$ = new BehaviorSubject<boolean>(false);
   ) {}
 
 async fullLogout() {
+  await this.dataService.ensureStorageReady();
+
+  const email = this.dataService.email || await this.dataService.getStorageItem('email');
+  console.log('Logging out user:', email);
+
+  if (email) {
+    const userLangKey = `selectedLang_${email}`;
+    const lang = await this.dataService.getStorageItem(userLangKey);
+
+    if (lang) {
+      await this.dataService.setStorageItem('selectedLang_guest', lang);
+      console.log('Saved guest language:', lang);
+    }
+  }
   await this.dataService.clearAuthData();
   this.loggedIn$.next(false);
+
+  console.log('Full logout complete.');
 }
 
   setLoggedIn(value: boolean) {
@@ -86,9 +102,15 @@ deleteAccount(): Observable<any> {
         { token }
       );
     }),
-    tap(() => {
-      this.dataService.clearAuthData();
-      this.storage.remove('auth_token');
+    tap(async () => {
+      const key = await this.dataService.getLanguageKey();
+      const email = await this.dataService.getStorageItem('email');
+      if (email) {
+        const key = `selectedLang_${email}`;
+        await this.storage.remove(key);
+      }
+
+      await this.dataService.clearAuthData();
       this.loggedIn$.next(false);
     })
   );

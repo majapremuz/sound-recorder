@@ -6,7 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/services/auth.service';
 import { DataService } from 'src/app/services/data.service';
-
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-brisanje-racuna',
@@ -59,7 +59,7 @@ export class BrisanjeRacunaPage implements OnInit {
   async confirmDelete() {
   this.authService.deleteAccount().subscribe({
     next: () => {
-      this.router.navigate(['/login'], { replaceUrl: true });
+      App.exitApp();
     },
     error: err => {
       console.error('Delete failed:', err);
