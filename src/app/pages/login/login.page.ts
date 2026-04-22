@@ -106,7 +106,7 @@ const body = {
   username: this.registerUsername,
   email: this.registerEmail,
   password: this.registerPassword,
-  token: firebaseToken
+  //token: firebaseToken
 };
 
 console.log('Registering with:', body);
