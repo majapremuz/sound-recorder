@@ -38,7 +38,16 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 /* @import "@ionic/angular/css/palettes/dark.system.css"; */
 
+
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Roboto', sans-serif !important;
+}
+
+:root {
+  --ion-font-family: 'Roboto', sans-serif !important;
+}
+
+html.ios {
+  --ion-font-family: 'Roboto', sans-serif !important;
 }
 

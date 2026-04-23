@@ -63,6 +63,8 @@ export class LocationService {
   }
 
 resetSelectedCities() {
+  console.log('RESETTING CITIES');
   this.selectedCitiesSubject.next([]);
+  localStorage.removeItem('selectedCities');
 }
 }

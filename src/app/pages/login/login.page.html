@@ -39,7 +39,7 @@
   <ion-item [class.invalid]="loginPasswordField.invalid && (loginPasswordField.dirty || loginPasswordField.touched)"
             [class.valid]="loginPasswordField.valid">
     <ion-input [type]="showLoginPassword ? 'text' : 'password'" name="loginPassword" [(ngModel)]="loginPassword"
-               required minlength="9" #loginPasswordField="ngModel"></ion-input>
+               required #loginPasswordField="ngModel"></ion-input>
     <ion-icon
       [name]="showLoginPassword ? 'eye-off' : 'eye'"
       (click)="showLoginPassword = !showLoginPassword"
@@ -77,7 +77,7 @@
   <ion-item [class.invalid]="registerPasswordField.invalid && (registerPasswordField.dirty || registerPasswordField.touched)"
             [class.valid]="registerPasswordField.valid">
     <ion-input [type]="showRegisterPassword ? 'text' : 'password'" name="registerPassword" [(ngModel)]="registerPassword"
-               required minlength="9" #registerPasswordField="ngModel"></ion-input>
+               required #registerPasswordField="ngModel" ngDefaultControl></ion-input>
     <ion-icon
       [name]="showRegisterPassword ? 'eye-off' : 'eye'"
       (click)="showRegisterPassword = !showRegisterPassword"
@@ -103,8 +103,8 @@
     [type]="showRepeatPassword ? 'text' : 'password'"
     name="registerRepeat"
     [(ngModel)]="registerRepeat"
+    ngDefaultControl
     required
-    minlength="9"
     #registerRepeatField="ngModel">
   </ion-input>
 
@@ -126,13 +126,14 @@
 
   <ion-button
   expand="block"
+  type="submit"
   class="action-btn"
   [disabled]="
     form.invalid ||
     (!isLoginMode && registerPassword !== registerRepeat)
   "
   [ngClass]="{'enabled-btn': form.valid, 'disabled-btn': form.invalid}"
-  (click)="onSubmit()">
+  >
 
   <div class="wrapper">
     {{ isLoginMode ? ('LOGIN_' | translate) : ('REGISTER' | translate) }}
@@ -169,21 +170,21 @@
 
 <ion-footer>
 
-        <ion-button class="footer-button home-button" (click)="navigateTo('home')" [disabled]="!isAuthenticated">
+        <ion-button class="footer-button home-button" (click)="navigateTo('home')" [disabled]= true>
           <div class="footer-btn-container">
             <img src="assets/home.png" alt="home icon" class="footer-icon">
             <p class="footer-title">{{ 'HOME' | translate }}</p>
           </div> 
         </ion-button>
 
-        <ion-button class="footer-button list-button" (click)="navigateTo('popis')" [disabled]="!isAuthenticated">
+        <ion-button class="footer-button list-button" (click)="navigateTo('popis')" [disabled]= true>
           <div class="footer-btn-container">
             <img src="assets/list.png" alt="list icon" class="footer-icon">
             <p class="footer-title">{{ 'LIST' | translate }}</p>
           </div>
         </ion-button>
 
-        <ion-button class="footer-button" (click)="navigateTo('profil')" [disabled]="!isAuthenticated">
+        <ion-button class="footer-button" (click)="navigateTo('profil')" [disabled]= true>
           <div class="footer-btn-container">
             <img src="assets/profil.png" alt="profil icon" class="footer-icon">
             <p class="footer-title">{{ 'PROFILE' | translate }}</p>
