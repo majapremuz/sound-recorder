@@ -10,12 +10,16 @@ export class LocationService {
   private citiesUrl = 'https://traffic-call.com/api/cities.php';
   private addUserLocationUrl = 'https://traffic-call.com/api/addUserLocation.php';
   private removeUserLocationUrl = 'https://traffic-call.com/api/removeUserLocation.php';
-  private getUserLocationsUrl = 'https://traffic-call.com/api/getUserLocations.php';
 
-  private selectedCitiesSubject = new BehaviorSubject<string[]>([]);
+  selectedCitiesSubject = new BehaviorSubject<string[]>([]);
   selectedCities$ = this.selectedCitiesSubject.asObservable();
 
-  constructor(private http: HttpClient, private dataService: DataService) {}
+  constructor(private http: HttpClient, private dataService: DataService) {
+    const saved = localStorage.getItem('selectedCities');
+  if (saved) {
+    this.selectedCitiesSubject.next(JSON.parse(saved));
+  }
+  }
 
   getCountries(): Observable<any[]> {
     return from(this.dataService.getAuthToken()).pipe(
@@ -29,37 +33,38 @@ export class LocationService {
     );
   }
 
-  /** Fetch user’s selected cities from server */
-  getUserSelectedCities(): Observable<string[]> {
-    return from(this.dataService.getAuthToken()).pipe(
-      switchMap(token => this.http.post<string[]>(this.getUserLocationsUrl, { token })),
-      tap(cities => this.selectedCitiesSubject.next(cities))
-    );
-  }
-
   addUserLocation(cityName: string): Observable<any> {
-    return from(this.dataService.getAuthToken()).pipe(
-      switchMap(token => this.http.post(this.addUserLocationUrl, { token, location: cityName })),
-      tap(() => {
-        const current = this.selectedCitiesSubject.value;
-        if (!current.includes(cityName)) {
-          this.selectedCitiesSubject.next([...current, cityName]);
-        }
-      })
-    );
-  }
+  return from(this.dataService.getAuthToken()).pipe(
+    switchMap(token =>
+      this.http.post(this.addUserLocationUrl, { token, location: cityName })
+    ),
+    tap(() => {
+      const current = this.selectedCitiesSubject.value;
+      if (!current.includes(cityName)) {
+        const updated = [...current, cityName];
+        this.selectedCitiesSubject.next(updated);
+        localStorage.setItem('selectedCities', JSON.stringify(updated));
+      }
+    })
+  );
+}
 
   removeUserLocation(cityName: string): Observable<any> {
-    return from(this.dataService.getAuthToken()).pipe(
-      switchMap(token => this.http.post(this.removeUserLocationUrl, { token, location: cityName })),
-      tap(() => {
-        const updated = this.selectedCitiesSubject.value.filter(c => c !== cityName);
-        this.selectedCitiesSubject.next(updated);
-      })
-    );
+  return from(this.dataService.getAuthToken()).pipe(
+    switchMap(token =>
+      this.http.post(this.removeUserLocationUrl, { token, location: cityName })
+    ),
+    tap(() => {
+      const updated = this.selectedCitiesSubject.value.filter(c => c !== cityName);
+      this.selectedCitiesSubject.next(updated);
+      localStorage.setItem('selectedCities', JSON.stringify(updated));
+    })
+  );
   }
 
 resetSelectedCities() {
+  console.log('RESETTING CITIES');
   this.selectedCitiesSubject.next([]);
+  localStorage.removeItem('selectedCities');
 }
 }

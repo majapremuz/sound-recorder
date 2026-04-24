@@ -33,54 +33,52 @@ export class PopisLokacijaPage implements OnInit {
 
   constructor(private router: Router, private locationService: LocationService) {}
 
-  ngOnInit() {
-    this.loadCountries();
-    this.locationModeAll = localStorage.getItem('locationMode') === 'all';
+  private locationModeListener = () => {
+  this.locationModeAll = localStorage.getItem('locationMode') === 'all';
+};
 
-    window.addEventListener('locationModeChanged', () => {
-      this.locationModeAll = localStorage.getItem('locationMode') === 'all';
-    });
-  }
+ ngOnInit() {
+  this.loadCountries();
+  this.locationModeAll = localStorage.getItem('locationMode') === 'all';
+  window.addEventListener('locationModeChanged', this.locationModeListener);
+}
+
+ngOnDestroy() {
+  window.removeEventListener('locationModeChanged', this.locationModeListener);
+}
 
   async loadCountries() {
-    this.locationService.getCountries().subscribe({
-      next: countriesData => {
-        const countryItems = countriesData.filter(item => item.title);
-        this.countries = countryItems.map((item, index) => ({
-          id: String(index + 1),
-          name: item.title,
-          cities: []
-        }));
+  this.locationService.getCountries().subscribe({
+    next: countriesData => {
+      const countryItems = countriesData.filter(item => item.title);
 
-        this.countries.forEach(country => this.loadCitiesForCountry(country));
+      this.countries = countryItems.map((item, index) => ({
+        id: String(index + 1),
+        name: item.title,
+        cities: []
+      }));
 
-        // Fetch user selected cities after countries loaded
-        this.locationService.getUserSelectedCities().subscribe(selectedCities => {
-          this.countries.forEach(country => {
-            country.cities.forEach(city => {
-              city.enabled = selectedCities.includes(city.name);
-            });
-          });
-        });
-      },
-      error: err => console.error('Countries error:', err)
-    });
-  }
+      this.countries.forEach(country => this.loadCitiesForCountry(country));
+    },
+    error: err => console.error('Countries error:', err)
+  });
+}
 
   loadCitiesForCountry(country: Country) {
-    this.locationService.getCities(country.id).subscribe({
-      next: data => {
-        country.cities = data
-          .filter(item => item.title)
-          .map((item, index) => ({
-            id: index + 1,
-            name: item.title,
-            enabled: false // will be updated from server after getUserSelectedCities()
-          }));
-      },
-      error: err => console.error(`Cities error for ${country.name}:`, err)
-    });
-  }
+  this.locationService.getCities(country.id).subscribe({
+    next: data => {
+      const selected = this.locationService.selectedCitiesSubject.value;
+
+      country.cities = data
+        .filter(item => item.title)
+        .map((item, index) => ({
+          id: index + 1,
+          name: item.title,
+          enabled: selected.includes(item.title)
+        }));
+    }
+  });
+}
 
   onCityToggle(city: any, event: any) {
   const checked = event.detail.checked;
@@ -88,9 +86,9 @@ export class PopisLokacijaPage implements OnInit {
   city.enabled = checked;
 
   if (checked) {
-    this.locationService.addUserLocation(city.name).subscribe();
+    this.locationService.addUserLocation(city.id).subscribe();
   } else {
-    this.locationService.removeUserLocation(city.name).subscribe();
+    this.locationService.removeUserLocation(city.id).subscribe();
   }
 }
 

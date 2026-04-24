@@ -15,6 +15,7 @@ import { ControllerService } from './services/controller.service';
 import { DataService } from './services/data.service';
 import { AuthService } from './services/auth.service';
 import { LanguageService } from './services/language.service';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-root',
@@ -146,20 +147,20 @@ export class AppComponent {
 }
 
   private async setReadyPage() {
-    console.log('setReadyPage');
+  if (this.platform.is('hybrid')) {
+    await SplashScreen.hide();
+    await StatusBar.show();
 
-    if (this.platform.is('hybrid')) {
-      try {
-        await SplashScreen.hide();
-        await StatusBar.show();
+    App.addListener('appStateChange', async ({ isActive }) => {
+      if (isActive) {
+        console.log('App is active → init notifications');
         await this.initNotifications();
-      } catch (e) {
-        console.warn('Error initializing mobile plugins', e);
       }
-    }
-
-    this.contrCtrl.setReadyPage();
+    });
   }
+
+  this.contrCtrl.setReadyPage();
+}
 
   private async initLanguage(): Promise<string> {
   await this.dataService.ensureStorageReady();

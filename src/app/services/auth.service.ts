@@ -6,6 +6,7 @@ import { Observable, tap, BehaviorSubject, from, switchMap } from 'rxjs';
 import * as sha1 from 'sha1';
 import { Storage } from '@ionic/storage-angular';
 import { DataService } from './data.service';
+import { LocationService } from './location.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,8 @@ private loggedIn$ = new BehaviorSubject<boolean>(false);
     private http: HttpClient, 
     private router: Router,
     private storage: Storage,
-    private dataService: DataService
+    private dataService: DataService,
+    private locationService: LocationService
   ) {}
 
 async fullLogout() {
@@ -109,7 +111,7 @@ deleteAccount(): Observable<any> {
         const key = `selectedLang_${email}`;
         await this.storage.remove(key);
       }
-
+      this.locationService.resetSelectedCities();
       await this.dataService.clearAuthData();
       this.loggedIn$.next(false);
     })

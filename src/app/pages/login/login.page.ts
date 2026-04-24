@@ -99,23 +99,23 @@ export class LoginPage implements OnInit {
 
   async register() {
   const url = 'https://traffic-call.com/api/register.php';
-  let firebaseToken = this.dataService.pushToken;
 
-  console.log('Using token:', firebaseToken);
-const body = {
-  username: this.registerUsername,
-  email: this.registerEmail,
-  password: this.registerPassword,
-  token: firebaseToken
-};
+  const body = {
+    username: this.registerUsername,
+    email: this.registerEmail,
+    password: this.registerPassword,
+  };
 
-console.log('Registering with:', body);
+  console.log('Registering with:', body);
 
-this.http.post(url, body, {
-  headers: { 'Content-Type': 'application/json' },
-  responseType: 'text'
-}).subscribe({
-  next: async (raw) => {
+  try {
+    const raw = await firstValueFrom(
+      this.http.post(url, body, {
+        headers: { 'Content-Type': 'application/json' },
+        responseType: 'text'
+      })
+    );
+
     console.log('RAW REGISTER RESPONSE:', raw);
 
     if (!raw || raw.trim() === '') {
@@ -125,7 +125,6 @@ this.http.post(url, body, {
     }
 
     let res: any;
-
     try {
       res = JSON.parse(raw);
     } catch (e) {
@@ -136,38 +135,33 @@ this.http.post(url, body, {
     }
 
     if (Array.isArray(res) && res.length > 0 && res[0].response === "Success") {
-      const lastlogin = res[0].lastlogin;
 
       await this.dataService.setAuthData(
         this.registerUsername,
         this.registerEmail,
-        lastlogin
+        res[0].lastlogin
       );
 
-      const savedLang = await this.dataService.getSavedLanguage();
-      const langToUse = savedLang || 'hr';
-
+      const langToUse = await this.dataService.getSavedLanguage() || 'hr';
       await firstValueFrom(this.translate.use(langToUse));
-      this.translate.setDefaultLang(langToUse);
- 
+
       const message = await firstValueFrom(this.translate.get('REGISTER_SUCCESS'));
       this.showToast(message, 'success');
+
       this.isLoginMode = true;
-      this.isAuthenticated = true;
+      //this.isAuthenticated = true;
       this.authService.setLoggedIn(true);
+
     } else {
       const message = await firstValueFrom(this.translate.get('REGISTER_ERROR'));
       this.showToast(res[0]?.message || message, 'error');
     }
-  },
-  error: (err) => {
-    (async () => {
+
+  } catch (err) {
     console.error('REGISTER ERROR:', err);
     const message = await firstValueFrom(this.translate.get('REGISTER_ERROR'));
     this.showToast(message, 'error');
-    })();
   }
-});
 }
 
 login() {

@@ -102,8 +102,7 @@ ngOnDestroy() {
 
 getSupportedMimeType() {
   const types = [
-    'audio/mp4',
-    'audio/aac',
+    'audio/webm;codecs=opus',
     'audio/webm',
     'audio/ogg'
   ];
@@ -129,6 +128,7 @@ getExtension(mimeType: string) {
   if (this.isRecording) return;
 
   try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     const mimeType = this.getSupportedMimeType();
