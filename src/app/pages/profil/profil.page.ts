@@ -118,6 +118,7 @@ export class ProfilPage implements OnInit, OnDestroy {
     localStorage.setItem('notificationsEnabled', JSON.stringify(this.notificationsEnabled));
 
     const token = await this.dataService.loadFirebaseToken();
+    console.log("token:", token);
     if (!token) return;
 
     const formData = new FormData();

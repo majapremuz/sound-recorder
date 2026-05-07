@@ -9,13 +9,14 @@ import { firstValueFrom } from 'rxjs';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar } from '@capacitor/status-bar';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
-
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { TranslateConfigService } from './services/translate-config.service';
 import { ControllerService } from './services/controller.service';
 import { DataService } from './services/data.service';
 import { AuthService } from './services/auth.service';
 import { LanguageService } from './services/language.service';
 import { App } from '@capacitor/app';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +27,7 @@ import { App } from '@capacitor/app';
 })
 export class AppComponent {
   isAppReady = false;
+  private notificationListenersAdded = false;
 
   private defaultHrTranslations = { 
         "AUDIO_SEND": "Audio poslan!",
@@ -100,7 +102,8 @@ export class AppComponent {
     private translate: TranslateService, 
     private authService: AuthService,
     private storage: Storage,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private http: HttpClient
   ) {}
 
   async ngOnInit() { 
@@ -150,6 +153,8 @@ export class AppComponent {
   if (this.platform.is('hybrid')) {
     await SplashScreen.hide();
     await StatusBar.show();
+    await this.initNotifications();
+
 
     App.addListener('appStateChange', async ({ isActive }) => {
       if (isActive) {
@@ -199,44 +204,90 @@ export class AppComponent {
   }
 
   private async initNotifications() {
-    if (!this.platform.is('hybrid')) {
-      console.log('Skipping notifications in browser');
+
+  if (!this.platform.is('hybrid')) {
+    console.log('Skipping notifications in browser');
+    return;
+  }
+
+  try {
+    await this.addListeners();
+    await LocalNotifications.requestPermissions();
+
+    let perm = await FirebaseMessaging.checkPermissions();
+    console.log('Push permission:', perm);
+
+    // Ask permission if needed
+    if (perm.receive !== 'granted') {
+      perm = await FirebaseMessaging.requestPermissions();
+    }
+
+    // Final check
+    if (perm.receive !== 'granted') {
+      console.warn('Push permission not granted');
       return;
     }
 
-    try {
-      const perm = await FirebaseMessaging.requestPermissions();
-      console.log('Push permission:', perm);
+    const { token } = await FirebaseMessaging.getToken();
+    console.log('FCM Token:', token);
 
-      if (perm.receive !== 'granted') {
-        console.warn('Push permission not granted');
-        return;
-      }
+    if (token) {
 
-      const { token } = await FirebaseMessaging.getToken();
-      console.log('FCM Token:', token);
+      // save locally
+      await this.dataService.savePushToken(token);
 
-      if (token) {
-        await this.dataService.savePushToken(token);
-      } else {
-        console.warn('No FCM token received');
-      }
+      // send to backend
+      await firstValueFrom(
+        this.http.post('https://traffic-call.com/api/token.php', {
+          token
+        })
+      );
 
-      await this.addListeners();
+      console.log('FCM token sent to backend');
 
-    } catch (err) {
-      console.error('initNotifications error:', err);
+    } else {
+      console.warn('No FCM token received');
     }
+
+  } catch (err) {
+    console.error('initNotifications error:', err);
+  }
+}
+
+private async addListeners() {
+
+  if (this.notificationListenersAdded) {
+    return;
   }
 
-  private async addListeners() {
-    await FirebaseMessaging.addListener('notificationReceived', notification => {
-      console.log('Push received:', notification);
-    });
+  this.notificationListenersAdded = true;
 
-    await FirebaseMessaging.addListener('notificationActionPerformed', notification => {
+  await FirebaseMessaging.addListener(
+  'notificationReceived',
+  async notification => {
+
+    console.log('Push received:', notification);
+
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: Date.now(),
+          title: notification.notification?.title || 'Traffic Call',
+          body: notification.notification?.body || '',
+          smallIcon: 'ic_stat_icon_config_sample',
+          schedule: { at: new Date(Date.now() + 100) }
+        }
+      ]
+    });
+  }
+);
+
+  await FirebaseMessaging.addListener(
+    'notificationActionPerformed',
+    notification => {
       console.log('Push action:', notification);
-    });
-  }
+    }
+  );
+} 
 
 }
