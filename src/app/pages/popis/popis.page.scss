@@ -39,6 +39,7 @@ ion-item {
 ion-list {
   max-height: 80vh;
   overflow-y: auto;
+  margin: 1rem auto;
 }
 
 ion-list ion-item {
@@ -79,12 +80,7 @@ ion-list ion-item {
 ion-footer {
   box-shadow: none;
   background-color: #f0f0f0;
-  height: 5rem;
-  padding: 1rem 0;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  padding-bottom: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;

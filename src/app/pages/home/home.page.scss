@@ -5,7 +5,7 @@ ion-header {
 ion-content {
   padding: 0;
   margin: 0;
-  overflow: visible;
+  //overflow: visible;
 
 }
 
@@ -36,11 +36,10 @@ ion-content {
   }
 }
 
-.record-timer {
+/*.record-timer {
   svg {
     width: 100%;
   height: 100%;
-  transform: rotate(-90deg);
   }
 
   circle {
@@ -60,31 +59,71 @@ ion-content {
   .timer-text {
   font-size: 1.5rem;
   color: rgba(0, 150, 200, 1);
-  text-align: center; 
-  position: absolute;
-  margin-top: 70%;
-  margin-left: 1rem;
-  transform: translate(-50%, -50%);
+  text-align: center;
   font-size: 1.5rem;
   font-weight: bold;
   color: rgba(0, 150, 200, 1);
   z-index: 10;
   text-align: center;  
   }
-}
+}*/
 
-.record-timer {
-  position: absolute; /* inside img-container */
-  bottom: 30vmin; /* place below mic */
-  left: 55%;
-  transform: translateX(-50%);
+/*.record-timer {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 3rem;
+  margin-left: 8rem;
+}*/
+
+.record-timer {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 3rem 8rem;
+
+  svg {
+    width: 100%;
+  height: 100%;
+  }
+
+  circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+  }
+
+  circle:nth-child(1) {
+    stroke: #ccc;
+  }
+
+  circle:nth-child(2) {
+    transition: stroke-dashoffset 0.1s linear;
+  }
+}
+
+.record-timer svg {
+  width: 100%;
+  height: 100%;
+}
+
+.timer-text {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: rgba(0, 150, 200, 1);
+
+  pointer-events: none;
 }
 
 .img-container {
-  position: absolute;
+  position: relative;
   top: 30%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -163,30 +202,13 @@ h2 {
 }
 }
 
-@media screen  and (max-width: 360px) and (max-height: 760px){
-  .timer-text {
-    margin-bottom: 1rem;
-  }
-}
-
-@media screen  and (max-width: 712px) and (max-height: 1138px){
-  .timer-text {
-    margin-bottom: 1rem;
-  }
-}
-
 ion-footer {
   box-shadow: none;
   background-color: #f0f0f0;
-  height: 5rem;
-  padding: 1rem 0;
+  padding-bottom: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
 }
 
 .footer-btn-container {

@@ -95,15 +95,10 @@ h3 {
 ion-footer {
   box-shadow: none;
   background-color: #f0f0f0;
-  height: 5rem;
-  padding: 1rem 0;
+  padding-bottom: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
 }
 
 .footer-btn-container {

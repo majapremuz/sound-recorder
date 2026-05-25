@@ -5,6 +5,10 @@ ion-content {
   font-family: "Roboto";
 }
 
+ion-accordion {
+  margin: 2rem 0;
+}
+
 .title {
 display: flex;
 justify-content: flex-start;
@@ -59,12 +63,7 @@ h2 {
 ion-footer {
   box-shadow: none;
   background-color: #f0f0f0;
-  height: 5rem;
-  padding: 1rem 0;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  padding-bottom: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
