@@ -17,7 +17,7 @@ export const environment = {
   def_image: 'assets/imgs/no-image-icon-23485.png',
   company_id: 2,
   show_id: true,
-  version: '1.1.6',
+  version: '1.1.7',
   db_version: '1.2.8',
 
   firebase: {

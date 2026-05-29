@@ -53,7 +53,7 @@ ngOnDestroy() {
       const countryItems = countriesData.filter(item => item.title);
 
       this.countries = countryItems.map((item, index) => ({
-        id: String(index + 1),
+        id: item.id,
         name: item.title,
         cities: []
       }));
@@ -72,7 +72,7 @@ ngOnDestroy() {
       country.cities = data
         .filter(item => item.title)
         .map((item, index) => ({
-          id: index + 1,
+          id: item.id,
           name: item.title,
           enabled: selected.includes(item.title)
         }));

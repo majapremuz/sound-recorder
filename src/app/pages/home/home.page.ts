@@ -124,12 +124,12 @@ getExtension(mimeType: string) {
 }
 
   async startRecording() {
-  await Geolocation.requestPermissions();
   if (this.isRecording) return;
 
   try {
-    await navigator.mediaDevices.getUserMedia({ audio: true });
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true
+    });
 
     const mimeType = this.getSupportedMimeType();
     console.log('Using mimeType:', mimeType);
@@ -158,6 +158,14 @@ getExtension(mimeType: string) {
 
   } catch (err) {
     console.error('Recording error:', err);
+
+    const toast = await this.toastController.create({
+    message: 'Microphone permission denied',
+    duration: 2000,
+    color: 'danger'
+   });
+
+   await toast.present();
   }
 }
 
@@ -210,6 +218,10 @@ async stopRecording() {
   };
 
   this.mediaRecorder.stop();
+
+  this.mediaRecorder.stream
+  ?.getTracks()
+  .forEach((track: MediaStreamTrack) => track.stop());
 }
 
 toggleRecording() {

@@ -118,14 +118,21 @@ export class ProfilPage implements OnInit, OnDestroy {
     localStorage.setItem('notificationsEnabled', JSON.stringify(this.notificationsEnabled));
 
     const token = await this.dataService.loadFirebaseToken();
-    console.log("token:", token);
+    console.log("loaded token:", token);
+    
     if (!token) return;
 
     const formData = new FormData();
     formData.append('token', token);
     formData.append('active', this.notificationsEnabled ? '1' : '0');
 
-    this.http.post('https://traffic-call.com/api/pushchange.php', formData).subscribe();
+    this.http.post(
+  'https://traffic-call.com/api/pushchange.php',
+      formData
+    ).subscribe({
+      next: res => console.log('Push change response:', res),
+      error: err => console.error('Push change error:', err)
+    });
   }
 
   onLocationModeChange(event: any) {
